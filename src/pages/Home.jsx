@@ -27,6 +27,7 @@ import ProgrammeCard from '../components/ProgrammeCard';
 import FacultyCard from '../components/FacultyCard';
 import EnquiryForm from '../components/EnquiryForm';
 import ApplyModal from '../components/ApplyModal';
+import HeroBanner from '../components/HeroBanner';
 
 export default function Home() {
   const [applyModalOpen, setApplyModalOpen] = useState(false);
@@ -47,88 +48,9 @@ export default function Home() {
   return (
     <div className="overflow-hidden bg-white">
       {/* ========================================================
-          SECTION 1: HERO BANNER
+          SECTION 1: HERO BANNER (Univet Exact Visual Language)
       ======================================================== */}
-      <section className="relative min-h-[85vh] lg:min-h-[90vh] flex items-center justify-center bg-brand-navy overflow-hidden">
-        {/* Full-width University Campus Photo Background */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-transform duration-1000"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=2000&q=85')`,
-          }}
-        />
-
-        {/* Deep Navy Overlay with Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/90 to-brand-navy/70" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-yellow/10 via-transparent to-transparent" />
-
-        {/* Subtle grid texture */}
-        <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
-
-        {/* Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 w-full">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-3xl"
-          >
-            {/* Small Eyebrow Label */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-brand-yellow/15 border border-brand-yellow/30 text-brand-yellow text-xs font-bold uppercase tracking-widest mb-6">
-              <span className="w-2 h-2 rounded-full bg-brand-yellow animate-ping"></span>
-              <span>Premier Management Institute • Estd. 1955-56</span>
-            </div>
-
-            {/* Large Serif Heading */}
-            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight drop-shadow-sm">
-              {instituteData.tagline}
-            </h1>
-
-            {/* Supporting Description */}
-            <p className="mt-6 text-lg sm:text-xl text-slate-300 leading-relaxed font-normal max-w-2xl">
-              {instituteData.subheading}
-            </p>
-
-            {/* Affiliation Badges Line */}
-            <div className="mt-6 flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-300">
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/10">
-                <ShieldCheck className="w-4 h-4 text-brand-yellow" />
-                AICTE Approved
-              </span>
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/10">
-                <Award className="w-4 h-4 text-brand-yellow" />
-                Affiliated to BPUT, Rourkela
-              </span>
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/10">
-                <GraduationCap className="w-4 h-4 text-brand-yellow" />
-                NCCT, New Delhi
-              </span>
-            </div>
-
-            {/* Two CTA Buttons */}
-            <div className="mt-10 flex flex-wrap items-center gap-4">
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => handleOpenApply('MBA')}
-              >
-                Apply Now
-              </Button>
-
-              <Button
-                to="/about"
-                variant="outlineWhite"
-                size="lg"
-              >
-                Explore MICM
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Bottom subtle divider ribbon */}
-        <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-r from-brand-yellow via-amber-400 to-brand-yellow"></div>
-      </section>
+      <HeroBanner onApplyClick={handleOpenApply} />
 
 
       {/* ========================================================
