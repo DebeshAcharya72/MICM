@@ -31,6 +31,9 @@ export default function SearchModal({ isOpen, onClose }) {
 
   // Search items
   const staticItems = [
+    { title: "MoU's (Memoranda of Understanding)", desc: "National and International institutional collaborations and academic partnerships", path: "/collaboration/mous", category: "Collaboration", icon: Building2 },
+    { title: "Library & Information System", desc: "17,000+ volumes, 86 journals, EBSCO, DELNET, Indiastat, and e-Aarjav software", path: "/library", category: "Library", icon: BookOpen },
+    { title: "MICM Sahakar Varta (Newsletter)", desc: "Quarterly institutional publications, research articles, and training reports", path: "/newsletter", category: "Newsletter", icon: BookOpen },
     { title: "About MICM", desc: "History, Vision, Mission, and Affiliations since 1955-56", path: "/about", category: "About", icon: Building2 },
     { title: "Director's Message", desc: "Institutional address from Dr. P. Kannaiah", path: "/about", category: "Leadership", icon: User },
     { title: "Admission & Eligibility", desc: "MBA through OJEE & HDCM Correspondence batch", path: "/programmes", category: "Admissions", icon: BookOpen },

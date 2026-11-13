@@ -1,621 +1,405 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
-  GraduationCap, 
-  ArrowRight, 
-  ShieldCheck, 
+  ChevronRight, 
+  ChevronLeft, 
   Award, 
-  BookOpen, 
-  Building2, 
-  Monitor, 
-  Users, 
-  CheckCircle2, 
+  FileText, 
   Calendar, 
-  ChevronRight,
-  ExternalLink,
-  ChevronLeft,
-  Quote
+  ExternalLink, 
+  CheckCircle2, 
+  ShieldCheck,
+  Building2,
+  Users,
+  GraduationCap
 } from 'lucide-react';
-import { instituteData } from '../data/instituteData';
-import { programmesData } from '../data/programmeData';
-import { facultyData } from '../data/facultyData';
-import { facilitiesData } from '../data/facilitiesData';
-import SectionHeading from '../components/SectionHeading';
-import Button from '../components/Button';
-import ProgrammeCard from '../components/ProgrammeCard';
-import FacultyCard from '../components/FacultyCard';
-import EnquiryForm from '../components/EnquiryForm';
-import ApplyModal from '../components/ApplyModal';
-import HeroBanner from '../components/HeroBanner';
+import { portalData } from '../data/portalData';
 
 export default function Home() {
-  const [applyModalOpen, setApplyModalOpen] = useState(false);
-  const [selectedProgramme, setSelectedProgramme] = useState('MBA');
-  const [activeReviewIdx, setActiveReviewIdx] = useState(0);
+  const [activeNewsTab, setActiveNewsTab] = useState('coop');
+  const [bannerSlide, setBannerSlide] = useState(0);
 
-  const handleOpenApply = (progCode = 'MBA') => {
-    setSelectedProgramme(progCode);
-    setApplyModalOpen(true);
-  };
+  const bannerSlides = [
+    {
+      title: "Congratulations",
+      subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+      location: "AT NATIONAL COOPERATIVE SUMMIT",
+      students: [
+        { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
+        { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
+        { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+      ],
+      bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]"
+    },
+    {
+      title: "Pioneering Legacy",
+      subtitle: "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
+      location: "MINISTRY OF CO-OPERATION, GOVT. OF INDIA",
+      students: [
+        { name: "AICTE APPROVED", batch: "2-Year MBA", rank: "BPUT Affiliated" },
+        { name: "NCCT UNIT", batch: "New Delhi", rank: "Apex Body" },
+        { name: "3.4 ACRES", batch: "Nayapalli, BBSR", rank: "Green Campus" }
+      ],
+      bg: "from-[#093a47] via-[#0288D1] to-[#093a47]"
+    }
+  ];
 
-  // The 3 featured faculty members requested for homepage
-  const homeFaculty = facultyData.slice(0, 3);
-
-  // Gallery items for Campus Life & Facilities
-  const featuredFacilities = facilitiesData.slice(0, 5);
+  const currentBanner = bannerSlides[bannerSlide];
 
   return (
-    <div className="overflow-hidden bg-white">
+    <div className="bg-[#f4f6f9] pb-12">
+      
       {/* ========================================================
-          SECTION 1: HERO BANNER (Univet Exact Visual Language)
+          HERO BANNER SLIDER (Exact VAMNICOM Blue Banner from Image 1)
       ======================================================== */}
-      <HeroBanner onApplyClick={handleOpenApply} />
+      <section className="relative overflow-hidden bg-gradient-to-r text-white shadow-md border-b-2 border-amber-400">
+        <div className={`py-8 sm:py-12 px-4 sm:px-8 bg-gradient-to-r ${currentBanner.bg} relative transition-all duration-700`}>
+          
+          {/* Subtle Watermark Crest */}
+          <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
+            <GraduationCap className="w-96 h-96 text-white" />
+          </div>
 
-
-      {/* ========================================================
-          SECTION 2: ABOUT MICM (Univet-style Asymmetrical Collage)
-      ======================================================== */}
-      <section className="py-20 lg:py-28 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
             
-            {/* Left: Asymmetrical Image Collage */}
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="lg:col-span-6 relative"
-            >
-              {/* Univet decorative yellow frame border accent */}
-              <div className="relative pr-6 pb-6">
-                {/* Main Large Campus Image */}
-                <div className="relative rounded-2xl overflow-hidden shadow-premium border-4 border-white aspect-[4/3]">
-                  <img
-                    src="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1000&q=80"
-                    alt="MICM Campus Environment"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/60 via-transparent to-transparent"></div>
-                </div>
-
-                {/* Smaller Overlapping Student Image (Univet Style) */}
-                <div className="absolute -bottom-6 -right-2 sm:-bottom-8 sm:right-2 w-3/5 sm:w-1/2 rounded-2xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/3] bg-brand-navy hidden sm:block">
-                  <img
-                    src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80"
-                    alt="Management Scholars Collaborating"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-
-                {/* Decorative Experience Badge (Established 1955-56) */}
-                <div className="absolute -top-4 -left-4 sm:top-6 sm:-left-6 bg-brand-yellow text-brand-navy p-4 sm:p-5 rounded-2xl shadow-xl border-2 border-white flex items-center gap-3">
-                  <div className="p-2.5 bg-brand-navy text-brand-yellow rounded-xl">
-                    <GraduationCap className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="block text-[11px] font-bold uppercase tracking-wider text-brand-navy">
-                      Pioneering Legacy
-                    </span>
-                    <span className="font-serif font-black text-xl sm:text-2xl text-brand-navy block leading-none mt-0.5">
-                      Established 1955-56
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Right: Text Content */}
-            <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="lg:col-span-6 space-y-6"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/15 border border-brand-yellow/30 text-brand-navy text-xs font-bold uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-brand-yellow"></span>
-                <span>Institutional Profile</span>
+            {/* Left Banner Title Area */}
+            <div className="text-center lg:text-left space-y-2.5 max-w-xl">
+              {/* Official MICM Logo Badge in Hero Banner */}
+              <div className="inline-flex items-center gap-2 bg-white py-1 px-3 rounded-md shadow-md border border-amber-300">
+                <img
+                  src="/micm-logo.png"
+                  alt="MICM Bhubaneswar"
+                  className="h-8 sm:h-9 w-auto object-contain"
+                />
               </div>
 
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-slate leading-tight">
-                Welcome to Madhusudan Institute of Co-operative Management
-              </h2>
+              <div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-semibold uppercase tracking-wider text-amber-300">
+                <span>Madhusudan Institute of Co-operative Management (MICM)</span>
+              </div>
 
-              <p className="text-base sm:text-lg text-brand-body leading-relaxed">
-                Established during the historic 1955-56 academic year, Madhusudan Institute of Co-operative Management (MICM), Bhubaneswar stands as a vanguard institution in professional management education and cooperative institutional training.
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-amber-400 tracking-tight leading-tight uppercase drop-shadow-sm">
+                {currentBanner.title}
+              </h1>
+
+              <p className="text-xs sm:text-sm font-bold text-white tracking-wide uppercase">
+                {currentBanner.subtitle}
               </p>
 
-              <p className="text-sm sm:text-base text-brand-body leading-relaxed">
-                Functioning under the aegis of the National Council for Cooperative Training (NCCT), New Delhi, and promoted by the Ministry of Co-operation, Government of India, the institute is dedicated to nurturing dynamic leaders equipped with strategic vision, governance acumen, and ethical commitment.
-              </p>
-
-              {/* Three Feature Highlights */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div className="p-4 rounded-xl bg-brand-light border border-slate-200 hover:border-brand-yellow transition-colors">
-                  <ShieldCheck className="w-6 h-6 text-brand-navy mb-2" />
-                  <h4 className="font-serif font-bold text-sm text-brand-slate">AICTE Approved</h4>
-                  <p className="text-xs text-brand-body mt-1">Rigorous quality governance for MBA curriculum.</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-brand-light border border-slate-200 hover:border-brand-yellow transition-colors">
-                  <Award className="w-6 h-6 text-brand-navy mb-2" />
-                  <h4 className="font-serif font-bold text-sm text-brand-slate">BPUT Affiliated</h4>
-                  <p className="text-xs text-brand-body mt-1">Conducted under state technical university norms.</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-brand-light border border-slate-200 hover:border-brand-yellow transition-colors">
-                  <Building2 className="w-6 h-6 text-brand-navy mb-2" />
-                  <h4 className="font-serif font-bold text-sm text-brand-slate">NCCT Unit</h4>
-                  <p className="text-xs text-brand-body mt-1">National Council for Cooperative Training, New Delhi.</p>
-                </div>
-              </div>
-
-              <div className="pt-4 flex items-center gap-4">
-                <Button to="/about" variant="primary" size="md">
-                  Explore More
-                </Button>
-                <Link 
-                  to="/programmes" 
-                  className="text-sm font-bold text-brand-navy hover:text-brand-yellow-hover flex items-center gap-1.5 py-2 px-3 transition-colors"
-                >
-                  <span>View All Academic Programmes</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </motion.div>
-
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 3: INSTITUTIONAL HIGHLIGHTS (Navy Statistics)
-      ======================================================== */}
-      <section className="py-16 lg:py-20 bg-brand-navy text-white relative overflow-hidden">
-        {/* Subtle decorative circles */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-brand-navy-light/30 blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-brand-yellow/10 blur-3xl pointer-events-none"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-bold text-brand-yellow uppercase tracking-widest">
-              Institutional Heritage & Infrastructure
-            </span>
-            <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-white mt-1">
-              Verified Institutional Highlights
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {instituteData.stats.map((stat, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.15 }}
-                className="bg-brand-navy-light/60 border border-brand-navy-light/90 rounded-2xl p-6 sm:p-8 text-center relative hover:border-brand-yellow/60 transition-all duration-300 group hover:-translate-y-1"
-              >
-                <div className="font-serif font-black text-3xl sm:text-4xl lg:text-5xl text-brand-yellow tracking-tight group-hover:scale-105 transition-transform duration-300">
-                  {stat.value}{stat.suffix}
-                </div>
-                <div className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-300">
-                  {stat.label}
-                </div>
-                <div className="w-8 h-0.5 bg-brand-yellow/40 mx-auto mt-4 group-hover:w-14 transition-all duration-300"></div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 4: OUR PROGRAMMES (2 Large Verified Cards)
-      ======================================================== */}
-      <section className="py-20 lg:py-28 bg-brand-light">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading
-            eyebrow="Academic Offerings"
-            title="Our Academic Programmes"
-            description="Explore our AICTE-approved MBA and NCCT-promoted Higher Diploma in Co-operative Management (HDCM), structured to empower visionary management leaders."
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-            {programmesData.map((programme) => (
-              <ProgrammeCard
-                key={programme.id}
-                programme={programme}
-                onApplyClick={handleOpenApply}
-              />
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <Button to="/programmes" variant="secondary" size="md">
-              View Detailed Curriculum & Fee Schedules
-            </Button>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 5: CAMPUS LIFE & FACILITIES (Univet Collage)
-      ======================================================== */}
-      <section className="py-20 lg:py-28 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading
-            eyebrow="Campus Environment"
-            title="Campus Life & Modern Infrastructure"
-            description="Spread over 3.4 acres in Unit-8, Nayapalli, Bhubaneswar, MICM offers an intellectually vibrant and resource-rich atmosphere for scholarly pursuit."
-          />
-
-          {/* Univet-inspired gallery composition: 1 large featured + 4 smaller grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            {/* Featured Left Card (lg:col-span-6) */}
-            <div className="lg:col-span-6 rounded-2xl overflow-hidden relative shadow-premium group min-h-[360px] lg:min-h-[480px]">
-              <img
-                src={featuredFacilities[0].image}
-                alt={featuredFacilities[0].title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy via-brand-navy/30 to-transparent"></div>
-              
-              <div className="absolute top-4 left-4 bg-brand-yellow text-brand-navy text-xs font-black uppercase px-3 py-1 rounded-full shadow-sm">
-                Featured Infrastructure
-              </div>
-
-              <div className="absolute bottom-6 left-6 right-6 text-white">
-                <span className="text-xs uppercase tracking-wider text-brand-yellow font-bold block">
-                  {featuredFacilities[0].category}
+              <div className="pt-2">
+                <span className="inline-block bg-white/15 px-3 py-1 rounded text-xs font-black tracking-widest text-amber-300 border border-white/20">
+                  {currentBanner.location}
                 </span>
-                <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-white mt-1">
-                  {featuredFacilities[0].title}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-200 mt-2 line-clamp-2">
-                  {featuredFacilities[0].description}
-                </p>
-                <div className="mt-4">
-                  <Link
-                    to="/facilities"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-yellow hover:text-white transition-colors"
-                  >
-                    <span>Explore Campus Details</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
               </div>
             </div>
 
-            {/* 4 Smaller Grid Cards (lg:col-span-6: 2x2) */}
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {featuredFacilities.slice(1, 5).map((fac) => (
-                <div 
-                  key={fac.id}
-                  className="rounded-2xl overflow-hidden relative shadow-md group min-h-[220px]"
-                >
-                  <img
-                    src={fac.image}
-                    alt={fac.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/95 via-brand-navy/50 to-transparent"></div>
+            {/* Right: Round Scholar Badges (Exact VAMNICOM Style) */}
+            <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
+              {currentBanner.students.map((student, idx) => (
+                <div key={idx} className="flex flex-col items-center text-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-amber-400 bg-white shadow-lg overflow-hidden flex items-center justify-center p-1">
+                    <div className="w-full h-full rounded-full bg-slate-800 text-amber-300 flex flex-col items-center justify-center p-1">
+                      <GraduationCap className="w-7 h-7 sm:w-8 sm:h-8" />
+                      <span className="text-[8px] font-black uppercase text-amber-400 tracking-tighter mt-0.5">
+                        {student.rank}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="font-bold text-xs sm:text-[13px] text-white mt-2 block tracking-tight">
+                    {student.name}
+                  </span>
+                  <span className="text-[10px] text-amber-200 font-semibold block">
+                    {student.batch}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <span className="text-[10px] uppercase font-bold text-brand-yellow tracking-wider block">
-                      {fac.category}
+          </div>
+
+          {/* Banner Slider Controls */}
+          <button
+            type="button"
+            onClick={() => setBannerSlide((prev) => (prev === 0 ? 1 : 0))}
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white transition-colors"
+            aria-label="Previous Slide"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setBannerSlide((prev) => (prev === 0 ? 1 : 0))}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white transition-colors"
+            aria-label="Next Slide"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+        </div>
+      </section>
+
+
+      {/* ========================================================
+          MAIN HOMEPAGE 4-COLUMN SECTION (Image 1 Layout)
+      ======================================================== */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+        
+        {/* ROW 1: Dignitaries (Left) | Quick Links | Announcements | Dignitaries (Right) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-stretch">
+          
+          {/* Column 1: Left Dignitaries (Ministers) - lg:col-span-2 */}
+          <div className="lg:col-span-2 space-y-3.5">
+            {portalData.dignitaries.left.map((dig, idx) => (
+              <div 
+                key={idx}
+                className="bg-white border border-slate-300 rounded p-3 text-center shadow-2xs hover:shadow-xs transition-shadow flex flex-col items-center justify-between min-h-[160px]"
+              >
+                <div className="w-16 h-20 rounded border border-slate-300 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                  <img
+                    src={dig.image}
+                    alt={dig.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight">
+                    {dig.name}
+                  </h4>
+                  <p className="text-[10px] text-red-700 font-semibold mt-1 leading-snug">
+                    {dig.designation}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Column 2: Quick Links Box - lg:col-span-4 */}
+          <div className="lg:col-span-4 bg-white border border-slate-300 rounded shadow-2xs flex flex-col">
+            <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
+              <h3 className="font-serif font-bold text-base text-red-700 tracking-wide">
+                Quick Links
+              </h3>
+              <span className="text-[11px] font-bold text-slate-400 uppercase">
+                Resources
+              </span>
+            </div>
+
+            <div className="p-3 divide-y divide-slate-100 max-h-[500px] overflow-y-auto text-xs flex-1">
+              {portalData.quickLinks.map((item, idx) => (
+                <Link
+                  key={idx}
+                  to={item.link}
+                  className="py-2 px-1.5 flex items-start gap-2 text-slate-800 hover:text-[#0288D1] hover:bg-slate-50 transition-colors group"
+                >
+                  <span className="text-slate-400 font-bold group-hover:text-[#0288D1]">{'>'}</span>
+                  <span className="flex-1 font-medium leading-snug">{item.title}</span>
+                  {item.isNew && (
+                    <span className="bg-red-600 text-white font-bold text-[8px] px-1 py-0.2 rounded-xs uppercase shrink-0">
+                      NEW
                     </span>
-                    <h4 className="font-serif font-bold text-base sm:text-lg text-white mt-0.5 line-clamp-1">
-                      {fac.title}
-                    </h4>
-                    <p className="text-[11px] text-slate-300 mt-1 line-clamp-1">
-                      {fac.subtitle}
-                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Column 3: Announcements Box - lg:col-span-4 */}
+          <div className="lg:col-span-4 bg-white border border-slate-300 rounded shadow-2xs flex flex-col">
+            <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
+              <h3 className="font-serif font-bold text-base text-red-700 tracking-wide">
+                Announcements
+              </h3>
+              <span className="text-[11px] font-bold text-slate-400 uppercase">
+                Updates
+              </span>
+            </div>
+
+            <div className="p-3 divide-y divide-slate-100 max-h-[500px] overflow-y-auto text-xs flex-1">
+              {portalData.announcements.map((item, idx) => (
+                <div key={idx} className="py-2.5 px-1.5 space-y-1">
+                  <Link
+                    to={item.link}
+                    className="flex items-start gap-2 text-slate-800 hover:text-[#0288D1] transition-colors group"
+                  >
+                    <span className="text-slate-400 font-bold group-hover:text-[#0288D1]">{'>'}</span>
+                    <span className="flex-1 font-semibold leading-snug">{item.title}</span>
+                  </Link>
+                  <div className="pl-4 flex items-center gap-2 text-[10px] text-slate-500">
+                    <Calendar className="w-3 h-3 text-slate-400" />
+                    <span>{item.date}</span>
+                    {item.isNew && (
+                      <span className="bg-amber-500 text-slate-900 font-bold px-1 rounded text-[8px] uppercase">
+                        Notice
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-10 text-center">
-            <Button to="/facilities" variant="primary" size="md">
-              View All Campus Facilities
-            </Button>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 6: OUR FACULTY (Dark Navy Background)
-      ======================================================== */}
-      <section className="py-20 lg:py-28 bg-brand-navy text-white relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading
-            dark
-            eyebrow="Distinguished Mentors"
-            title="Our Dedicated Faculty"
-            description="Guided by experienced academicians and practitioners dedicated to imparting rigorous management insights and cooperative administration ethics."
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {homeFaculty.map((member) => (
-              <FacultyCard key={member.id} member={member} />
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <Button to="/faculty" variant="outlineWhite" size="md">
-              View All Faculty Members
-            </Button>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 7: DIRECTOR'S MESSAGE (Visually Attractive Split)
-      ======================================================== */}
-      <section className="py-20 lg:py-28 bg-white border-t border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-            
-            {/* Left: Dignified Director Placeholder / Crest Presentation */}
-            <div className="lg:col-span-5">
-              <div className="relative max-w-md mx-auto">
-                <div className="rounded-2xl overflow-hidden bg-brand-navy shadow-premium border-4 border-slate-100 p-8 sm:p-12 text-center text-white relative">
-                  {/* Background subtle radial */}
-                  <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
-
-                  <div className="relative z-10 w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-white/10 border-4 border-brand-yellow mx-auto flex items-center justify-center shadow-inner">
-                    <span className="font-serif font-black text-4xl text-brand-yellow">
-                      PK
-                    </span>
-                  </div>
-
-                  <div className="relative z-10 mt-6">
-                    <span className="text-xs font-bold uppercase tracking-widest text-brand-yellow block">
-                      Leadership
-                    </span>
-                    <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-white mt-1">
-                      {instituteData.director.name}
-                    </h3>
-                    <p className="text-sm font-semibold text-slate-300 mt-1">
-                      {instituteData.director.designation}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-2">
-                      Madhusudan Institute of Co-operative Management
-                    </p>
-                  </div>
-
-                  <div className="relative z-10 mt-6 pt-6 border-t border-white/10 flex items-center justify-center gap-2 text-xs text-brand-yellow">
-                    <Award className="w-4 h-4" />
-                    <span>NCCT, New Delhi / Govt. of India</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Editorial Welcome Message */}
-            <div className="lg:col-span-7 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/15 border border-brand-yellow/30 text-brand-navy text-xs font-bold uppercase tracking-wider">
-                <Quote className="w-3.5 h-3.5 text-brand-yellow" />
-                <span>Institutional Address</span>
-              </div>
-
-              <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-brand-slate">
-                Message from the Director
-              </h2>
-
-              <div className="space-y-4 text-base text-brand-body leading-relaxed">
-                {instituteData.director.messagePoints.map((paragraph, idx) => (
-                  <p key={idx} className="relative pl-4 border-l-2 border-brand-yellow">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
-
-              <div className="pt-4 flex items-center gap-4">
-                <Button to="/about" variant="primary" size="md">
-                  Read More About Administration
-                </Button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 8: INSTITUTIONAL RECOGNITION & STANDARDS (Univet Feedback Inspiration)
-      ======================================================== */}
-      <section className="py-20 lg:py-28 bg-brand-navy text-white relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading
-            dark
-            eyebrow="Academic Credibility"
-            title="Institutional Accreditation & Benchmarks"
-            description="MICM maintains uncompromising standards across curriculum design, professional ethics, and public sector governance."
-          />
-
-          {/* 3 Sophisticated Neutral Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {instituteData.editorialReviewCards.map((card, idx) => (
-              <div
+          {/* Column 4: Right Dignitaries (Secretaries & Director) - lg:col-span-2 */}
+          <div className="lg:col-span-2 space-y-3.5">
+            {portalData.dignitaries.right.map((dig, idx) => (
+              <div 
                 key={idx}
-                className="bg-brand-navy-light/70 border border-brand-navy-light/90 rounded-2xl p-8 hover:border-brand-yellow transition-all duration-300 flex flex-col justify-between group"
+                className="bg-white border border-slate-300 rounded p-3 text-center shadow-2xs hover:shadow-xs transition-shadow flex flex-col items-center justify-between min-h-[160px]"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-brand-yellow px-2.5 py-1 rounded bg-brand-yellow/10 border border-brand-yellow/20">
-                      {card.tag}
-                    </span>
-                    <ShieldCheck className="w-5 h-5 text-brand-yellow" />
-                  </div>
-
-                  <h3 className="font-serif text-xl font-bold text-white group-hover:text-brand-yellow transition-colors">
-                    {card.title}
-                  </h3>
-
-                  <span className="text-xs font-semibold text-slate-300 block mt-1">
-                    {card.subtitle}
-                  </span>
-
-                  <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-                    {card.description}
-                  </p>
+                <div className="w-16 h-20 rounded border border-slate-300 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                  <img
+                    src={dig.image}
+                    alt={dig.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
-
-                <div className="mt-6 pt-6 border-t border-brand-navy-light/80 flex items-center gap-2 text-xs text-brand-yellow">
-                  <CheckCircle2 className="w-4 h-4 text-brand-yellow" />
-                  <span>Verified Institutional Compliance</span>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight">
+                    {dig.name}
+                  </h4>
+                  <p className="text-[10px] text-red-700 font-semibold mt-1 leading-snug">
+                    {dig.designation}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
+
         </div>
-      </section>
 
 
-      {/* ========================================================
-          SECTION 9: APPLICATION ENQUIRY SECTION
-      ======================================================== */}
-      <section className="py-20 lg:py-28 bg-brand-light" id="enquiry">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left: Explanatory Context */}
-            <div className="lg:col-span-5 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brand-yellow/20 border border-brand-yellow/40 text-brand-navy text-xs font-bold uppercase tracking-wider">
-                <GraduationCap className="w-4 h-4 text-brand-navy" />
-                <span>Admissions 2026-27</span>
-              </div>
-
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-slate leading-tight">
-                Submit an Admission Enquiry
-              </h2>
-
-              <p className="text-base text-brand-body leading-relaxed">
-                Connect with our academic advisory team for guidance on eligibility, entrance criteria, and course specifications for the MBA and HDCM programmes.
-              </p>
-
-              <div className="space-y-4 pt-2">
-                <div className="flex items-start gap-3.5 p-4 rounded-xl bg-white border border-slate-200">
-                  <div className="p-2 bg-brand-yellow/20 rounded-lg text-brand-navy shrink-0">
-                    <BookOpen className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-sm text-brand-slate">MBA (2 Years)</h4>
-                    <p className="text-xs text-brand-body mt-0.5">
-                      Graduation + valid OJEE Rank. Total Fee: ₹1,22,400. AICTE approved.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3.5 p-4 rounded-xl bg-white border border-slate-200">
-                  <div className="p-2 bg-brand-yellow/20 rounded-lg text-brand-navy shrink-0">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-sm text-brand-slate">HDCM (36 Weeks)</h4>
-                    <p className="text-xs text-brand-body mt-0.5">
-                      Graduate eligibility. Correspondence mode with contact boarding included. Total Fee: ₹22,500.
-                    </p>
-                  </div>
-                </div>
-              </div>
+        {/* ROW 2: Reports (Left) | Upcoming Training Programmes (Center) | Cooperative News (Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          {/* Left: Reports Box (lg:col-span-3) */}
+          <div className="lg:col-span-3 bg-white border border-slate-300 rounded shadow-2xs">
+            <div className="border-b border-slate-200 px-4 py-3 bg-slate-50">
+              <h3 className="font-serif font-bold text-base text-red-700 tracking-wide">
+                Reports
+              </h3>
             </div>
-
-            {/* Right: Validated Interactive Form */}
-            <div className="lg:col-span-7">
-              <EnquiryForm dark={true} defaultProgramme="MBA" />
+            <div className="p-3 divide-y divide-slate-100 text-xs">
+              {portalData.reports.map((rep, idx) => (
+                <Link
+                  key={idx}
+                  to={rep.link}
+                  className="py-2.5 px-1 flex items-start gap-2 text-slate-800 hover:text-[#0288D1] transition-colors group"
+                >
+                  <span className="text-slate-400 font-bold group-hover:text-[#0288D1]">{'>'}</span>
+                  <span className="font-semibold leading-snug">{rep.title}</span>
+                </Link>
+              ))}
             </div>
-
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 10: NEWS & UPDATES (Editorial Cards)
-      ======================================================== */}
-      <section className="py-20 lg:py-28 bg-white border-t border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 text-brand-navy text-xs font-bold uppercase tracking-wider mb-2">
-                <Calendar className="w-3.5 h-3.5 text-brand-navy" />
-                <span>Notice Board</span>
-              </div>
-              <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-brand-slate">
-                Official News & Announcements
-              </h2>
-            </div>
-            <Link
-              to="/programmes"
-              className="text-sm font-bold text-brand-navy hover:text-brand-yellow-hover flex items-center gap-1.5 transition-colors"
-            >
-              <span>Explore Academic Calendars</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {instituteData.newsAnnouncements.map((news) => (
-              <div
-                key={news.id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-soft hover:shadow-premium transition-all duration-300 p-6 flex flex-col justify-between group hover:-translate-y-1"
+          {/* Center: Upcoming Training Programmes at MICM (lg:col-span-6) */}
+          <div className="lg:col-span-6 bg-white border border-slate-300 rounded shadow-2xs overflow-hidden">
+            <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+              <h3 className="font-serif font-bold text-base text-red-700 tracking-wide">
+                Upcoming Training Programmes at MICM
+              </h3>
+              <Link to="/programmes" className="text-xs font-bold text-[#0288D1] hover:underline">
+                View Calendar
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#0288D1] text-white text-[11px] uppercase font-bold">
+                    <th className="py-2 px-2.5 text-center border-r border-sky-400 w-10">S.No.</th>
+                    <th className="py-2 px-3 border-r border-sky-400">Title</th>
+                    <th className="py-2 px-2 border-r border-sky-400 whitespace-nowrap">From Date</th>
+                    <th className="py-2 px-2 border-r border-sky-400 whitespace-nowrap">To Date</th>
+                    <th className="py-2 px-2 border-r border-sky-400 whitespace-nowrap">Venue</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap">Know More</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  {portalData.upcomingTrainings.map((tr) => (
+                    <tr key={tr.sno} className="hover:bg-sky-50/60 transition-colors">
+                      <td className="py-2.5 px-2 text-center font-bold text-slate-600 border-r border-slate-200">
+                        {tr.sno}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-900 font-semibold leading-tight border-r border-slate-200">
+                        {tr.title}
+                      </td>
+                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
+                        {tr.fromDate}
+                      </td>
+                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
+                        {tr.toDate}
+                      </td>
+                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
+                        {tr.venue}
+                      </td>
+                      <td className="py-2.5 px-2 text-center">
+                        <Link
+                          to={tr.link}
+                          className="text-[#0288D1] font-bold hover:underline inline-flex items-center gap-0.5 text-[11px]"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>PDF</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Right: Cooperative News / What's New Tabbed Panel (lg:col-span-3) */}
+          <div className="lg:col-span-3 bg-white border border-slate-300 rounded shadow-2xs">
+            <div className="flex border-b border-slate-200 text-xs font-bold bg-slate-50">
+              <button
+                type="button"
+                onClick={() => setActiveNewsTab('coop')}
+                className={`flex-1 py-3 px-2 text-center transition-colors border-r border-slate-200 ${
+                  activeNewsTab === 'coop'
+                    ? 'text-red-700 font-serif font-extrabold border-b-2 border-red-700 bg-white'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
               >
-                <div>
-                  <div className="flex items-center justify-between text-xs text-brand-body mb-3">
-                    <span className="font-bold text-brand-navy bg-brand-yellow/20 px-2.5 py-0.5 rounded-full">
-                      {news.category}
-                    </span>
-                    <span className="text-slate-400 font-medium">{news.readTime}</span>
-                  </div>
+                Cooperative News
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveNewsTab('whatsnew')}
+                className={`flex-1 py-3 px-2 text-center transition-colors ${
+                  activeNewsTab === 'whatsnew'
+                    ? 'text-red-700 font-serif font-extrabold border-b-2 border-red-700 bg-white'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Whats New
+              </button>
+            </div>
 
-                  <span className="text-xs text-slate-500 font-medium block mb-2">
-                    {news.date}
+            <div className="p-3 divide-y divide-slate-100 text-xs max-h-[380px] overflow-y-auto">
+              {portalData.cooperativeNews.map((item, idx) => (
+                <div key={idx} className="py-2.5 px-1 space-y-1">
+                  <span className="text-[11px] font-bold text-slate-500 block">
+                    {item.date}
                   </span>
-
-                  <h3 className="font-serif text-xl font-bold text-brand-slate group-hover:text-brand-navy transition-colors line-clamp-2">
-                    {news.title}
-                  </h3>
-
-                  <p className="mt-3 text-xs sm:text-sm text-brand-body leading-relaxed line-clamp-3">
-                    {news.summary}
+                  <p className="text-slate-800 font-medium leading-snug">
+                    {item.title}
                   </p>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                   <Link
-                    to="/contact"
-                    className="text-xs font-bold text-brand-navy hover:text-brand-yellow flex items-center gap-1"
+                    to={item.link}
+                    className="text-[#0288D1] text-[11px] font-bold hover:underline inline-block uppercase tracking-wider"
                   >
-                    <span>Enquire Details</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    KNOW MORE
                   </Link>
-                  <span className="text-[10px] uppercase font-bold text-slate-400">
-                    Official Notice
-                  </span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Reusable Apply Modal */}
-      <ApplyModal
-        isOpen={applyModalOpen}
-        onClose={() => setApplyModalOpen(false)}
-        defaultProgramme={selectedProgramme}
-      />
+        </div>
+
+      </div>
+
     </div>
   );
 }

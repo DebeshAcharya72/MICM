@@ -1,372 +1,237 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Building2, 
-  History, 
+  History as HistoryIcon, 
   Users, 
   Target, 
-  Compass, 
   ShieldCheck, 
-  Award, 
   ChevronRight, 
-  GraduationCap, 
+  Award, 
   CheckCircle2, 
-  Clock,
-  ArrowRight
+  Cpu, 
+  BookOpen, 
+  Briefcase, 
+  HeartHandshake, 
+  Compass,
+  FileText
 } from 'lucide-react';
 import { instituteData } from '../data/instituteData';
-import SectionHeading from '../components/SectionHeading';
-import Button from '../components/Button';
 
 export default function About() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('history');
+  const location = useLocation();
 
-  const sidebarItems = [
-    { id: 'overview', label: 'About MICM', icon: Building2 },
-    { id: 'history', label: 'Institute History', icon: History },
-    { id: 'vision-mission', label: 'Vision & Mission', icon: Target },
-    { id: 'leadership', label: 'Administration & Leadership', icon: Users },
-    { id: 'affiliations', label: 'Affiliations & Approvals', icon: ShieldCheck },
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      setActiveTab(id);
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [location.hash]);
+
+  const sidebarLinks = [
+    { id: 'history', label: 'History' },
+    { id: 'madhusudan', label: 'Utkal Gourav Madhusudan Das' },
+    { id: 'director', label: "Director's Desk" },
+    { id: 'vision', label: 'Vision, Mission and Focus' },
+    { id: 'structure', label: 'Organization Structure' },
+    { id: 'centres', label: 'Centres at MICM' },
+    { id: 'mandate', label: 'Mandate of MICM' },
+    { id: 'management', label: 'Management Committee' },
   ];
 
-  const scrollToSection = (id) => {
-    setActiveTab(id);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
+  const centres = [
+    { name: "Centre for Information Technology", icon: Cpu, color: "bg-teal-600", desc: "Digital PACS, ERP and Computing Infrastructure" },
+    { name: "Centre for Cooperative Management", icon: HeartHandshake, color: "bg-emerald-600", desc: "Cooperative governance, credit unions and banking" },
+    { name: "Centre for Management Education", icon: BookOpen, color: "bg-sky-600", desc: "Full-time MBA & Higher Diploma Programmes" },
+    { name: "Centre for Research, Consultancy & Publication", icon: FileText, color: "bg-amber-600", desc: "Sectoral studies, field evaluations & research journals" },
+    { name: "Centre for Entrepreneurship Development", icon: Briefcase, color: "bg-indigo-600", desc: "FPO incubation, agri-business & collective enterprise" },
+    { name: "Centre for Training Information System", icon: Compass, color: "bg-blue-700", desc: "Curriculum tracking & national training databases" },
+  ];
 
   return (
-    <div className="bg-white">
-      {/* ========================================================
-          HERO BANNER
-      ======================================================== */}
-      <section className="relative py-24 sm:py-28 bg-brand-navy overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-25"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1800&q=80')`,
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/95 to-brand-navy/80"></div>
+    <div className="bg-white min-h-[70vh] py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-6">
         
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
-          {/* Breadcrumb */}
-          <nav className="flex items-center justify-center sm:justify-start gap-2 text-xs font-semibold text-slate-300 mb-4">
-            <Link to="/" className="hover:text-brand-yellow transition-colors">Home</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-brand-yellow">About MICM</span>
-          </nav>
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-xs text-slate-500 border-b border-slate-200 pb-3">
+          <Link to="/" className="hover:text-[#0288D1]">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-slate-700">About Us</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-[#0288D1] font-bold capitalize">{activeTab}</span>
+        </nav>
 
-          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight">
-            About MICM
-          </h1>
-          <p className="mt-4 text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
-            A pioneering management education and cooperative training institution established in 1955-56 in Bhubaneswar, Odisha.
-          </p>
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          MAIN SECTION: 2-COLUMN LAYOUT WITH UNIVET SIDEBAR
-      ======================================================== */}
-      <section className="py-16 lg:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+        {/* 2-Column VAMNICOM Style Layout (Image 2) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Left Sidebar Navigation (lg:col-span-4) */}
-          <div className="lg:col-span-4">
-            <div className="sticky top-28 bg-brand-light p-6 rounded-2xl border border-slate-200 shadow-soft space-y-4">
-              <div className="border-b border-slate-200 pb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Navigation
-                </span>
-                <h3 className="font-serif text-xl font-bold text-brand-slate mt-0.5">
-                  Institute Overview
-                </h3>
+          {/* Left Sidebar (Dark Teal / Cyan Menu) */}
+          <div className="lg:col-span-3 bg-[#00171f] text-white rounded overflow-hidden shadow-sm">
+            <div className="bg-[#0288D1] px-4 py-3 font-bold text-sm tracking-wide text-white uppercase">
+              About MICM
+            </div>
+            <div className="divide-y divide-slate-800 text-xs font-semibold">
+              {sidebarLinks.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    const el = document.getElementById(item.id);
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between ${
+                    activeTab === item.id
+                      ? 'bg-[#004e64] text-white font-bold border-l-4 border-amber-400'
+                      : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  <ChevronRight className="w-3 h-3 opacity-60" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Main Content Pane */}
+          <div className="lg:col-span-9 space-y-8">
+            
+            {/* Title: Green Serif (Exact VAMNICOM Style) */}
+            <div>
+              <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-emerald-800">
+                History
+              </h1>
+              <div className="w-16 h-1 bg-emerald-700 mt-1"></div>
+            </div>
+
+            {/* Box 1: About MICM History Content */}
+            <div id="history" className="border border-slate-300 rounded p-5 sm:p-6 text-xs sm:text-[13px] text-slate-800 leading-relaxed space-y-4 bg-white shadow-2xs">
+              <h2 className="font-bold text-slate-900 text-sm border-b border-slate-200 pb-2">
+                About MICM
+              </h2>
+              
+              <p>
+                In the historic academic year <strong>1955-56</strong>, a high-level committee appointed by the Government of India recommended the establishment of apex regional institutes to assess and address the training needs of the co-operative sector. It was recommended to set up specialized training institutes to undertake the training of senior personnel in co-operative institutions/departments, conduct fundamental and applied research, and provide consultancy services.
+              </p>
+              
+              <p>
+                Named after the legendary statesman and pioneer of Odisha’s industrial, constitutional, and cooperative movement, <strong>Utkal Gourav Madhusudan Das</strong>, the institute was established as a premier seat of cooperative management education. Functioning as an apex unit of the <strong>National Council for Cooperative Training (NCCT), New Delhi</strong>, promoted by the <strong>Ministry of Co-operation, Government of India</strong>, the institute caters to the training needs of senior and middle-level cooperative functionaries and management scholars across Odisha and Eastern India.
+              </p>
+
+              <p>
+                The institute's post-graduate 2-year full-time <strong>MBA programme</strong> is approved by the <strong>All India Council for Technical Education (AICTE), New Delhi</strong> and affiliated to the prestigious <strong>Biju Patnaik University of Technology (BPUT), Rourkela</strong>.
+              </p>
+            </div>
+
+            {/* Box 2: Centres at MICM (Flowchart Infographic from Image 2) */}
+            <div id="centres" className="border border-slate-300 rounded p-5 sm:p-6 bg-white shadow-2xs space-y-5">
+              <div className="bg-emerald-800 text-white text-center py-2.5 px-4 font-bold text-sm tracking-wider uppercase rounded-xs">
+                CENTRES AT MICM
               </div>
 
-              <div className="space-y-1">
-                {sidebarItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
+              <p className="text-xs text-slate-600 text-center max-w-xl mx-auto">
+                MICM has established six dedicated centres to conduct short-duration Executive and Management Development Programmes for Senior/Top Level Officials and non-officials of the cooperative sector.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2">
+                {centres.map((c, idx) => {
+                  const Icon = c.icon;
                   return (
-                    <button
-                      key={item.id}
-                      onClick={() => scrollToSection(item.id)}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all text-left ${
-                        isActive
-                          ? 'bg-brand-navy text-white shadow-md'
-                          : 'text-brand-slate hover:bg-white hover:text-brand-navy'
-                      }`}
+                    <div
+                      key={idx}
+                      className="border border-slate-200 rounded p-4 bg-slate-50 hover:bg-sky-50 transition-colors flex flex-col justify-between"
                     >
-                      <div className="flex items-center gap-3">
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-brand-yellow' : 'text-slate-400'}`} />
-                        <span>{item.label}</span>
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded text-white ${c.color} shrink-0`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-xs text-slate-900 leading-tight">
+                            {c.name}
+                          </h4>
+                          <p className="text-[11px] text-slate-600 mt-1 leading-snug">
+                            {c.desc}
+                          </p>
+                        </div>
                       </div>
-                      <ChevronRight className={`w-3.5 h-3.5 ${isActive ? 'text-brand-yellow' : 'opacity-40'}`} />
-                    </button>
+                    </div>
                   );
                 })}
               </div>
+            </div>
 
-              {/* Quick Contact Card */}
-              <div className="pt-4 border-t border-slate-200">
-                <div className="p-4 rounded-xl bg-brand-navy text-white text-xs space-y-2">
-                  <div className="flex items-center gap-2 text-brand-yellow font-bold">
-                    <GraduationCap className="w-4 h-4" />
-                    <span>Admission Enquiries</span>
-                  </div>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Contact our administration for session details and entrance counselling.
-                  </p>
-                  <p className="text-brand-yellow font-bold pt-1">{instituteData.phone}</p>
+            {/* Box 3: Mandate of MICM (Exact VAMNICOM Style from Image 2) */}
+            <div id="mandate" className="border border-slate-300 rounded p-5 sm:p-6 bg-white shadow-2xs space-y-4">
+              <h3 className="font-serif text-lg font-bold text-emerald-800 border-b border-slate-200 pb-2">
+                Mandate of MICM
+              </h3>
+
+              <div className="space-y-3.5 text-xs sm:text-[13px] text-slate-800 leading-relaxed">
+                <div>
+                  <strong className="text-slate-900 font-bold uppercase tracking-wide text-xs">TRAINING :</strong>
+                  <span className="ml-1 text-slate-700">
+                    Capacity Building and empowering the cooperatives and collectives across Odisha and eastern state federations.
+                  </span>
+                </div>
+
+                <div>
+                  <strong className="text-slate-900 font-bold uppercase tracking-wide text-xs">EDUCATION :</strong>
+                  <span className="ml-1 text-slate-700">
+                    Fostering and nurturing the managerial and entrepreneurial skill in budding managers in the area of agri business, cooperation, banking, and rural development through AICTE-approved MBA & NCCT Higher Diploma.
+                  </span>
+                </div>
+
+                <div>
+                  <strong className="text-slate-900 font-bold uppercase tracking-wide text-xs">CONSULTANCY :</strong>
+                  <span className="ml-1 text-slate-700">
+                    Consultancy services for cooperatives - banking, sugar, dairy, and IT/PACS ERP implementation, recruitment of qualified professional manpower, defining job responsibilities of personnel in cooperative institutions.
+                  </span>
+                </div>
+
+                <div>
+                  <strong className="text-slate-900 font-bold uppercase tracking-wide text-xs">RESEARCH :</strong>
+                  <span className="ml-1 text-slate-700">
+                    Formulate policy to nurture research culture and develop research plans/proposals in the field of agri business, cooperation, financial inclusion, and rural development.
+                  </span>
+                </div>
+
+                <div>
+                  <strong className="text-slate-900 font-bold uppercase tracking-wide text-xs">POLICY SUPPORT :</strong>
+                  <span className="ml-1 text-slate-700">
+                    Policy support, data collection and analysis and documentation for various programmes and schemes of the Ministry of Cooperation and for various cooperative federations.
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Right Main Content (lg:col-span-8) */}
-          <div className="lg:col-span-8 space-y-16">
-
-            {/* Sub-Section 1: Overview & Asymmetrical Image Composition */}
-            <div id="overview" className="scroll-mt-32 space-y-8">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 text-brand-navy text-xs font-bold uppercase tracking-wider mb-3">
-                  <span>Institutional Heritage</span>
-                </div>
-                <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-brand-slate">
-                  Legacy of Academic & Sectoral Leadership
-                </h2>
-              </div>
-
-              {/* Univet Asymmetrical Two-Image Composition */}
-              <div className="relative pt-4 pb-8 pr-6">
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                  {/* Students Image */}
-                  <div className="sm:col-span-7 rounded-2xl overflow-hidden shadow-premium border-4 border-white aspect-[4/3] bg-brand-navy">
-                    <img
-                      src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80"
-                      alt="Management Students Collaborating"
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                    />
-                  </div>
-
-                  {/* Campus Image */}
-                  <div className="sm:col-span-5 rounded-2xl overflow-hidden shadow-lg border-4 border-white aspect-[3/4] bg-brand-navy sm:-ml-6 z-10 hidden sm:block">
-                    <img
-                      src="https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=600&q=80"
-                      alt="MICM Campus Grounds"
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                    />
-                  </div>
-                </div>
-
-                {/* Decorative Academic Icon Badge */}
-                <div className="absolute -bottom-2 sm:bottom-2 left-6 bg-brand-navy border-2 border-brand-yellow text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3">
-                  <div className="p-2 bg-brand-yellow text-brand-navy rounded-lg">
-                    <GraduationCap className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-300 block">Unit of</span>
-                    <span className="font-serif font-black text-sm text-brand-yellow">NCCT, New Delhi</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4 text-base text-brand-body leading-relaxed pt-4">
-                <p>
-                  <strong className="text-brand-slate">Madhusudan Institute of Co-operative Management (MICM)</strong>, Bhubaneswar, is one of India's premier management education and cooperative development institutes. Established in the academic year <strong>1955-56</strong>, the institute carries nearly seven decades of dedication to fostering administrative capacity, corporate stewardship, and cooperative governance.
-                </p>
-                <p>
-                  Promoted by the <strong>Ministry of Co-operation, Government of India</strong>, and functioning under the administrative oversight of the <strong>National Council for Cooperative Training (NCCT), New Delhi</strong>, MICM bridges academic excellence with sectoral demands across Odisha and the eastern region.
-                </p>
-                <p>
-                  The institute is affiliated to <strong>Biju Patnaik University of Technology (BPUT), Rourkela</strong>, and its post-graduate management curriculum is approved by the <strong>All India Council for Technical Education (AICTE), New Delhi</strong>.
+            {/* Box 4: Vision & Mission */}
+            <div id="vision" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="border border-[#0288D1] rounded p-5 bg-sky-50/50">
+                <span className="text-xs font-bold uppercase text-[#0288D1] tracking-wider block mb-1">
+                  Our Vision
+                </span>
+                <p className="font-serif text-sm font-semibold text-slate-900 italic leading-relaxed">
+                  "{instituteData.vision}"
                 </p>
               </div>
-            </div>
 
-
-            {/* Sub-Section 2: History */}
-            <div id="history" className="scroll-mt-32 pt-8 border-t border-slate-200 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-navy text-white text-xs font-bold uppercase tracking-wider">
-                <Clock className="w-3.5 h-3.5 text-brand-yellow" />
-                <span>Foundational Journey</span>
-              </div>
-              <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-brand-slate">
-                Institute History & Milestone Years
-              </h3>
-              
-              <div className="p-6 rounded-2xl bg-brand-light border border-slate-200 space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-brand-navy text-brand-yellow flex items-center justify-center font-serif font-bold text-lg shrink-0">
-                    55
-                  </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-lg text-brand-slate">
-                      1955-56: Historic Establishment
-                    </h4>
-                    <p className="text-sm text-brand-body mt-1 leading-relaxed">
-                      Founded to develop professional administrative competencies for cooperative institutions, state federations, and public credit organizations during India's formative post-independence planning era.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 pt-4 border-t border-slate-200">
-                  <div className="w-12 h-12 rounded-xl bg-brand-yellow text-brand-navy flex items-center justify-center font-serif font-bold text-lg shrink-0">
-                    PG
-                  </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-lg text-brand-slate">
-                      Expansion into Full-Time Management Degree
-                    </h4>
-                    <p className="text-sm text-brand-body mt-1 leading-relaxed">
-                      Evolved to introduce the flagship 2-year full-time MBA programme approved by AICTE and affiliated to BPUT, while sustaining executive correspondence training through the 36-week HDCM diploma.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-
-            {/* Sub-Section 3: Vision & Mission */}
-            <div id="vision-mission" className="scroll-mt-32 pt-8 border-t border-slate-200 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 text-brand-navy text-xs font-bold uppercase tracking-wider">
-                <Target className="w-3.5 h-3.5 text-brand-navy" />
-                <span>Guiding Philosophy</span>
-              </div>
-              <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-brand-slate">
-                Vision & Mission
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Vision Box */}
-                <div className="bg-brand-navy text-white p-8 rounded-2xl shadow-lg border-t-4 border-brand-yellow flex flex-col justify-between">
-                  <div>
-                    <div className="w-10 h-10 rounded-xl bg-brand-yellow text-brand-navy flex items-center justify-center mb-4">
-                      <Target className="w-5 h-5" />
-                    </div>
-                    <span className="text-xs uppercase font-bold tracking-widest text-brand-yellow block">
-                      Our Vision
-                    </span>
-                    <p className="font-serif text-lg sm:text-xl font-medium text-slate-100 mt-3 leading-relaxed italic">
-                      "{instituteData.vision}"
-                    </p>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-white/10 text-xs text-slate-300">
-                    Sustainable Development for State, Region & Nation
-                  </div>
-                </div>
-
-                {/* Mission Box */}
-                <div className="bg-brand-light text-brand-slate p-8 rounded-2xl shadow-soft border border-slate-200 border-t-4 border-brand-navy flex flex-col justify-between">
-                  <div>
-                    <div className="w-10 h-10 rounded-xl bg-brand-navy text-brand-yellow flex items-center justify-center mb-4">
-                      <Compass className="w-5 h-5" />
-                    </div>
-                    <span className="text-xs uppercase font-bold tracking-widest text-brand-navy block">
-                      Our Mission
-                    </span>
-                    <p className="font-serif text-lg sm:text-xl font-semibold text-brand-slate mt-3 leading-relaxed italic">
-                      "{instituteData.mission}"
-                    </p>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-slate-200 text-xs text-brand-body">
-                    Capacity Building & Innovative Skill Training
-                  </div>
-                </div>
-              </div>
-            </div>
-
-
-            {/* Sub-Section 4: Administration & Leadership */}
-            <div id="leadership" className="scroll-mt-32 pt-8 border-t border-slate-200 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 text-brand-navy text-xs font-bold uppercase tracking-wider">
-                <Users className="w-3.5 h-3.5 text-brand-navy" />
-                <span>Executive Leadership</span>
-              </div>
-              <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-brand-slate">
-                Message from the Director
-              </h3>
-
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-soft p-6 sm:p-8">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-slate-100">
-                  {/* Portrait Placeholder */}
-                  <div className="w-24 h-24 rounded-full bg-brand-navy text-brand-yellow border-4 border-brand-yellow/50 flex items-center justify-center font-serif font-black text-2xl shrink-0 shadow-md">
-                    PK
-                  </div>
-                  <div className="text-center sm:text-left">
-                    <span className="text-xs uppercase font-bold text-brand-navy bg-brand-yellow/20 px-2.5 py-0.5 rounded-full">
-                      Institutional Head
-                    </span>
-                    <h4 className="font-serif text-2xl font-bold text-brand-slate mt-1">
-                      {instituteData.director.name}
-                    </h4>
-                    <p className="text-sm font-semibold text-brand-navy">
-                      {instituteData.director.designation}
-                    </p>
-                    <p className="text-xs text-brand-body mt-0.5">
-                      Madhusudan Institute of Co-operative Management
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-6 space-y-3.5 text-sm sm:text-base text-brand-body leading-relaxed">
-                  {instituteData.director.messagePoints.map((point, idx) => (
-                    <p key={idx}>{point}</p>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-
-            {/* Sub-Section 5: Affiliations & Approvals (3 Attractive Cards) */}
-            <div id="affiliations" className="scroll-mt-32 pt-8 border-t border-slate-200 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 text-brand-navy text-xs font-bold uppercase tracking-wider">
-                <ShieldCheck className="w-3.5 h-3.5 text-brand-navy" />
-                <span>Statutory Standing</span>
-              </div>
-              <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-brand-slate">
-                Affiliations & Regulatory Approvals
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {instituteData.affiliations.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-6 rounded-2xl bg-brand-light border border-slate-200 hover:border-brand-yellow transition-all duration-300 flex flex-col justify-between group shadow-sm hover:shadow"
-                  >
-                    <div>
-                      <div className="w-10 h-10 rounded-xl bg-brand-navy text-brand-yellow flex items-center justify-center font-bold text-xs mb-4">
-                        {item.abbr}
-                      </div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                        {item.badge}
-                      </span>
-                      <h4 className="font-serif text-lg font-bold text-brand-slate group-hover:text-brand-navy transition-colors mt-1">
-                        {item.title}
-                      </h4>
-                      <p className="mt-3 text-xs text-brand-body leading-relaxed">
-                        {item.body}
-                      </p>
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-slate-200/70 flex items-center gap-1.5 text-xs text-emerald-700 font-semibold">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>Compliant & Verified</span>
-                    </div>
-                  </div>
-                ))}
+              <div className="border border-emerald-600 rounded p-5 bg-emerald-50/50">
+                <span className="text-xs font-bold uppercase text-emerald-800 tracking-wider block mb-1">
+                  Our Mission
+                </span>
+                <p className="font-serif text-sm font-semibold text-slate-900 italic leading-relaxed">
+                  "{instituteData.mission}"
+                </p>
               </div>
             </div>
 
           </div>
 
         </div>
-      </section>
+
+      </div>
     </div>
   );
 }
