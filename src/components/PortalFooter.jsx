@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Linkedin, Youtube, ExternalLink, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import { Facebook, Twitter, Linkedin, Youtube, Lock } from 'lucide-react';
 
 export default function PortalFooter() {
   return (
@@ -11,21 +11,21 @@ export default function PortalFooter() {
           
           {/* Quick Compliance Links */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1 text-[11px] sm:text-xs">
-            <Link to="/about" className="hover:underline">Tender Documents</Link>
+            <Link href="/downloads" className="hover:underline">Tender Documents</Link>
             <span className="text-white/60">|</span>
-            <Link to="/about" className="hover:underline">Right To Information (RTI)</Link>
+            <Link href="/rti-careers" className="hover:underline">Right To Information (RTI)</Link>
             <span className="text-white/60">|</span>
-            <Link to="/about" className="hover:underline">Archived</Link>
+            <Link href="/compliance" className="hover:underline">Mandatory Disclosures</Link>
             <span className="text-white/60">|</span>
-            <Link to="/about" className="hover:underline">Citizen Charter</Link>
+            <Link href="/committees" className="hover:underline">Citizen Charter & ICC</Link>
             <span className="text-white/60">|</span>
-            <Link to="/about" className="hover:underline">Vigilance</Link>
+            <Link href="/grievance" className="hover:underline">Grievance Redressal</Link>
             <span className="text-white/60">|</span>
-            <Link to="/about" className="hover:underline">Intranet</Link>
+            <Link href="/rti-careers" className="hover:underline">Recruitment & Careers</Link>
             <span className="text-white/60">|</span>
-            <Link to="/about" className="hover:underline">Recruitment</Link>
+            <Link href="/admission-faqs" className="hover:underline">Admission FAQs</Link>
             <span className="text-white/60">|</span>
-            <Link to="/contact" className="hover:underline">Contact</Link>
+            <Link href="/contact" className="hover:underline">Contact</Link>
           </div>
 
           {/* Social Media Links */}
@@ -57,11 +57,14 @@ export default function PortalFooter() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 text-slate-400">
-            <span>Last Update : 13-November-2026</span>
+            <span>Last Update : 18-November-2026</span>
             <span className="text-slate-600">|</span>
             <span>Visitor Count <strong className="text-amber-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700">534,892</strong></span>
             <span className="text-slate-600">|</span>
-            <span>Contents published and managed by MICM</span>
+            <Link href="/admin" className="text-sky-300 hover:text-white flex items-center gap-1 font-semibold">
+              <Lock className="w-3 h-3" />
+              <span>Admin Login</span>
+            </Link>
           </div>
 
         </div>

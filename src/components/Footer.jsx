@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { 
   GraduationCap, 
   MapPin, 
@@ -63,7 +63,7 @@ export default function Footer() {
           
           {/* Column 1: Institute Information (col-span-3) */}
           <div className="lg:col-span-3 space-y-4">
-            <Link to="/" className="flex items-center gap-3 group">
+            <Link href="/" className="flex items-center gap-3 group">
               <div className="w-11 h-11 rounded-xl bg-brand-yellow text-brand-navy flex items-center justify-center font-bold shadow-md">
                 <GraduationCap className="w-6 h-6" />
               </div>
@@ -138,37 +138,37 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link to="/" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
+                <Link href="/" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
                   <ArrowRight className="w-3 h-3 text-brand-yellow/70" />
                   <span>Home</span>
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
+                <Link href="/about" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
                   <ArrowRight className="w-3 h-3 text-brand-yellow/70" />
                   <span>About MICM</span>
                 </Link>
               </li>
               <li>
-                <Link to="/programmes" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
+                <Link href="/programmes" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
                   <ArrowRight className="w-3 h-3 text-brand-yellow/70" />
                   <span>Programmes</span>
                 </Link>
               </li>
               <li>
-                <Link to="/faculty" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
+                <Link href="/faculty" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
                   <ArrowRight className="w-3 h-3 text-brand-yellow/70" />
                   <span>Faculty Directory</span>
                 </Link>
               </li>
               <li>
-                <Link to="/facilities" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
+                <Link href="/facilities" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
                   <ArrowRight className="w-3 h-3 text-brand-yellow/70" />
                   <span>Campus Facilities</span>
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
+                <Link href="/contact" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
                   <ArrowRight className="w-3 h-3 text-brand-yellow/70" />
                   <span>Contact & Location</span>
                 </Link>
@@ -183,25 +183,25 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-400">
               <li>
-                <Link to="/programmes" className="hover:text-brand-yellow transition-colors block">
+                <Link href="/programmes" className="hover:text-brand-yellow transition-colors block">
                   <span className="text-white font-medium block">BPUT Affiliation</span>
                   <span className="text-[11px] text-slate-400">Curriculum & Exam Framework</span>
                 </Link>
               </li>
               <li>
-                <Link to="/programmes" className="hover:text-brand-yellow transition-colors block">
+                <Link href="/programmes" className="hover:text-brand-yellow transition-colors block">
                   <span className="text-white font-medium block">AICTE Recognition</span>
                   <span className="text-[11px] text-slate-400">Approved MBA Institution</span>
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-brand-yellow transition-colors block">
+                <Link href="/about" className="hover:text-brand-yellow transition-colors block">
                   <span className="text-white font-medium block">NCCT Guidelines</span>
                   <span className="text-[11px] text-slate-400">National Council Regulations</span>
                 </Link>
               </li>
               <li>
-                <Link to="/programmes" className="hover:text-brand-yellow transition-colors block">
+                <Link href="/programmes" className="hover:text-brand-yellow transition-colors block">
                   <span className="text-white font-medium block">OJEE Counselling</span>
                   <span className="text-[11px] text-slate-400">State MBA Admission Process</span>
                 </Link>
@@ -288,11 +288,11 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Madhusudan Institute of Co-operative Management (MICM), Bhubaneswar. All rights reserved.
           </p>
           <div className="flex items-center space-x-6 text-xs">
-            <Link to="/about" className="hover:text-brand-yellow transition-colors">
+            <Link href="/about" className="hover:text-brand-yellow transition-colors">
               About Institute
             </Link>
             <span className="text-slate-600">•</span>
-            <Link to="/contact" className="hover:text-brand-yellow transition-colors">
+            <Link href="/contact" className="hover:text-brand-yellow transition-colors">
               Admissions
             </Link>
             <span className="text-slate-600">•</span>

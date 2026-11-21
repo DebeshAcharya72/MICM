@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { instituteData } from '../data/instituteData';
 
@@ -133,8 +133,7 @@ export default function HeroBanner({ onApplyClick }) {
 
               {/* Buttons: Univet Pill Button with 4-Dot Diamond Constellation Icon */}
               <div className="pt-4 flex flex-wrap items-center gap-4">
-                <Link
-                  to={active.buttonLink}
+                <Link href={active.buttonLink}
                   className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-brand-yellow hover:bg-brand-yellow-hover text-brand-navy font-bold text-sm sm:text-base tracking-wide transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>{active.buttonText}</span>

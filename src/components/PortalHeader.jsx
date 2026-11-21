@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Facebook, Twitter, Linkedin, Youtube, GraduationCap } from 'lucide-react';
 import { portalData } from '../data/portalData';
 
@@ -7,14 +10,14 @@ export default function PortalHeader({ onSearchClick }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [fontSizeOffset, setFontSizeOffset] = useState(0);
   const [selectedLang, setSelectedLang] = useState('English');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (onSearchClick) {
       onSearchClick(searchQuery);
     } else {
-      navigate(`/programmes?q=${encodeURIComponent(searchQuery)}`);
+      router.push(`/programmes?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -35,7 +38,7 @@ export default function PortalHeader({ onSearchClick }) {
         <a 
           href="https://facebook.com" 
           target="_blank" 
-          rel="noreferrer"
+          rel="noreferrer" 
           aria-label="Facebook"
           className="w-9 h-9 bg-[#3b5998] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
@@ -44,7 +47,7 @@ export default function PortalHeader({ onSearchClick }) {
         <a 
           href="https://twitter.com" 
           target="_blank" 
-          rel="noreferrer"
+          rel="noreferrer" 
           aria-label="Twitter"
           className="w-9 h-9 bg-[#00acee] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
@@ -53,7 +56,7 @@ export default function PortalHeader({ onSearchClick }) {
         <a 
           href="https://linkedin.com" 
           target="_blank" 
-          rel="noreferrer"
+          rel="noreferrer" 
           aria-label="LinkedIn"
           className="w-9 h-9 bg-[#0077b5] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
@@ -62,7 +65,7 @@ export default function PortalHeader({ onSearchClick }) {
         <a 
           href="https://youtube.com" 
           target="_blank" 
-          rel="noreferrer"
+          rel="noreferrer" 
           aria-label="YouTube"
           className="w-9 h-9 bg-[#cd201f] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
@@ -75,7 +78,7 @@ export default function PortalHeader({ onSearchClick }) {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
           
           {/* Left: Official Emblem + Bilingual Name & Ministry Details */}
-          <Link to="/" className="flex items-center gap-3.5 sm:gap-5 text-left group">
+          <Link href="/" className="flex items-center gap-3.5 sm:gap-5 text-left group">
             {/* Official MICM Logo Image */}
             <div className="shrink-0 bg-white p-1 rounded-sm border border-slate-100 shadow-2xs group-hover:scale-102 transition-transform">
               <img

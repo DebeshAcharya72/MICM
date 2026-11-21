@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Clock, GraduationCap, CheckCircle2, ArrowRight, IndianRupee, Users } from 'lucide-react';
 import Button from './Button';
 
@@ -88,8 +88,7 @@ export default function ProgrammeCard({ programme, onApplyClick }) {
 
         {/* CTA Footer */}
         <div className="mt-8 pt-5 border-t border-slate-100 flex items-center justify-between gap-3">
-          <Link
-            to="/programmes"
+          <Link href="/programmes"
             className="text-xs font-bold text-brand-navy hover:text-brand-yellow-hover flex items-center gap-1 group/link"
           >
             <span>View Syllabus & Fees</span>

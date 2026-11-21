@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   Phone, 
   Mail, 
@@ -23,7 +24,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
-  const location = useLocation();
+  const location = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -134,7 +135,7 @@ export default function Navbar() {
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             {/* Left: Branding */}
-            <Link to="/" className="flex items-center gap-3.5 group">
+            <Link href="/" className="flex items-center gap-3.5 group">
               {/* Academic Crest / Emblem */}
               <div className="w-12 h-12 rounded-xl bg-brand-navy flex items-center justify-center text-brand-yellow shadow-md group-hover:scale-105 transition-transform shrink-0 border border-brand-yellow/30">
                 <GraduationCap className="w-7 h-7" />

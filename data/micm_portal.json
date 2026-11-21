@@ -1,0 +1,309 @@
+{
+  "admin_users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password_hash": "de1a79b1f017ac9cadb42cf30ab059a865284dc1ff301f0818e364b96f09eca5",
+      "full_name": "MICM Portal Administrator",
+      "role": "superadmin",
+      "created_at": "2026-11-21T13:24:54.690Z"
+    }
+  ],
+  "notices": [
+    {
+      "id": 1,
+      "title": "MBA 2026-28 Batch Prospectus & OJEE Counselling Guidelines Released",
+      "category": "Admissions",
+      "date": "12-Nov-2026",
+      "link": "/programmes",
+      "is_new": 1,
+      "is_active": 1,
+      "created_at": "2026-11-21T13:24:54.693Z"
+    },
+    {
+      "id": 2,
+      "title": "Prospectus (2026-2027) Higher Diploma in Co-operative Management (HDCM)",
+      "category": "Admissions",
+      "date": "10-Nov-2026",
+      "link": "/programmes",
+      "is_new": 1,
+      "is_active": 1,
+      "created_at": "2026-11-21T13:24:54.693Z"
+    },
+    {
+      "id": 3,
+      "title": "MICM received ISO 9001:2015 Certificate by STQC, MeitY, Govt. of India",
+      "category": "Compliance",
+      "date": "05-Nov-2026",
+      "link": "/about",
+      "is_new": 0,
+      "is_active": 1,
+      "created_at": "2026-11-21T13:24:54.693Z"
+    },
+    {
+      "id": 4,
+      "title": "Recruitment for Post of Registrar, Finance Officer & Assistant Director 2026",
+      "category": "Careers",
+      "date": "01-Nov-2026",
+      "link": "/rti-careers",
+      "is_new": 1,
+      "is_active": 1,
+      "created_at": "2026-11-21T13:24:54.693Z"
+    },
+    {
+      "id": 5,
+      "title": "National Workshop on Primary Agricultural Credit Societies (PACS) Computerization",
+      "category": "Events",
+      "date": "25-Oct-2026",
+      "link": "/about",
+      "is_new": 0,
+      "is_active": 1,
+      "created_at": "2026-11-21T13:24:54.693Z"
+    },
+    {
+      "id": 6,
+      "title": "Procurement Tender: High-End Workstations for Computing Centre",
+      "category": "Tenders",
+      "date": "20-Oct-2026",
+      "link": "/downloads",
+      "is_new": 0,
+      "is_active": 1,
+      "created_at": "2026-11-21T13:24:54.693Z"
+    }
+  ],
+  "enquiries": [
+    {
+      "id": 1,
+      "full_name": "Amitav Patnaik",
+      "email": "amitav.patnaik@example.com",
+      "phone": "+91 9437012345",
+      "programme": "MBA (2-Year Full-Time)",
+      "message": "Inquiring about OJEE cutoff ranks and hostel availability for MBA 2026 batch.",
+      "status": "New",
+      "created_at": "2026-11-21T13:24:54.693Z"
+    },
+    {
+      "id": 2,
+      "full_name": "Sasmita Sahoo",
+      "email": "sasmita.s@example.com",
+      "phone": "+91 9861054321",
+      "programme": "HDCM (Correspondence)",
+      "message": "Please share fee structure and examination centre details for HDCM.",
+      "status": "Contacted",
+      "created_at": "2026-11-21T13:24:54.693Z"
+    }
+  ],
+  "applications": [
+    {
+      "id": 1,
+      "app_number": "MICM-2026-MBA-59273",
+      "programme": "MBA (2-Year Full-Time)",
+      "full_name": "Rahul Kumar Mohapatra",
+      "gender": "Male",
+      "dob": "2001-05-15",
+      "category": "General",
+      "father_name": "Ramesh Chandra Mohapatra",
+      "email": "rahul.mohapatra@example.com",
+      "phone": "+91 9876543210",
+      "address": "Plot 42, Saheed Nagar, Bhubaneswar, Odisha - 751007",
+      "qualification": "B.Sc. (Science / Agriculture)",
+      "grad_percentage": "74.5%",
+      "entrance_exam": "OJEE",
+      "entrance_roll": "OJEE26019482",
+      "entrance_score": "Rank 1420",
+      "documents_status": "Verified Online",
+      "status": "Submitted",
+      "created_at": "2026-11-21T13:24:54.693Z"
+    },
+    {
+      "id": 2,
+      "app_number": "MICM-2026-MBA-17641",
+      "programme": "MBA (2-Year Full-Time)",
+      "full_name": "NextJS Applicant",
+      "gender": "Female",
+      "dob": "2002-08-20",
+      "category": "General",
+      "father_name": "Parent Name",
+      "email": "nextjs.applicant@example.com",
+      "phone": "9876501234",
+      "address": "Bhubaneswar, Odisha",
+      "qualification": "B.Com",
+      "grad_percentage": "78%",
+      "entrance_exam": "OJEE",
+      "entrance_roll": "OJEE26099",
+      "entrance_score": "Rank 310",
+      "documents_status": "Verified Online",
+      "status": "Submitted",
+      "created_at": "2026-11-21T15:32:33.756Z"
+    }
+  ],
+  "faculty": [
+    {
+      "id": 1,
+      "name": "Dr. P. Kannaiah",
+      "designation": "Director",
+      "department": "Executive Administration & Management",
+      "qualifications": "Ph.D., MBA, M.Com",
+      "expertise": "Cooperative Banking, Strategic Governance, Public Policy",
+      "email": "micmbbs@gmail.com",
+      "phone": "+91 674 2562826",
+      "image_url": null,
+      "order_seq": 1
+    },
+    {
+      "id": 2,
+      "name": "Dr. Sanjib Kumar Hota",
+      "designation": "Dy. Director",
+      "department": "Academic Administration & Research",
+      "qualifications": "Ph.D., MBA (HR & Mktg)",
+      "expertise": "Organizational Behavior, Rural Enterprise, Agri-Business",
+      "email": "micmbbs@gmail.com",
+      "phone": "+91 674 2562826",
+      "image_url": null,
+      "order_seq": 2
+    },
+    {
+      "id": 3,
+      "name": "Dr. P.K. Upadhyaya",
+      "designation": "Guest Lecturer",
+      "department": "Management Studies",
+      "qualifications": "Ph.D., M.Com, FICWA",
+      "expertise": "Financial Management, Cost Accounting, Project Finance",
+      "email": "micmbbs@gmail.com",
+      "phone": "+91 674 2562826",
+      "image_url": null,
+      "order_seq": 3
+    },
+    {
+      "id": 4,
+      "name": "Dr. Pranaba Nanda Das",
+      "designation": "Lecturer",
+      "department": "Co-operative Management & Economics",
+      "qualifications": "Ph.D., MA (Economics), HDCM",
+      "expertise": "Cooperative Law, Microfinance, Agricultural Credit",
+      "email": "micmbbs@gmail.com",
+      "phone": "+91 674 2562826",
+      "image_url": null,
+      "order_seq": 4
+    },
+    {
+      "id": 5,
+      "name": "Ms. Priyadarshini Dash",
+      "designation": "Lecturer",
+      "department": "Business Administration & Quantitative Methods",
+      "qualifications": "MBA, M.Phil",
+      "expertise": "Operations Research, Marketing Analytics, Business Stats",
+      "email": "micmbbs@gmail.com",
+      "phone": "+91 674 2562826",
+      "image_url": null,
+      "order_seq": 5
+    },
+    {
+      "id": 6,
+      "name": "Dr. Dilip Kumar Mahapatra",
+      "designation": "Lecturer",
+      "department": "Financial Management & Banking",
+      "qualifications": "Ph.D., MBA (Finance)",
+      "expertise": "Banking Technology, Risk Analysis, Cooperative Audit",
+      "email": "micmbbs@gmail.com",
+      "phone": "+91 674 2562826",
+      "image_url": null,
+      "order_seq": 6
+    }
+  ],
+  "news_events": [
+    {
+      "id": 1,
+      "title": "Convocation Ceremony for MBA Batch 2023-25",
+      "category": "Academic Event",
+      "date": "14-Feb-2026",
+      "summary": "Annual convocation address delivered by Hon'ble Minister of State for Cooperation.",
+      "content": "",
+      "image_url": null,
+      "is_active": 1,
+      "created_at": "2026-11-21T13:24:54.693Z"
+    }
+  ],
+  "grievances": [
+    {
+      "id": 1,
+      "tracking_id": "MICM-GRV-2026-A92B1",
+      "grievant_type": "Student",
+      "full_name": "Subhashree Pradhan",
+      "email": "subhashree@example.com",
+      "phone": "+91 9938012345",
+      "category": "Academic & Teaching",
+      "subject": "BPUT Semester Marksheet Dispatch Clarification",
+      "description": "Requesting update on original degree marksheet receipt from affiliating university BPUT.",
+      "status": "Under Review",
+      "resolution_notes": "Forwarded to Examination Cell. University verification in progress.",
+      "created_at": "2026-11-21T13:24:54.693Z"
+    }
+  ],
+  "downloads": [
+    {
+      "id": 1,
+      "title": "MBA 2-Year Full-Time Course Curriculum & Syllabus (BPUT Regulations)",
+      "category": "Syllabi & Curriculum",
+      "file_size": "2.4 MB",
+      "upload_date": "10-Jan-2026",
+      "file_type": "PDF"
+    },
+    {
+      "id": 2,
+      "title": "Higher Diploma in Co-operative Management (HDCM) 36-Week Scheme of Study",
+      "category": "Syllabi & Curriculum",
+      "file_size": "1.8 MB",
+      "upload_date": "15-Dec-2025",
+      "file_type": "PDF"
+    },
+    {
+      "id": 3,
+      "title": "Academic Rules, Examination Guidelines & Attendance Regulations",
+      "category": "Rules & Regulations",
+      "file_size": "950 KB",
+      "upload_date": "04-Nov-2025",
+      "file_type": "PDF"
+    },
+    {
+      "id": 4,
+      "title": "MICM Offline Admission Application Form (MBA & HDCM 2026-27)",
+      "category": "Application Forms",
+      "file_size": "1.1 MB",
+      "upload_date": "02-Feb-2026",
+      "file_type": "PDF"
+    },
+    {
+      "id": 5,
+      "title": "Cooperative Training Nomination Form (For Sponsoring Organizations)",
+      "category": "Application Forms",
+      "file_size": "820 KB",
+      "upload_date": "20-Jan-2026",
+      "file_type": "PDF"
+    },
+    {
+      "id": 6,
+      "title": "Anti-Ragging Undertaking Format for Students & Guardians (UGC Regulations)",
+      "category": "Rules & Regulations",
+      "file_size": "640 KB",
+      "upload_date": "12-Sep-2025",
+      "file_type": "PDF"
+    },
+    {
+      "id": 7,
+      "title": "AICTE Mandatory Disclosure (Form A & B) 2025-26",
+      "category": "Institutional Circulars",
+      "file_size": "3.2 MB",
+      "upload_date": "28-Aug-2025",
+      "file_type": "PDF"
+    },
+    {
+      "id": 8,
+      "title": "Internal Complaints Committee (ICC) Policy & Guidelines on Workplace Safety",
+      "category": "Institutional Circulars",
+      "file_size": "780 KB",
+      "upload_date": "14-Jul-2025",
+      "file_type": "PDF"
+    }
+  ]
+}

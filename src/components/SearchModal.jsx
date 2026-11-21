@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Search, X, BookOpen, User, Building2, MapPin, ArrowUpRight } from 'lucide-react';
 import { programmesData } from '../data/programmeData';
 import { facultyData } from '../data/facultyData';
@@ -7,7 +9,7 @@ import { facilitiesData } from '../data/facilitiesData';
 
 export default function SearchModal({ isOpen, onClose }) {
   const [query, setQuery] = useState('');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -37,9 +39,13 @@ export default function SearchModal({ isOpen, onClose }) {
     { title: "About MICM", desc: "History, Vision, Mission, and Affiliations since 1955-56", path: "/about", category: "About", icon: Building2 },
     { title: "Director's Message", desc: "Institutional address from Dr. P. Kannaiah", path: "/about", category: "Leadership", icon: User },
     { title: "Admission & Eligibility", desc: "MBA through OJEE & HDCM Correspondence batch", path: "/programmes", category: "Admissions", icon: BookOpen },
-    { title: "Fee Structure", desc: "Detailed breakdown of MBA (₹1,22,400) and HDCM (₹22,500)", path: "/programmes", category: "Finance", icon: BookOpen },
+    { title: "Apply Online (2026-27)", desc: "Multi-step online admission application form with auto-generated receipt", path: "/apply", category: "Admissions", icon: BookOpen },
+    { title: "Training Calendar", desc: "Annual training programmes calendar by month and category", path: "/training-calendar", category: "Training", icon: BookOpen },
+    { title: "Placements & Recruiters", desc: "Highest ₹9.5 LPA, Average ₹5.8 LPA, Recruiter wall (Amul, IFFCO, KRIBHCO)", path: "/placements", category: "Careers", icon: Building2 },
+    { title: "Statutory Committees & ICC", desc: "ICC, Anti-Ragging Committee, Grievance Redressal Committee", path: "/committees", category: "Governance", icon: Building2 },
+    { title: "Online Grievance Redressal", desc: "Lodge and track student and stakeholder grievances online", path: "/grievance", category: "Grievance", icon: Building2 },
+    { title: "Downloads Centre", desc: "Syllabi, application forms, regulations, and circulars", path: "/downloads", category: "Downloads", icon: BookOpen },
     { title: "Campus Location & Map", desc: "Unit-8, Nayapalli, Bhubaneswar, Odisha - 751012", path: "/contact", category: "Contact", icon: MapPin },
-    { title: "Enquiry & Admissions Desk", desc: "Reach MICM by email micmbbs@gmail.com and phone +91 674 2562826", path: "/contact", category: "Contact", icon: MapPin },
   ];
 
   const matchedProgrammes = programmesData.filter(p => 
@@ -87,7 +93,7 @@ export default function SearchModal({ isOpen, onClose }) {
   const results = q ? [...matchedProgrammes, ...matchedFaculty, ...matchedFacilities, ...matchedStatic] : staticItems;
 
   const handleSelect = (path) => {
-    navigate(path);
+    router.push(path);
     onClose();
   };
 
