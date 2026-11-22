@@ -1,15 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  ChevronDown, 
-  Menu, 
-  X, 
-  FileText, 
-  Lock
-} from 'lucide-react';
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ChevronDown, Menu, X, FileText, Lock } from "lucide-react";
 
 export default function PortalNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,44 +11,42 @@ export default function PortalNavbar() {
   const [collabDropdownOpen, setCollabDropdownOpen] = useState(false);
   const [academicsDropdownOpen, setAcademicsDropdownOpen] = useState(false);
   const [committeesDropdownOpen, setCommitteesDropdownOpen] = useState(false);
-  const pathname = usePathname() || '/';
+  const pathname = usePathname() || "/";
 
-  const isAboutActive = pathname.startsWith('/about');
-  const isCollabActive = pathname.startsWith('/collaboration') || pathname.startsWith('/mous');
-  const isAcademicsActive = pathname.startsWith('/programmes') || 
-                            pathname.startsWith('/apply') || 
-                            pathname.startsWith('/training-calendar') || 
-                            pathname.startsWith('/downloads') || 
-                            pathname.startsWith('/admission-faqs');
-  const isCommitteesActive = pathname.startsWith('/committees') || 
-                             pathname.startsWith('/grievance') ||
-                             pathname.startsWith('/compliance');
+  const isAboutActive = pathname.startsWith("/about");
+  const isCollabActive =
+    pathname.startsWith("/collaboration") || pathname.startsWith("/mous");
+  const isAcademicsActive =
+    pathname.startsWith("/programmes") ||
+    pathname.startsWith("/apply") ||
+    pathname.startsWith("/training-calendar") ||
+    pathname.startsWith("/downloads") ||
+    pathname.startsWith("/admission-faqs");
+  const isCommitteesActive =
+    pathname.startsWith("/committees") ||
+    pathname.startsWith("/grievance") ||
+    pathname.startsWith("/compliance");
 
   const navItemClass = (active) =>
     `px-3 py-2.5 text-xs font-bold tracking-tight transition-colors ${
       active
-        ? 'bg-[#0288D1] text-white shadow-xs'
-        : 'text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]'
+        ? "bg-[#0288D1] text-white shadow-xs"
+        : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
     }`;
 
   return (
     <nav className="w-full bg-[#f8fafc] border-y border-slate-300 shadow-xs sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          
           {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center flex-wrap">
-            
             {/* Home Tab */}
-            <Link
-              href="/"
-              className={navItemClass(pathname === '/')}
-            >
+            <Link href="/" className={navItemClass(pathname === "/")}>
               Home
             </Link>
 
             {/* About Us Dropdown */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setAboutDropdownOpen(true)}
               onMouseLeave={() => setAboutDropdownOpen(false)}
@@ -63,8 +55,8 @@ export default function PortalNavbar() {
                 type="button"
                 className={`px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors ${
                   isAboutActive
-                    ? 'bg-[#0288D1] text-white'
-                    : 'text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]'
+                    ? "bg-[#0288D1] text-white"
+                    : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
                 }`}
               >
                 <span>About Us</span>
@@ -113,7 +105,7 @@ export default function PortalNavbar() {
             </div>
 
             {/* Collaboration Dropdown (MoU's) */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setCollabDropdownOpen(true)}
               onMouseLeave={() => setCollabDropdownOpen(false)}
@@ -122,8 +114,8 @@ export default function PortalNavbar() {
                 type="button"
                 className={`px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors ${
                   isCollabActive
-                    ? 'bg-[#0288D1] text-white'
-                    : 'text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]'
+                    ? "bg-[#0288D1] text-white"
+                    : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
                 }`}
               >
                 <span>Collaboration</span>
@@ -158,7 +150,7 @@ export default function PortalNavbar() {
             </div>
 
             {/* Academics & Admissions Dropdown */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setAcademicsDropdownOpen(true)}
               onMouseLeave={() => setAcademicsDropdownOpen(false)}
@@ -167,8 +159,8 @@ export default function PortalNavbar() {
                 type="button"
                 className={`px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors ${
                   isAcademicsActive
-                    ? 'bg-[#0288D1] text-white'
-                    : 'text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]'
+                    ? "bg-[#0288D1] text-white"
+                    : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
                 }`}
               >
                 <span>Academics & Admissions</span>
@@ -183,7 +175,9 @@ export default function PortalNavbar() {
                     className="block px-4 py-2 font-bold text-[#0B1B3D] bg-amber-50 hover:bg-[#FFC107] border-b border-slate-100 transition-colors flex items-center justify-between"
                   >
                     <span>📝 Online Application Form</span>
-                    <span className="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black">2026-27</span>
+                    <span className="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black">
+                      2026-27
+                    </span>
                   </Link>
                   <Link
                     href="/programmes#mba-section"
@@ -227,13 +221,13 @@ export default function PortalNavbar() {
             {/* Placements Tab */}
             <Link
               href="/placements"
-              className={navItemClass(pathname.startsWith('/placements'))}
+              className={navItemClass(pathname.startsWith("/placements"))}
             >
               Placements
             </Link>
 
             {/* Committees & Compliance Dropdown */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setCommitteesDropdownOpen(true)}
               onMouseLeave={() => setCommitteesDropdownOpen(false)}
@@ -242,8 +236,8 @@ export default function PortalNavbar() {
                 type="button"
                 className={`px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors ${
                   isCommitteesActive
-                    ? 'bg-[#0288D1] text-white'
-                    : 'text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]'
+                    ? "bg-[#0288D1] text-white"
+                    : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
                 }`}
               >
                 <span>Committees</span>
@@ -280,7 +274,7 @@ export default function PortalNavbar() {
             {/* Faculty Tab */}
             <Link
               href="/faculty"
-              className={navItemClass(pathname.startsWith('/faculty'))}
+              className={navItemClass(pathname.startsWith("/faculty"))}
             >
               Faculty
             </Link>
@@ -288,7 +282,7 @@ export default function PortalNavbar() {
             {/* Facilities Tab */}
             <Link
               href="/facilities"
-              className={navItemClass(pathname.startsWith('/facilities'))}
+              className={navItemClass(pathname.startsWith("/facilities"))}
             >
               Facilities
             </Link>
@@ -296,43 +290,42 @@ export default function PortalNavbar() {
             {/* Library Tab */}
             <Link
               href="/library"
-              className={navItemClass(pathname.startsWith('/library'))}
+              className={navItemClass(pathname.startsWith("/library"))}
             >
               Library
             </Link>
 
             {/* Newsletter Tab */}
-            <Link
+            {/* <Link
               href="/newsletter"
-              className={navItemClass(pathname.startsWith('/newsletter'))}
+              className={navItemClass(pathname.startsWith("/newsletter"))}
             >
               Newsletter
-            </Link>
+            </Link> */}
 
             {/* Alumni Tab */}
             <Link
               href="/alumni"
-              className={navItemClass(pathname.startsWith('/alumni'))}
+              className={navItemClass(pathname.startsWith("/alumni"))}
             >
               Alumni
             </Link>
 
             {/* RTI & Careers Tab */}
-            <Link
+            {/* <Link
               href="/rti-careers"
               className={navItemClass(pathname.startsWith('/rti-careers'))}
             >
               Careers/RTI
-            </Link>
+            </Link> */}
 
             {/* Contact Tab */}
             <Link
               href="/contact"
-              className={navItemClass(pathname.startsWith('/contact'))}
+              className={navItemClass(pathname.startsWith("/contact"))}
             >
               Contact
             </Link>
-
           </div>
 
           {/* Right Action: Apply Now & Admin CMS Link */}
@@ -372,11 +365,14 @@ export default function PortalNavbar() {
                 className="p-1.5 text-slate-800 hover:bg-slate-200 rounded"
                 aria-label="Toggle Navigation"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
               </button>
             </div>
           </div>
-
         </div>
       </div>
 
