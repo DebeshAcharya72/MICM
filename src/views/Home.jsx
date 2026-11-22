@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ChevronRight, 
@@ -16,46 +16,103 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { portalData } from '../data/portalData';
+import { api } from '../services/api';
+
+const DEFAULT_BANNER_SLIDES = [
+  {
+    id: 1,
+    title: "CONGRATULATIONS",
+    subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+    location: "AT NATIONAL COOPERATIVE SUMMIT",
+    students: [
+      { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
+      { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
+      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+    ],
+    bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
+    image_url: null
+  },
+  {
+    id: 2,
+    title: "PIONEERING LEGACY",
+    subtitle: "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
+    location: "MINISTRY OF CO-OPERATION, GOVT. OF INDIA",
+    students: [
+      { name: "AICTE APPROVED", batch: "2-Year MBA", rank: "BPUT Affiliated" },
+      { name: "NCCT UNIT", batch: "New Delhi", rank: "Apex Body" },
+      { name: "3.4 ACRES", batch: "Nayapalli, BBSR", rank: "Green Campus" }
+    ],
+    bg: "from-[#093a47] via-[#0288D1] to-[#093a47]",
+    image_url: null
+  }
+];
 
 export default function Home() {
   const [activeNewsTab, setActiveNewsTab] = useState('coop');
+  const [bannerSlides, setBannerSlides] = useState(DEFAULT_BANNER_SLIDES);
   const [bannerSlide, setBannerSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const bannerSlides = [
-    {
-      title: "Congratulations",
-      subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
-      location: "AT NATIONAL COOPERATIVE SUMMIT",
-      students: [
-        { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
-        { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-        { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
-      ],
-      bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]"
-    },
-    {
-      title: "Pioneering Legacy",
-      subtitle: "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
-      location: "MINISTRY OF CO-OPERATION, GOVT. OF INDIA",
-      students: [
-        { name: "AICTE APPROVED", batch: "2-Year MBA", rank: "BPUT Affiliated" },
-        { name: "NCCT UNIT", batch: "New Delhi", rank: "Apex Body" },
-        { name: "3.4 ACRES", batch: "Nayapalli, BBSR", rank: "Green Campus" }
-      ],
-      bg: "from-[#093a47] via-[#0288D1] to-[#093a47]"
-    }
-  ];
+  // Fetch dynamic banners from backend API
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const data = await api.getBanners(true);
+        if (data && Array.isArray(data) && data.length > 0) {
+          setBannerSlides(data);
+        }
+      } catch (err) {
+        console.warn('Could not load dynamic banners, using preloaded slides:', err);
+      }
+    };
+    fetchBanners();
+  }, []);
 
-  const currentBanner = bannerSlides[bannerSlide];
+  // Auto-scroll banner slides every 5 seconds (pausing on hover)
+  useEffect(() => {
+    if (bannerSlides.length <= 1 || isPaused) return;
+    const interval = setInterval(() => {
+      setBannerSlide((prev) => (prev + 1) % bannerSlides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [bannerSlides.length, isPaused]);
+
+  const handlePrevSlide = () => {
+    setBannerSlide((prev) => (prev === 0 ? bannerSlides.length - 1 : prev - 1));
+  };
+
+  const handleNextSlide = () => {
+    setBannerSlide((prev) => (prev + 1) % bannerSlides.length);
+  };
+
+  const currentBanner = bannerSlides[bannerSlide] || DEFAULT_BANNER_SLIDES[0];
 
   return (
     <div className="bg-[#f4f6f9] pb-12">
       
       {/* ========================================================
           HERO BANNER SLIDER (Exact VAMNICOM Blue Banner from Image 1)
+          Now fully auto-scrollable & CMS customizable by Admin
       ======================================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-r text-white shadow-md border-b-2 border-amber-400">
-        <div className={`py-8 sm:py-12 px-4 sm:px-8 bg-gradient-to-r ${currentBanner.bg} relative transition-all duration-700`}>
+      <section 
+        className="relative overflow-hidden shadow-md border-b-2 border-amber-400 select-none group"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <div 
+          className={`py-8 sm:py-12 px-4 sm:px-8 relative transition-all duration-700 ${
+            currentBanner.image_url ? 'bg-[#0B1B3D]' : `bg-gradient-to-r ${currentBanner.bg || 'from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]'}`
+          }`}
+          style={currentBanner.image_url ? {
+            backgroundImage: `url('${currentBanner.image_url}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          } : {}}
+        >
+          {/* Custom Image Dark Gradient Overlay for contrast and readability */}
+          {currentBanner.image_url && (
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0c2a5c]/95 via-[#0c2a5c]/85 to-[#0c2a5c]/90 backdrop-blur-[1px]"></div>
+          )}
           
           {/* Subtle Watermark Crest */}
           <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
@@ -96,7 +153,7 @@ export default function Home() {
 
             {/* Right: Round Scholar Badges (Exact VAMNICOM Style) */}
             <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
-              {currentBanner.students.map((student, idx) => (
+              {(currentBanner.students || []).map((student, idx) => (
                 <div key={idx} className="flex flex-col items-center text-center">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-amber-400 bg-white shadow-lg overflow-hidden flex items-center justify-center p-1">
                     <div className="w-full h-full rounded-full bg-slate-800 text-amber-300 flex flex-col items-center justify-center p-1">
@@ -119,22 +176,41 @@ export default function Home() {
           </div>
 
           {/* Banner Slider Controls */}
-          <button
-            type="button"
-            onClick={() => setBannerSlide((prev) => (prev === 0 ? 1 : 0))}
-            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white transition-colors"
-            aria-label="Previous Slide"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setBannerSlide((prev) => (prev === 0 ? 1 : 0))}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white transition-colors"
-            aria-label="Next Slide"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+          {bannerSlides.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={handlePrevSlide}
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/75 text-white transition-all shadow-md group-hover:scale-105 z-20"
+                aria-label="Previous Slide"
+              >
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextSlide}
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/75 text-white transition-all shadow-md group-hover:scale-105 z-20"
+                aria-label="Next Slide"
+              >
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+
+              {/* Slider Dots / Indicators */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
+                {bannerSlides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setBannerSlide(idx)}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      bannerSlide === idx ? 'w-6 bg-amber-400' : 'w-2 bg-white/50 hover:bg-white/80'
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
         </div>
       </section>

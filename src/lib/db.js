@@ -214,6 +214,40 @@ const DEFAULT_DATA = {
       created_at: new Date().toISOString()
     }
   ],
+  banners: [
+    {
+      id: 1,
+      title: "CONGRATULATIONS",
+      subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+      location: "AT NATIONAL COOPERATIVE SUMMIT",
+      bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
+      image_url: null,
+      students: [
+        { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
+        { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
+        { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+      ],
+      is_active: 1,
+      order_seq: 1,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: "PIONEERING LEGACY",
+      subtitle: "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
+      location: "MINISTRY OF CO-OPERATION, GOVT. OF INDIA",
+      bg: "from-[#093a47] via-[#0288D1] to-[#093a47]",
+      image_url: null,
+      students: [
+        { name: "AICTE APPROVED", batch: "2-Year MBA", rank: "BPUT Affiliated" },
+        { name: "NCCT UNIT", batch: "New Delhi", rank: "Apex Body" },
+        { name: "3.4 ACRES", batch: "Nayapalli, BBSR", rank: "Green Campus" }
+      ],
+      is_active: 1,
+      order_seq: 2,
+      created_at: new Date().toISOString()
+    }
+  ],
   grievances: [
     {
       id: 1,
@@ -308,7 +342,12 @@ function readDb() {
       return JSON.parse(JSON.stringify(DEFAULT_DATA));
     }
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!parsed.banners) {
+      parsed.banners = JSON.parse(JSON.stringify(DEFAULT_DATA.banners));
+      writeDb(parsed);
+    }
+    return parsed;
   } catch (err) {
     console.error('Error reading database file:', err);
     return JSON.parse(JSON.stringify(DEFAULT_DATA));
@@ -326,9 +365,83 @@ function writeDb(data) {
   }
 }
 
-// Exported Helper Methods for Next.js Route Handlers
+// =============================================================================
+// PURE JAVASCRIPT DATABASE ENGINE & QUERY INTERFACE (Next.js Server-Side)
+// All data queries, filters, mutations, transactions, and indexing in JavaScript.
+// =============================================================================
 export const db = {
-  // Auth
+  // Generic JavaScript Query Operations
+  query: {
+    find: (collection, filterFn = () => true, { sort, limit, skip = 0 } = {}) => {
+      const data = readDb();
+      let results = (data[collection] || []).filter(filterFn);
+      if (typeof sort === 'function') {
+        results = results.slice().sort(sort);
+      }
+      if (skip > 0 || limit !== undefined) {
+        results = results.slice(skip, limit !== undefined ? skip + limit : undefined);
+      }
+      return results;
+    },
+
+    findOne: (collection, filterFn) => {
+      const data = readDb();
+      return (data[collection] || []).find(filterFn) || null;
+    },
+
+    findById: (collection, id) => {
+      const data = readDb();
+      return (data[collection] || []).find(item => item.id === Number(id)) || null;
+    },
+
+    insert: (collection, document) => {
+      const data = readDb();
+      if (!data[collection]) data[collection] = [];
+      const newId = (data[collection].length > 0 ? Math.max(...data[collection].map(i => i.id || 0)) : 0) + 1;
+      const record = {
+        id: newId,
+        ...document,
+        created_at: new Date().toISOString()
+      };
+      data[collection].push(record);
+      writeDb(data);
+      return record;
+    },
+
+    update: (collection, id, updates) => {
+      const data = readDb();
+      if (!data[collection]) return null;
+      const index = data[collection].findIndex(item => item.id === Number(id));
+      if (index === -1) return null;
+      data[collection][index] = {
+        ...data[collection][index],
+        ...updates,
+        id: Number(id),
+        updated_at: new Date().toISOString()
+      };
+      writeDb(data);
+      return data[collection][index];
+    },
+
+    delete: (collection, id) => {
+      const data = readDb();
+      if (!data[collection]) return false;
+      const prevLen = data[collection].length;
+      data[collection] = data[collection].filter(item => item.id !== Number(id));
+      if (data[collection].length !== prevLen) {
+        writeDb(data);
+        return true;
+      }
+      return false;
+    },
+
+    count: (collection, filterFn = () => true) => {
+      const data = readDb();
+      return (data[collection] || []).filter(filterFn).length;
+    }
+  },
+
+  // Auth (Pure JS crypto & hash validation)
   authenticateAdmin: (username, password) => {
     const data = readDb();
     const hash = hashPassword(password);
@@ -540,6 +653,60 @@ export const db = {
     return true;
   },
 
+  // Banners
+  getBanners: (activeOnly = true) => {
+    const data = readDb();
+    let list = data.banners || [];
+    if (activeOnly) {
+      list = list.filter(b => b.is_active !== 0);
+    }
+    return list.slice().sort((a, b) => (a.order_seq || 99) - (b.order_seq || 99));
+  },
+
+  createBanner: (bannerData) => {
+    const data = readDb();
+    if (!data.banners) data.banners = [];
+    const newId = (data.banners.length > 0 ? Math.max(...data.banners.map(b => b.id)) : 0) + 1;
+    const record = {
+      id: newId,
+      title: bannerData.title || "CONGRATULATIONS",
+      subtitle: bannerData.subtitle || "",
+      location: bannerData.location || "MADHUSUDAN INSTITUTE OF CO-OPERATIVE MANAGEMENT",
+      bg: bannerData.bg || "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
+      image_url: bannerData.image_url || null,
+      students: Array.isArray(bannerData.students) ? bannerData.students : [],
+      is_active: bannerData.is_active !== undefined ? (bannerData.is_active ? 1 : 0) : 1,
+      order_seq: bannerData.order_seq || data.banners.length + 1,
+      created_at: new Date().toISOString()
+    };
+    data.banners.push(record);
+    writeDb(data);
+    return record;
+  },
+
+  updateBanner: (id, bannerData) => {
+    const data = readDb();
+    if (!data.banners) data.banners = [];
+    const index = data.banners.findIndex(b => b.id === Number(id));
+    if (index === -1) return null;
+    data.banners[index] = {
+      ...data.banners[index],
+      ...bannerData,
+      id: Number(id),
+      updated_at: new Date().toISOString()
+    };
+    writeDb(data);
+    return data.banners[index];
+  },
+
+  deleteBanner: (id) => {
+    const data = readDb();
+    if (!data.banners) data.banners = [];
+    data.banners = data.banners.filter(b => b.id !== Number(id));
+    writeDb(data);
+    return true;
+  },
+
   // Downloads
   getDownloads: () => {
     const data = readDb();
@@ -561,6 +728,7 @@ export const db = {
       active_notices: (data.notices || []).filter(n => n.is_active !== 0).length,
       grievances_total: (data.grievances || []).length,
       faculty_members: (data.faculty || []).length,
+      banners_total: (data.banners || []).length,
       server_status: "Online (Next.js 14 Full-Stack)",
       last_backup: new Date().toLocaleString('en-GB')
     };

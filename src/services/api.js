@@ -167,6 +167,75 @@ export const api = {
     return await res.json();
   },
 
+  // Image Upload (ImgBB with resilient fallback)
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`${API_BASE_URL}/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to upload image');
+    }
+    return await res.json();
+  },
+
+  // Banners
+  getBanners: async (activeOnly = true) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/banners?active_only=${activeOnly}`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createBanner: async (bannerData, token) => {
+    const res = await fetch(`${API_BASE_URL}/banners`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(bannerData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to create banner');
+    }
+    return await res.json();
+  },
+
+  updateBanner: async (id, bannerData, token) => {
+    const res = await fetch(`${API_BASE_URL}/banners/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(bannerData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to update banner');
+    }
+    return await res.json();
+  },
+
+  deleteBanner: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/banners/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to delete banner');
+    }
+    return await res.json();
+  },
+
   // Downloads
   getDownloads: async () => {
     try {

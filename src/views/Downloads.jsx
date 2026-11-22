@@ -103,7 +103,7 @@ export default function Downloads() {
   ]);
 
   useEffect(() => {
-    // Optionally fetch live downloads from FastAPI
+    // Fetch live downloads from Next.js API
     api.getDownloads().then(data => {
       if (data && data.length > 0) {
         setDownloads(data);

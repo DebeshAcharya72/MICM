@@ -22,6 +22,13 @@ import {
   Server,
   RefreshCw,
   AlertCircle,
+  Image as ImageIcon,
+  Upload,
+  Sliders,
+  CheckCircle,
+  Edit3,
+  Camera,
+  Sparkles,
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -57,6 +64,7 @@ export default function Admin() {
   const [notices, setNotices] = useState([]);
   const [grievances, setGrievances] = useState([]);
   const [faculty, setFaculty] = useState([]);
+  const [banners, setBanners] = useState([]);
 
   // Modals & Forms
   const [selectedApp, setSelectedApp] = useState(null);
@@ -75,6 +83,7 @@ export default function Admin() {
     is_new: 1,
   });
 
+  // Faculty Modal & Image State
   const [newFacultyModal, setNewFacultyModal] = useState(false);
   const [newFacultyData, setNewFacultyData] = useState({
     name: "",
@@ -84,6 +93,30 @@ export default function Admin() {
     expertise: "",
     email: "micmbbs@gmail.com",
     phone: "+91 674 2562826",
+    image_url: "",
+  });
+  const [facultyImagePreview, setFacultyImagePreview] = useState("");
+  const [facultyUploading, setFacultyUploading] = useState(false);
+  const [facultyUploadError, setFacultyUploadError] = useState("");
+
+  // Banner Modal & Image State
+  const [newBannerModal, setNewBannerModal] = useState(false);
+  const [editingBannerId, setEditingBannerId] = useState(null);
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const [bannerUploadError, setBannerUploadError] = useState("");
+  const [newBannerData, setNewBannerData] = useState({
+    title: "CONGRATULATIONS",
+    subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+    location: "AT NATIONAL COOPERATIVE SUMMIT",
+    bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
+    image_url: "",
+    students: [
+      { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
+      { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
+      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+    ],
+    is_active: 1,
+    order_seq: 1
   });
 
   // App Search/Filter State
@@ -96,13 +129,14 @@ export default function Admin() {
       const authToken = activeAuthToken || token;
       if (!authToken) return;
 
-      const [s, a, e, n, g, f] = await Promise.allSettled([
+      const [s, a, e, n, g, f, b] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
         api.getEnquiries(authToken),
         api.getNotices(false),
         api.getGrievances(authToken),
         api.getFaculty(),
+        api.getBanners(false),
       ]);
 
       if (s.status === "fulfilled") setStats(s.value);
@@ -111,6 +145,7 @@ export default function Admin() {
       if (n.status === "fulfilled") setNotices(n.value);
       if (g.status === "fulfilled") setGrievances(g.value);
       if (f.status === "fulfilled") setFaculty(f.value);
+      if (b.status === "fulfilled") setBanners(b.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
     }
@@ -207,6 +242,31 @@ export default function Admin() {
     }
   };
 
+  // Upload Faculty Image via ImgBB
+  const handleFacultyImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFacultyImagePreview(URL.createObjectURL(file));
+    setFacultyUploading(true);
+    setFacultyUploadError("");
+
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setNewFacultyData((prev) => ({
+          ...prev,
+          image_url: res.url,
+        }));
+      }
+    } catch (err) {
+      console.error("Faculty image upload error:", err);
+      setFacultyUploadError(err.message || "Failed to upload photo to ImgBB");
+    } finally {
+      setFacultyUploading(false);
+    }
+  };
+
   // Add Faculty
   const handleAddFaculty = async (e) => {
     e.preventDefault();
@@ -221,7 +281,10 @@ export default function Admin() {
         expertise: "",
         email: "micmbbs@gmail.com",
         phone: "+91 674 2562826",
+        image_url: "",
       });
+      setFacultyImagePreview("");
+      setFacultyUploadError("");
       loadAdminData(token);
     } catch {
       alert("Faculty member added.");
@@ -237,6 +300,104 @@ export default function Admin() {
         loadAdminData(token);
       } catch {
         setFaculty(faculty.filter((f) => f.id !== id));
+      }
+    }
+  };
+
+  // Upload Banner Custom Background Image via ImgBB
+  const handleBannerImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setBannerUploading(true);
+    setBannerUploadError("");
+
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setNewBannerData((prev) => ({
+          ...prev,
+          image_url: res.url,
+        }));
+      }
+    } catch (err) {
+      console.error("Banner image upload error:", err);
+      setBannerUploadError(err.message || "Failed to upload banner image to ImgBB");
+    } finally {
+      setBannerUploading(false);
+    }
+  };
+
+  // Save Banner (Create or Update)
+  const handleSaveBanner = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingBannerId) {
+        await api.updateBanner(editingBannerId, newBannerData, token);
+      } else {
+        await api.createBanner(newBannerData, token);
+      }
+      setNewBannerModal(false);
+      setEditingBannerId(null);
+      setNewBannerData({
+        title: "CONGRATULATIONS",
+        subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+        location: "AT NATIONAL COOPERATIVE SUMMIT",
+        bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
+        image_url: "",
+        students: [
+          { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
+          { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
+          { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+        ],
+        is_active: 1,
+        order_seq: 1
+      });
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to save banner slide: " + err.message);
+    }
+  };
+
+  // Edit Banner
+  const handleEditBanner = (b) => {
+    setEditingBannerId(b.id);
+    setNewBannerData({
+      title: b.title || "",
+      subtitle: b.subtitle || "",
+      location: b.location || "",
+      bg: b.bg || "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
+      image_url: b.image_url || "",
+      students: Array.isArray(b.students) && b.students.length > 0 ? b.students : [
+        { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
+        { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
+        { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+      ],
+      is_active: b.is_active !== undefined ? b.is_active : 1,
+      order_seq: b.order_seq || 1
+    });
+    setNewBannerModal(true);
+  };
+
+  // Toggle Banner Active
+  const handleToggleBanner = async (b) => {
+    try {
+      const updatedStatus = b.is_active ? 0 : 1;
+      await api.updateBanner(b.id, { is_active: updatedStatus }, token);
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to toggle banner status: " + err.message);
+    }
+  };
+
+  // Delete Banner
+  const handleDeleteBanner = async (id) => {
+    if (window.confirm("Are you sure you want to delete this banner slide?")) {
+      try {
+        await api.deleteBanner(id, token);
+        loadAdminData(token);
+      } catch (err) {
+        alert("Failed to delete banner: " + err.message);
       }
     }
   };
@@ -374,9 +535,9 @@ export default function Admin() {
             <div>
               <div className="font-extrabold text-sm sm:text-base text-white tracking-tight flex items-center gap-2">
                 <span>MICM Central Management System</span>
-                {/* <span className="hidden sm:inline-block px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full">
-                  FastAPI Live
-                </span> */}
+                <span className="hidden sm:inline-block px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full">
+                  Next.js Full-Stack Live
+                </span>
               </div>
               <div className="text-[11px] text-sky-200">
                 Logged in as:{" "}
@@ -438,6 +599,11 @@ export default function Admin() {
               id: "faculty",
               label: `Faculty Directory (${faculty.length})`,
               icon: Users,
+            },
+            {
+              id: "banners",
+              label: `Banner Slider CMS (${banners.length})`,
+              icon: Sliders,
             },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -1048,6 +1214,9 @@ export default function Admin() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#0288D1] text-white">
                   <tr>
+                    <th className="p-3 font-bold border-r border-sky-600 text-center w-14">
+                      Photo
+                    </th>
                     <th className="p-3 font-bold border-r border-sky-600">
                       Name & Designation
                     </th>
@@ -1069,6 +1238,19 @@ export default function Admin() {
                 <tbody className="divide-y divide-slate-200">
                   {faculty.map((f) => (
                     <tr key={f.id} className="hover:bg-slate-50">
+                      <td className="p-2 border-r text-center">
+                        {f.image_url ? (
+                          <img
+                            src={f.image_url}
+                            alt={f.name}
+                            className="w-10 h-10 rounded-full object-cover mx-auto border-2 border-sky-400 shadow-xs"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs mx-auto border border-slate-300">
+                            {f.name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, '').slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                      </td>
                       <td className="p-3 border-r">
                         <div className="font-extrabold text-slate-900">
                           {f.name}
@@ -1101,6 +1283,172 @@ export default function Admin() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 7: BANNER SLIDER CMS */}
+        {/* ======================================================== */}
+        {activeTab === "banners" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-md border border-slate-300 shadow-xs">
+              <div>
+                <h3 className="font-bold text-base text-[#0B1B3D] flex items-center gap-2">
+                  <Sliders className="w-5 h-5 text-[#0288D1]" />
+                  <span>Homepage Hero Banner Management</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Configure live auto-scrolling hero banners, student award badges, headlines, and upload custom backgrounds with ImgBB.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingBannerId(null);
+                  setNewBannerData({
+                    title: "CONGRATULATIONS",
+                    subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+                    location: "AT NATIONAL COOPERATIVE SUMMIT",
+                    bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
+                    image_url: "",
+                    students: [
+                      { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
+                      { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
+                      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+                    ],
+                    is_active: 1,
+                    order_seq: banners.length + 1
+                  });
+                  setNewBannerModal(true);
+                }}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-4 py-2 rounded text-xs font-bold flex items-center gap-2 shadow-xs transition-colors shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add New Banner Slide</span>
+              </button>
+            </div>
+
+            {/* Banner Cards with Exact Preview */}
+            <div className="space-y-6">
+              {banners.map((b, bIdx) => (
+                <div
+                  key={b.id || bIdx}
+                  className="bg-white border border-slate-300 rounded-lg shadow-xs overflow-hidden"
+                >
+                  {/* Admin Card Header */}
+                  <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <span className="font-bold text-xs text-slate-800">
+                        Slide #{b.order_seq || bIdx + 1}:
+                      </span>
+                      <span className="font-extrabold text-xs text-[#0B1B3D] truncate max-w-xs">
+                        {b.title}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          b.is_active
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                            : "bg-slate-200 text-slate-600 border border-slate-300"
+                        }`}
+                      >
+                        {b.is_active ? "● Active (Displaying)" : "○ Inactive"}
+                      </span>
+                      {b.image_url && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                          Custom Background Image
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleToggleBanner(b)}
+                        className="text-xs px-2.5 py-1 rounded border border-slate-300 hover:bg-slate-100 font-semibold text-slate-700 transition-colors"
+                      >
+                        {b.is_active ? "Deactivate" : "Activate"}
+                      </button>
+                      <button
+                        onClick={() => handleEditBanner(b)}
+                        className="text-xs px-2.5 py-1 rounded bg-[#0288D1] hover:bg-[#0277bd] text-white font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteBanner(b.id)}
+                        className="text-xs p-1.5 rounded text-red-600 hover:bg-red-50 hover:text-red-800 transition-colors"
+                        title="Delete Slide"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Live Banner Preview (Exact style as on homepage) */}
+                  <div className="p-4 bg-slate-100">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1">
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Live Banner Preview:</span>
+                    </div>
+                    <div 
+                      className={`rounded-lg overflow-hidden border-2 border-amber-400 p-6 relative shadow-md ${
+                        b.image_url ? 'bg-[#0B1B3D]' : `bg-gradient-to-r ${b.bg || 'from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]'}`
+                      }`}
+                      style={b.image_url ? {
+                        backgroundImage: `url('${b.image_url}')`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      } : {}}
+                    >
+                      {b.image_url && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#0c2a5c]/95 via-[#0c2a5c]/85 to-[#0c2a5c]/90"></div>
+                      )}
+                      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="space-y-2 text-center md:text-left max-w-lg">
+                          <div className="inline-flex items-center gap-1.5 bg-white py-0.5 px-2 rounded shadow-xs border border-amber-300">
+                            <img src="/micm-logo.png" alt="MICM" className="h-6 w-auto object-contain" />
+                          </div>
+                          <h4 className="font-serif text-2xl sm:text-3xl font-black text-amber-400 tracking-tight uppercase">
+                            {b.title}
+                          </h4>
+                          <p className="text-xs font-bold text-white uppercase tracking-wide">
+                            {b.subtitle}
+                          </p>
+                          <div>
+                            <span className="inline-block bg-white/20 px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider text-amber-300 border border-white/20">
+                              {b.location}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Student Badges */}
+                        <div className="flex items-center gap-3 flex-wrap justify-center">
+                          {(b.students || []).map((st, sIdx) => (
+                            <div key={sIdx} className="flex flex-col items-center text-center">
+                              <div className="w-16 h-16 rounded-full border-3 border-amber-400 bg-slate-900 text-amber-300 shadow-md flex flex-col items-center justify-center p-1">
+                                <span className="text-[7px] font-black uppercase text-amber-400 text-center leading-tight">
+                                  {st.rank}
+                                </span>
+                              </div>
+                              <span className="font-bold text-[11px] text-white mt-1 block">
+                                {st.name}
+                              </span>
+                              <span className="text-[9px] text-amber-200 block">
+                                {st.batch}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {banners.length === 0 && (
+                <div className="p-12 text-center bg-white rounded-md border border-slate-300 text-slate-400">
+                  No banner slides currently found. Click "Add New Banner Slide" to create one.
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1283,19 +1631,67 @@ export default function Admin() {
       )}
 
       {/* ======================================================== */}
-      {/* MODAL: ADD FACULTY */}
+      {/* MODAL: ADD / EDIT FACULTY (WITH IMGBB PHOTO UPLOAD) */}
       {/* ======================================================== */}
       {newFacultyModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden my-6">
             <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
-              <span>Add Faculty Member</span>
+              <span className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span>Add Faculty Member (with ImgBB Photo)</span>
+              </span>
               <button onClick={() => setNewFacultyModal(false)}>
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAddFaculty} className="p-6 space-y-3 text-xs">
+            <form onSubmit={handleAddFaculty} className="p-6 space-y-4 text-xs">
+              {/* Faculty Image Upload Section (ImgBB Cloud Hosting) */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Faculty Photo (ImgBB API Hosting)
+                </label>
+                <div className="flex items-center gap-3 p-3 bg-slate-50 border border-dashed border-slate-300 rounded">
+                  <div className="w-14 h-14 rounded-full border-2 border-sky-400 bg-white overflow-hidden flex items-center justify-center shrink-0 shadow-xs">
+                    {facultyImagePreview || newFacultyData.image_url ? (
+                      <img
+                        src={facultyImagePreview || newFacultyData.image_url}
+                        alt="Faculty Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Camera className="w-6 h-6 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFacultyImageChange}
+                      className="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-bold file:bg-[#0288D1] file:text-white hover:file:bg-[#0277bd] cursor-pointer"
+                    />
+                    {facultyUploading && (
+                      <div className="text-[11px] text-sky-700 font-semibold flex items-center gap-1">
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                        <span>Uploading photo to ImgBB...</span>
+                      </div>
+                    )}
+                    {newFacultyData.image_url && !facultyUploading && (
+                      <div className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="truncate max-w-xs">Hosted: {newFacultyData.image_url}</span>
+                      </div>
+                    )}
+                    {facultyUploadError && (
+                      <div className="text-[11px] text-red-600 font-semibold">
+                        {facultyUploadError}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">
@@ -1330,6 +1726,43 @@ export default function Admin() {
                       })
                     }
                     placeholder="e.g. Associate Professor"
+                    className="w-full p-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Department
+                  </label>
+                  <input
+                    type="text"
+                    value={newFacultyData.department}
+                    onChange={(e) =>
+                      setNewFacultyData({
+                        ...newFacultyData,
+                        department: e.target.value,
+                      })
+                    }
+                    placeholder="Management Studies"
+                    className="w-full p-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Contact Email
+                  </label>
+                  <input
+                    type="email"
+                    value={newFacultyData.email}
+                    onChange={(e) =>
+                      setNewFacultyData({
+                        ...newFacultyData,
+                        email: e.target.value,
+                      })
+                    }
+                    placeholder="micmbbs@gmail.com"
                     className="w-full p-2 border border-slate-300 rounded outline-none"
                   />
                 </div>
@@ -1382,9 +1815,267 @@ export default function Admin() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-[#0288D1] text-white font-bold rounded"
+                  disabled={facultyUploading}
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
                 >
-                  Save Faculty
+                  <Check className="w-4 h-4" />
+                  <span>Save Faculty Member</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: ADD / EDIT BANNER SLIDE (WITH IMGBB CUSTOM IMAGE) */}
+      {/* ======================================================== */}
+      {newBannerModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-md max-w-2xl w-full border border-slate-300 shadow-2xl overflow-hidden my-6 max-h-[90vh] flex flex-col">
+            <div className="bg-[#0B1B3D] text-white px-6 py-3.5 font-bold text-sm flex justify-between items-center border-b-2 border-amber-400">
+              <span className="flex items-center gap-2 text-amber-300">
+                <Sliders className="w-4 h-4" />
+                <span>{editingBannerId ? "Edit Banner Slide" : "Add New Banner Slide"}</span>
+              </span>
+              <button onClick={() => setNewBannerModal(false)} className="text-white hover:text-slate-300">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveBanner} className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
+              {/* Banner Headlines */}
+              <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
+                <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>Headline & Institutional Category</span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Main Banner Title * (e.g. CONGRATULATIONS, ADMISSIONS 2026)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newBannerData.title}
+                    onChange={(e) =>
+                      setNewBannerData({ ...newBannerData, title: e.target.value })
+                    }
+                    placeholder="e.g. CONGRATULATIONS"
+                    className="w-full p-2 border border-slate-300 rounded outline-none font-bold text-slate-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Announcement Subtitle
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={newBannerData.subtitle}
+                    onChange={(e) =>
+                      setNewBannerData({ ...newBannerData, subtitle: e.target.value })
+                    }
+                    placeholder="e.g. FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE"
+                    className="w-full p-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Event / Location Badge Tag
+                  </label>
+                  <input
+                    type="text"
+                    value={newBannerData.location}
+                    onChange={(e) =>
+                      setNewBannerData({ ...newBannerData, location: e.target.value })
+                    }
+                    placeholder="e.g. AT NATIONAL COOPERATIVE SUMMIT"
+                    className="w-full p-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Background Style: Gradient vs ImgBB Custom Background */}
+              <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
+                <div className="font-bold text-slate-800 text-xs flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-[#0288D1]" />
+                    <span>Background Appearance</span>
+                  </span>
+                  {newBannerData.image_url ? (
+                    <button
+                      type="button"
+                      onClick={() => setNewBannerData({ ...newBannerData, image_url: "" })}
+                      className="text-[11px] text-red-600 hover:underline font-bold"
+                    >
+                      Remove Custom Photo
+                    </button>
+                  ) : null}
+                </div>
+
+                {/* Preset Gradient Palette */}
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1.5">
+                    Select Theme Gradient Palette:
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { label: "Navy Conclave", value: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]" },
+                      { label: "Ocean Teal", value: "from-[#093a47] via-[#0288D1] to-[#093a47]" },
+                      { label: "Deep Indigo", value: "from-[#1e1b4b] via-[#312e81] to-[#1e1b4b]" },
+                      { label: "Royal Prestige", value: "from-[#3b0764] via-[#581c87] to-[#3b0764]" }
+                    ].map((g, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setNewBannerData({ ...newBannerData, bg: g.value })}
+                        className={`p-2 rounded border text-left flex items-center gap-2 ${
+                          newBannerData.bg === g.value && !newBannerData.image_url
+                            ? "border-amber-500 ring-2 ring-amber-400"
+                            : "border-slate-300"
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded bg-gradient-to-r ${g.value}`}></div>
+                        <span className="text-[11px] font-bold text-slate-700">{g.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom Photo Upload via ImgBB */}
+                <div className="pt-2 border-t border-slate-200">
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Or Upload Custom Background Image (via ImgBB API)
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBannerImageChange}
+                      className="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-bold file:bg-[#0B1B3D] file:text-amber-300 hover:file:bg-slate-900 cursor-pointer"
+                    />
+                    {bannerUploading && (
+                      <div className="text-[11px] text-sky-700 font-semibold flex items-center gap-1">
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                        <span>Uploading background to ImgBB...</span>
+                      </div>
+                    )}
+                  </div>
+                  {newBannerData.image_url && !bannerUploading && (
+                    <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded flex items-center justify-between text-emerald-800 text-[11px] font-semibold">
+                      <span className="flex items-center gap-1.5 truncate">
+                        <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="truncate">Image URL: {newBannerData.image_url}</span>
+                      </span>
+                    </div>
+                  )}
+                  {bannerUploadError && (
+                    <div className="text-[11px] text-red-600 font-semibold mt-1">
+                      {bannerUploadError}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Scholar / Feature Badges (3 items) */}
+              <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
+                <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                  <GraduationCap className="w-4 h-4 text-amber-500" />
+                  <span>Scholar / Highlight Badges (Up to 3 Badges)</span>
+                </div>
+
+                <div className="space-y-3">
+                  {[0, 1, 2].map((idx) => {
+                    const st = newBannerData.students[idx] || { name: "", batch: "", rank: "" };
+                    return (
+                      <div key={idx} className="p-3 bg-white rounded border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                            Scholar Name #{idx + 1}
+                          </label>
+                          <input
+                            type="text"
+                            value={st.name}
+                            onChange={(e) => {
+                              const updated = [...newBannerData.students];
+                              updated[idx] = { ...st, name: e.target.value };
+                              setNewBannerData({ ...newBannerData, students: updated });
+                            }}
+                            placeholder="e.g. ADARSH MOHANTY"
+                            className="w-full p-1.5 border border-slate-300 rounded text-xs font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                            Batch / Programme
+                          </label>
+                          <input
+                            type="text"
+                            value={st.batch}
+                            onChange={(e) => {
+                              const updated = [...newBannerData.students];
+                              updated[idx] = { ...st, batch: e.target.value };
+                              setNewBannerData({ ...newBannerData, students: updated });
+                            }}
+                            placeholder="e.g. MBA (2025-27)"
+                            className="w-full p-1.5 border border-slate-300 rounded text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                            Merit / Badge Title
+                          </label>
+                          <input
+                            type="text"
+                            value={st.rank}
+                            onChange={(e) => {
+                              const updated = [...newBannerData.students];
+                              updated[idx] = { ...st, rank: e.target.value };
+                              setNewBannerData({ ...newBannerData, students: updated });
+                            }}
+                            placeholder="e.g. First Rank"
+                            className="w-full p-1.5 border border-slate-300 rounded text-xs text-amber-700 font-bold"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Status and Order */}
+              <div className="flex items-center gap-4 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(newBannerData.is_active)}
+                    onChange={(e) =>
+                      setNewBannerData({ ...newBannerData, is_active: e.target.checked ? 1 : 0 })
+                    }
+                    className="w-4 h-4 text-[#0288D1] rounded"
+                  />
+                  <span>Active (Auto-scroll on Homepage)</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setNewBannerModal(false)}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={bannerUploading}
+                  className="px-4 py-1.5 bg-[#0B1B3D] hover:bg-slate-900 text-amber-300 font-bold rounded flex items-center gap-1.5 border border-amber-400"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{editingBannerId ? "Update Banner Slide" : "Save Banner Slide"}</span>
                 </button>
               </div>
             </form>

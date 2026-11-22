@@ -1,12 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { GraduationCap, Users, ChevronRight, ShieldCheck, Award, BookOpen } from 'lucide-react';
 import { facultyData } from '../data/facultyData';
+import { api } from '../services/api';
 import FacultyCard from '../components/FacultyCard';
 
 export default function Faculty() {
+  const [facultyList, setFacultyList] = useState(facultyData);
+
+  useEffect(() => {
+    const loadFaculty = async () => {
+      try {
+        const remote = await api.getFaculty();
+        if (remote && Array.isArray(remote) && remote.length > 0) {
+          setFacultyList(remote);
+        }
+      } catch (err) {
+        console.warn('Could not load remote faculty list:', err);
+      }
+    };
+    loadFaculty();
+  }, []);
+
   return (
     <div className="bg-white">
       {/* ========================================================
@@ -67,7 +84,7 @@ export default function Faculty() {
 
         {/* 3-Column Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {facultyData.map((member) => (
+          {facultyList.map((member) => (
             <FacultyCard key={member.id} member={member} />
           ))}
         </div>
