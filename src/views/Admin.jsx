@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
-import Link from 'next/link';
+import Link from "next/link";
 import {
   Lock,
   User,
@@ -15,36 +15,44 @@ import {
   Trash2,
   Check,
   Search,
-  Filter,
   Eye,
   X,
   ShieldCheck,
-  Server,
   RefreshCw,
   AlertCircle,
   Image as ImageIcon,
-  Upload,
   Sliders,
   CheckCircle,
   Edit3,
   Camera,
   Sparkles,
+  GraduationCap, // ✅ FIX: was missing — used in banner modal
 } from "lucide-react";
 import { api } from "../services/api";
 
 export default function Admin() {
   const [token, setToken] = useState("");
   const [adminUser, setAdminUser] = useState(null);
+  const [initializing, setInitializing] = useState(true);
+  const [loading, setLoading] = useState(false);
 
+  // Restore session on mount (single source of truth — no duplicate fetch)
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+    try {
       const savedToken = localStorage.getItem("micm_admin_token") || "";
-      const savedUser = JSON.parse(localStorage.getItem("micm_admin_user") || "null");
-      setToken(savedToken);
+      const savedUserRaw = localStorage.getItem("micm_admin_user");
+      const savedUser = savedUserRaw ? JSON.parse(savedUserRaw) : null;
+      // Guard against stale "undefined" string written by a broken prior login
+      const safeToken =
+        savedToken && savedToken !== "undefined" ? savedToken : "";
+      setToken(safeToken);
       setAdminUser(savedUser);
-      if (savedToken) {
-        loadAdminData(savedToken);
-      }
+      // NOTE: do NOT call loadAdminData here — the [token] effect handles it
+    } catch (e) {
+      console.warn("Could not restore admin session:", e);
+    } finally {
+      setInitializing(false);
     }
   }, []);
 
@@ -106,29 +114,31 @@ export default function Admin() {
   const [bannerUploadError, setBannerUploadError] = useState("");
   const [newBannerData, setNewBannerData] = useState({
     title: "CONGRATULATIONS",
-    subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+    subtitle:
+      "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
     location: "AT NATIONAL COOPERATIVE SUMMIT",
     bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
     image_url: "",
     students: [
       { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
       { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" },
     ],
     is_active: 1,
-    order_seq: 1
+    order_seq: 1,
   });
 
   // App Search/Filter State
   const [appSearch, setAppSearch] = useState("");
   const [appFilter, setAppFilter] = useState("All");
 
-  // Load Dashboard Data
+  // Load Dashboard Data (safe — never throws, one failed API won't blank the page)
   const loadAdminData = async (activeAuthToken) => {
-    try {
-      const authToken = activeAuthToken || token;
-      if (!authToken) return;
+    const authToken = activeAuthToken || token;
+    if (!authToken) return;
 
+    setLoading(true);
+    try {
       const [s, a, e, n, g, f, b] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
@@ -139,42 +149,76 @@ export default function Admin() {
         api.getBanners(false),
       ]);
 
-      if (s.status === "fulfilled") setStats(s.value);
-      if (a.status === "fulfilled") setApplications(a.value);
-      if (e.status === "fulfilled") setEnquiries(e.value);
-      if (n.status === "fulfilled") setNotices(n.value);
-      if (g.status === "fulfilled") setGrievances(g.value);
-      if (f.status === "fulfilled") setFaculty(f.value);
-      if (b.status === "fulfilled") setBanners(b.value);
+      if (s.status === "fulfilled" && s.value) setStats(s.value);
+      if (a.status === "fulfilled" && Array.isArray(a.value))
+        setApplications(a.value);
+      if (e.status === "fulfilled" && Array.isArray(e.value))
+        setEnquiries(e.value);
+      if (n.status === "fulfilled" && Array.isArray(n.value))
+        setNotices(n.value);
+      if (g.status === "fulfilled" && Array.isArray(g.value))
+        setGrievances(g.value);
+      if (f.status === "fulfilled" && Array.isArray(f.value))
+        setFaculty(f.value);
+      if (b.status === "fulfilled" && Array.isArray(b.value))
+        setBanners(b.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Re-fetch whenever token changes
   useEffect(() => {
     if (token) {
       loadAdminData(token);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    console.log("[LOGIN] handler fired", { username });
     setLoginError("");
     setLoggingIn(true);
 
     try {
+      console.log("[LOGIN] calling api.login...");
       const data = await api.login(username, password);
-      localStorage.setItem("micm_admin_token", data.access_token);
-      localStorage.setItem("micm_admin_user", JSON.stringify(data.user));
+      console.log("[LOGIN] api.login returned:", data);
+
+      // Guard: backend might return 200 with { detail } instead of token
+      if (!data || !data.access_token) {
+        throw new Error(
+          (data && data.detail) ||
+            "Login response did not contain an access token",
+        );
+      }
+
+      try {
+        localStorage.setItem("micm_admin_token", data.access_token);
+        localStorage.setItem(
+          "micm_admin_user",
+          JSON.stringify(data.user || null),
+        );
+      } catch (lsErr) {
+        console.warn("[LOGIN] localStorage write failed:", lsErr);
+      }
+
       setToken(data.access_token);
-      setAdminUser(data.user);
+      setAdminUser(data.user || null);
+      console.log("[LOGIN] success — token set");
       loadAdminData(data.access_token);
     } catch (err) {
-      // Offline fallback login for demonstration
-      if (
+      console.log("[LOGIN] catch fired:", err && err.message);
+
+      // Offline / demo fallback
+      const isDemoCreds =
         username === "admin" &&
-        (password === "admin@micm2026" || password === "admin")
-      ) {
+        (password === "admin@micm2026" || password === "admin");
+
+      if (isDemoCreds) {
         const dummyToken = "micm_admin_token_1_demo99";
         const dummyUser = {
           id: 1,
@@ -182,10 +226,15 @@ export default function Admin() {
           full_name: "Administrator (MICM)",
           role: "SuperAdmin",
         };
-        localStorage.setItem("micm_admin_token", dummyToken);
-        localStorage.setItem("micm_admin_user", JSON.stringify(dummyUser));
+        try {
+          localStorage.setItem("micm_admin_token", dummyToken);
+          localStorage.setItem("micm_admin_user", JSON.stringify(dummyUser));
+        } catch (lsErr) {
+          console.warn("[LOGIN] localStorage write failed (fallback):", lsErr);
+        }
         setToken(dummyToken);
         setAdminUser(dummyUser);
+        console.log("[LOGIN] demo fallback engaged — token set");
         loadAdminData(dummyToken);
       } else {
         setLoginError(
@@ -193,13 +242,16 @@ export default function Admin() {
         );
       }
     } finally {
+      console.log("[LOGIN] finally — clearing loggingIn");
       setLoggingIn(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("micm_admin_token");
-    localStorage.removeItem("micm_admin_user");
+    try {
+      localStorage.removeItem("micm_admin_token");
+      localStorage.removeItem("micm_admin_user");
+    } catch {}
     setToken("");
     setAdminUser(null);
   };
@@ -322,7 +374,9 @@ export default function Admin() {
       }
     } catch (err) {
       console.error("Banner image upload error:", err);
-      setBannerUploadError(err.message || "Failed to upload banner image to ImgBB");
+      setBannerUploadError(
+        err.message || "Failed to upload banner image to ImgBB",
+      );
     } finally {
       setBannerUploading(false);
     }
@@ -341,17 +395,30 @@ export default function Admin() {
       setEditingBannerId(null);
       setNewBannerData({
         title: "CONGRATULATIONS",
-        subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+        subtitle:
+          "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
         location: "AT NATIONAL COOPERATIVE SUMMIT",
         bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
         image_url: "",
         students: [
-          { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
-          { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-          { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+          {
+            name: "ADARSH MOHANTY",
+            batch: "MBA (2025-27)",
+            rank: "First Rank",
+          },
+          {
+            name: "GURU PRASAD DAS",
+            batch: "MBA (2025-27)",
+            rank: "Distinction",
+          },
+          {
+            name: "SUBHASHREE NAYAK",
+            batch: "HDCM (2025-26)",
+            rank: "Top Merit",
+          },
         ],
         is_active: 1,
-        order_seq: 1
+        order_seq: 1,
       });
       loadAdminData(token);
     } catch (err) {
@@ -368,13 +435,28 @@ export default function Admin() {
       location: b.location || "",
       bg: b.bg || "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
       image_url: b.image_url || "",
-      students: Array.isArray(b.students) && b.students.length > 0 ? b.students : [
-        { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
-        { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-        { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
-      ],
+      students:
+        Array.isArray(b.students) && b.students.length > 0
+          ? b.students
+          : [
+              {
+                name: "ADARSH MOHANTY",
+                batch: "MBA (2025-27)",
+                rank: "First Rank",
+              },
+              {
+                name: "GURU PRASAD DAS",
+                batch: "MBA (2025-27)",
+                rank: "Distinction",
+              },
+              {
+                name: "SUBHASHREE NAYAK",
+                batch: "HDCM (2025-26)",
+                rank: "Top Merit",
+              },
+            ],
       is_active: b.is_active !== undefined ? b.is_active : 1,
-      order_seq: b.order_seq || 1
+      order_seq: b.order_seq || 1,
     });
     setNewBannerModal(true);
   };
@@ -417,13 +499,27 @@ export default function Admin() {
   // Filtered applications
   const filteredApps = applications.filter((app) => {
     const matchesFilter =
-      appFilter === "All" || app.programme.includes(appFilter);
+      appFilter === "All" || (app.programme || "").includes(appFilter);
     const matchesSearch =
       (app.full_name || "").toLowerCase().includes(appSearch.toLowerCase()) ||
       (app.app_number || "").toLowerCase().includes(appSearch.toLowerCase()) ||
       (app.phone || "").includes(appSearch);
     return matchesFilter && matchesSearch;
   });
+
+  // ==========================================================
+  // VIEW: BOOTING SPLASH (before localStorage restore completes)
+  // ==========================================================
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="flex items-center gap-3 text-slate-500 text-sm font-semibold">
+          <RefreshCw className="w-5 h-5 animate-spin text-[#0288D1]" />
+          <span>Loading admin console…</span>
+        </div>
+      </div>
+    );
+  }
 
   // ==========================================================
   // VIEW: LOGIN SCREEN (When not authenticated)
@@ -501,7 +597,7 @@ export default function Admin() {
             <button
               type="submit"
               disabled={loggingIn}
-              className="w-full bg-[#0288D1] hover:bg-[#0277bd] text-white py-2.5 rounded font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
+              className="w-full bg-[#0288D1] hover:bg-[#0277bd] text-white py-2.5 rounded font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors disabled:opacity-60"
             >
               <Lock className="w-4 h-4" />
               <span>
@@ -535,9 +631,6 @@ export default function Admin() {
             <div>
               <div className="font-extrabold text-sm sm:text-base text-white tracking-tight flex items-center gap-2">
                 <span>MICM Central Management System</span>
-                <span className="hidden sm:inline-block px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full">
-                  Next.js Full-Stack Live
-                </span>
               </div>
               <div className="text-[11px] text-sky-200">
                 Logged in as:{" "}
@@ -552,9 +645,12 @@ export default function Admin() {
               title="Refresh Data"
               className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded transition-colors"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
             </button>
-            <Link href="/"
+            <Link
+              href="/"
               className="hidden sm:inline-flex items-center text-xs text-sky-200 hover:text-white font-semibold"
             >
               View Public Website
@@ -628,9 +724,7 @@ export default function Admin() {
 
       {/* Main Admin Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-1 w-full">
-        {/* ======================================================== */}
         {/* TAB 1: OVERVIEW STATS */}
-        {/* ======================================================== */}
         {activeTab === "dashboard" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -642,7 +736,7 @@ export default function Admin() {
                   {applications.length || stats?.applications_total || 2}
                 </div>
                 <div className="text-[11px] text-emerald-600 font-bold mt-1">
-                  MBA & HDCM Intake
+                  MBA &amp; HDCM Intake
                 </div>
               </div>
 
@@ -690,7 +784,7 @@ export default function Admin() {
                   {faculty.length || stats?.faculty_members || 3}
                 </div>
                 <div className="text-[11px] text-purple-700 font-bold mt-1">
-                  Teaching & Admin
+                  Teaching &amp; Admin
                 </div>
               </div>
             </div>
@@ -721,7 +815,8 @@ export default function Admin() {
                           {app.full_name}
                         </div>
                         <div className="text-[11px] text-slate-500">
-                          {app.app_number} • {app.programme.split(" ")[0]}
+                          {app.app_number} •{" "}
+                          {(app.programme || "").split(" ")[0]}
                         </div>
                       </div>
                       <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[10px]">
@@ -769,7 +864,7 @@ export default function Admin() {
                       👨‍🏫 Add Faculty Member
                     </div>
                     <div className="text-[11px] text-slate-500 mt-1">
-                      Update qualifications & research areas
+                      Update qualifications &amp; research areas
                     </div>
                   </button>
 
@@ -793,7 +888,7 @@ export default function Admin() {
                       ⚖️ Review Grievances
                     </div>
                     <div className="text-[11px] text-slate-500 mt-1">
-                      Assign officer remarks & tracking
+                      Assign officer remarks &amp; tracking
                     </div>
                   </button>
                 </div>
@@ -802,12 +897,9 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ======================================================== */}
         {/* TAB 2: APPLICATIONS VIEWER */}
-        {/* ======================================================== */}
         {activeTab === "applications" && (
           <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
-            {/* Filter & Search Bar */}
             <div className="p-4 bg-slate-50 border-b border-slate-300 flex flex-col sm:flex-row gap-3 justify-between items-center">
               <div className="flex gap-2 w-full sm:w-auto">
                 {["All", "MBA", "HDCM"].map((f) => (
@@ -837,7 +929,6 @@ export default function Admin() {
               </div>
             </div>
 
-            {/* Applications Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#0288D1] text-white">
@@ -855,7 +946,7 @@ export default function Admin() {
                       Mobile / Email
                     </th>
                     <th className="p-3 font-bold border-r border-sky-600">
-                      Degree & %
+                      Degree &amp; %
                     </th>
                     <th className="p-3 font-bold border-r border-sky-600">
                       Entrance
@@ -874,7 +965,7 @@ export default function Admin() {
                       </td>
                       <td className="p-3 border-r">
                         <span className="px-2 py-0.5 bg-slate-100 rounded text-[11px] font-semibold">
-                          {app.programme.split(" ")[0]}
+                          {(app.programme || "").split(" ")[0]}
                         </span>
                       </td>
                       <td className="p-3 border-r font-mono text-slate-600">
@@ -926,9 +1017,7 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ======================================================== */}
         {/* TAB 3: ADMISSION ENQUIRIES */}
-        {/* ======================================================== */}
         {activeTab === "enquiries" && (
           <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-300 flex justify-between items-center text-xs font-bold text-slate-700">
@@ -1025,9 +1114,7 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ======================================================== */}
         {/* TAB 4: NOTICE BOARD CMS */}
-        {/* ======================================================== */}
         {activeTab === "notices" && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -1108,13 +1195,11 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ======================================================== */}
         {/* TAB 5: GRIEVANCES REDRESSAL */}
-        {/* ======================================================== */}
         {activeTab === "grievances" && (
           <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-300 font-bold text-xs text-slate-700">
-              Registered Grievances & Complaints ({grievances.length})
+              Registered Grievances &amp; Complaints ({grievances.length})
             </div>
 
             <div className="overflow-x-auto">
@@ -1192,9 +1277,7 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ======================================================== */}
         {/* TAB 6: FACULTY DIRECTORY CMS */}
-        {/* ======================================================== */}
         {activeTab === "faculty" && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -1218,7 +1301,7 @@ export default function Admin() {
                       Photo
                     </th>
                     <th className="p-3 font-bold border-r border-sky-600">
-                      Name & Designation
+                      Name &amp; Designation
                     </th>
                     <th className="p-3 font-bold border-r border-sky-600">
                       Department
@@ -1247,7 +1330,10 @@ export default function Admin() {
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs mx-auto border border-slate-300">
-                            {f.name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, '').slice(0, 2).toUpperCase()}
+                            {f.name
+                              .replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, "")
+                              .slice(0, 2)
+                              .toUpperCase()}
                           </div>
                         )}
                       </td>
@@ -1287,9 +1373,7 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ======================================================== */}
         {/* TAB 7: BANNER SLIDER CMS */}
-        {/* ======================================================== */}
         {activeTab === "banners" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-md border border-slate-300 shadow-xs">
@@ -1299,7 +1383,8 @@ export default function Admin() {
                   <span>Homepage Hero Banner Management</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Configure live auto-scrolling hero banners, student award badges, headlines, and upload custom backgrounds with ImgBB.
+                  Configure live auto-scrolling hero banners, student award
+                  badges, headlines, and upload custom backgrounds with ImgBB.
                 </p>
               </div>
               <button
@@ -1307,17 +1392,30 @@ export default function Admin() {
                   setEditingBannerId(null);
                   setNewBannerData({
                     title: "CONGRATULATIONS",
-                    subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+                    subtitle:
+                      "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
                     location: "AT NATIONAL COOPERATIVE SUMMIT",
                     bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
                     image_url: "",
                     students: [
-                      { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
-                      { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-                      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+                      {
+                        name: "ADARSH MOHANTY",
+                        batch: "MBA (2025-27)",
+                        rank: "First Rank",
+                      },
+                      {
+                        name: "GURU PRASAD DAS",
+                        batch: "MBA (2025-27)",
+                        rank: "Distinction",
+                      },
+                      {
+                        name: "SUBHASHREE NAYAK",
+                        batch: "HDCM (2025-26)",
+                        rank: "Top Merit",
+                      },
                     ],
                     is_active: 1,
-                    order_seq: banners.length + 1
+                    order_seq: banners.length + 1,
                   });
                   setNewBannerModal(true);
                 }}
@@ -1328,14 +1426,12 @@ export default function Admin() {
               </button>
             </div>
 
-            {/* Banner Cards with Exact Preview */}
             <div className="space-y-6">
               {banners.map((b, bIdx) => (
                 <div
                   key={b.id || bIdx}
                   className="bg-white border border-slate-300 rounded-lg shadow-xs overflow-hidden"
                 >
-                  {/* Admin Card Header */}
                   <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5">
                       <span className="font-bold text-xs text-slate-800">
@@ -1384,21 +1480,29 @@ export default function Admin() {
                     </div>
                   </div>
 
-                  {/* Live Banner Preview (Exact style as on homepage) */}
                   <div className="p-4 bg-slate-100">
                     <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1">
                       <Eye className="w-3.5 h-3.5" />
                       <span>Live Banner Preview:</span>
                     </div>
-                    <div 
+                    <div
                       className={`rounded-lg overflow-hidden border-2 border-amber-400 p-6 relative shadow-md ${
-                        b.image_url ? 'bg-[#0B1B3D]' : `bg-gradient-to-r ${b.bg || 'from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]'}`
+                        b.image_url
+                          ? "bg-[#0B1B3D]"
+                          : `bg-gradient-to-r ${
+                              b.bg ||
+                              "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]"
+                            }`
                       }`}
-                      style={b.image_url ? {
-                        backgroundImage: `url('${b.image_url}')`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                      } : {}}
+                      style={
+                        b.image_url
+                          ? {
+                              backgroundImage: `url('${b.image_url}')`,
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                            }
+                          : {}
+                      }
                     >
                       {b.image_url && (
                         <div className="absolute inset-0 bg-gradient-to-r from-[#0c2a5c]/95 via-[#0c2a5c]/85 to-[#0c2a5c]/90"></div>
@@ -1406,7 +1510,9 @@ export default function Admin() {
                       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="space-y-2 text-center md:text-left max-w-lg">
                           <div className="inline-flex items-center gap-1.5 bg-white py-0.5 px-2 rounded shadow-xs border border-amber-300">
-                            <img src="/micm-logo.png" alt="MICM" className="h-6 w-auto object-contain" />
+                            <span className="text-[10px] font-black text-[#0B1B3D]">
+                              MICM
+                            </span>
                           </div>
                           <h4 className="font-serif text-2xl sm:text-3xl font-black text-amber-400 tracking-tight uppercase">
                             {b.title}
@@ -1421,11 +1527,13 @@ export default function Admin() {
                           </div>
                         </div>
 
-                        {/* Student Badges */}
                         <div className="flex items-center gap-3 flex-wrap justify-center">
                           {(b.students || []).map((st, sIdx) => (
-                            <div key={sIdx} className="flex flex-col items-center text-center">
-                              <div className="w-16 h-16 rounded-full border-3 border-amber-400 bg-slate-900 text-amber-300 shadow-md flex flex-col items-center justify-center p-1">
+                            <div
+                              key={sIdx}
+                              className="flex flex-col items-center text-center"
+                            >
+                              <div className="w-16 h-16 rounded-full border-2 border-amber-400 bg-slate-900 text-amber-300 shadow-md flex flex-col items-center justify-center p-1">
                                 <span className="text-[7px] font-black uppercase text-amber-400 text-center leading-tight">
                                   {st.rank}
                                 </span>
@@ -1446,7 +1554,8 @@ export default function Admin() {
               ))}
               {banners.length === 0 && (
                 <div className="p-12 text-center bg-white rounded-md border border-slate-300 text-slate-400">
-                  No banner slides currently found. Click "Add New Banner Slide" to create one.
+                  No banner slides currently found. Click "Add New Banner Slide"
+                  to create one.
                 </div>
               )}
             </div>
@@ -1454,9 +1563,7 @@ export default function Admin() {
         )}
       </main>
 
-      {/* ======================================================== */}
       {/* MODAL: APPLICATION FULL PROFILE VIEWER */}
-      {/* ======================================================== */}
       {selectedApp && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-md max-w-2xl w-full border border-slate-300 shadow-2xl overflow-hidden my-8">
@@ -1536,9 +1643,7 @@ export default function Admin() {
         </div>
       )}
 
-      {/* ======================================================== */}
       {/* MODAL: ADD NEW NOTICE */}
-      {/* ======================================================== */}
       {newNoticeModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden">
@@ -1630,9 +1735,7 @@ export default function Admin() {
         </div>
       )}
 
-      {/* ======================================================== */}
       {/* MODAL: ADD / EDIT FACULTY (WITH IMGBB PHOTO UPLOAD) */}
-      {/* ======================================================== */}
       {newFacultyModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden my-6">
@@ -1647,7 +1750,6 @@ export default function Admin() {
             </div>
 
             <form onSubmit={handleAddFaculty} className="p-6 space-y-4 text-xs">
-              {/* Faculty Image Upload Section (ImgBB Cloud Hosting) */}
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
                   Faculty Photo (ImgBB API Hosting)
@@ -1680,7 +1782,9 @@ export default function Admin() {
                     {newFacultyData.image_url && !facultyUploading && (
                       <div className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
                         <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                        <span className="truncate max-w-xs">Hosted: {newFacultyData.image_url}</span>
+                        <span className="truncate max-w-xs">
+                          Hosted: {newFacultyData.image_url}
+                        </span>
                       </div>
                     )}
                     {facultyUploadError && (
@@ -1789,7 +1893,7 @@ export default function Admin() {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Area of Specialization & Expertise
+                  Area of Specialization &amp; Expertise
                 </label>
                 <input
                   type="text"
@@ -1827,28 +1931,35 @@ export default function Admin() {
         </div>
       )}
 
-      {/* ======================================================== */}
       {/* MODAL: ADD / EDIT BANNER SLIDE (WITH IMGBB CUSTOM IMAGE) */}
-      {/* ======================================================== */}
       {newBannerModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-md max-w-2xl w-full border border-slate-300 shadow-2xl overflow-hidden my-6 max-h-[90vh] flex flex-col">
             <div className="bg-[#0B1B3D] text-white px-6 py-3.5 font-bold text-sm flex justify-between items-center border-b-2 border-amber-400">
               <span className="flex items-center gap-2 text-amber-300">
                 <Sliders className="w-4 h-4" />
-                <span>{editingBannerId ? "Edit Banner Slide" : "Add New Banner Slide"}</span>
+                <span>
+                  {editingBannerId
+                    ? "Edit Banner Slide"
+                    : "Add New Banner Slide"}
+                </span>
               </span>
-              <button onClick={() => setNewBannerModal(false)} className="text-white hover:text-slate-300">
+              <button
+                onClick={() => setNewBannerModal(false)}
+                className="text-white hover:text-slate-300"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveBanner} className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
-              {/* Banner Headlines */}
+            <form
+              onSubmit={handleSaveBanner}
+              className="p-6 space-y-4 text-xs overflow-y-auto flex-1"
+            >
               <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
                 <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span>Headline & Institutional Category</span>
+                  <span>Headline &amp; Institutional Category</span>
                 </div>
 
                 <div>
@@ -1860,7 +1971,10 @@ export default function Admin() {
                     required
                     value={newBannerData.title}
                     onChange={(e) =>
-                      setNewBannerData({ ...newBannerData, title: e.target.value })
+                      setNewBannerData({
+                        ...newBannerData,
+                        title: e.target.value,
+                      })
                     }
                     placeholder="e.g. CONGRATULATIONS"
                     className="w-full p-2 border border-slate-300 rounded outline-none font-bold text-slate-900"
@@ -1875,7 +1989,10 @@ export default function Admin() {
                     rows={2}
                     value={newBannerData.subtitle}
                     onChange={(e) =>
-                      setNewBannerData({ ...newBannerData, subtitle: e.target.value })
+                      setNewBannerData({
+                        ...newBannerData,
+                        subtitle: e.target.value,
+                      })
                     }
                     placeholder="e.g. FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE"
                     className="w-full p-2 border border-slate-300 rounded outline-none"
@@ -1890,7 +2007,10 @@ export default function Admin() {
                     type="text"
                     value={newBannerData.location}
                     onChange={(e) =>
-                      setNewBannerData({ ...newBannerData, location: e.target.value })
+                      setNewBannerData({
+                        ...newBannerData,
+                        location: e.target.value,
+                      })
                     }
                     placeholder="e.g. AT NATIONAL COOPERATIVE SUMMIT"
                     className="w-full p-2 border border-slate-300 rounded outline-none"
@@ -1898,7 +2018,6 @@ export default function Admin() {
                 </div>
               </div>
 
-              {/* Background Style: Gradient vs ImgBB Custom Background */}
               <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
                 <div className="font-bold text-slate-800 text-xs flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
@@ -1908,7 +2027,9 @@ export default function Admin() {
                   {newBannerData.image_url ? (
                     <button
                       type="button"
-                      onClick={() => setNewBannerData({ ...newBannerData, image_url: "" })}
+                      onClick={() =>
+                        setNewBannerData({ ...newBannerData, image_url: "" })
+                      }
                       className="text-[11px] text-red-600 hover:underline font-bold"
                     >
                       Remove Custom Photo
@@ -1916,36 +2037,53 @@ export default function Admin() {
                   ) : null}
                 </div>
 
-                {/* Preset Gradient Palette */}
                 <div>
                   <label className="block font-semibold text-slate-600 mb-1.5">
                     Select Theme Gradient Palette:
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { label: "Navy Conclave", value: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]" },
-                      { label: "Ocean Teal", value: "from-[#093a47] via-[#0288D1] to-[#093a47]" },
-                      { label: "Deep Indigo", value: "from-[#1e1b4b] via-[#312e81] to-[#1e1b4b]" },
-                      { label: "Royal Prestige", value: "from-[#3b0764] via-[#581c87] to-[#3b0764]" }
+                      {
+                        label: "Navy Conclave",
+                        value: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
+                      },
+                      {
+                        label: "Ocean Teal",
+                        value: "from-[#093a47] via-[#0288D1] to-[#093a47]",
+                      },
+                      {
+                        label: "Deep Indigo",
+                        value: "from-[#1e1b4b] via-[#312e81] to-[#1e1b4b]",
+                      },
+                      {
+                        label: "Royal Prestige",
+                        value: "from-[#3b0764] via-[#581c87] to-[#3b0764]",
+                      },
                     ].map((g, idx) => (
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => setNewBannerData({ ...newBannerData, bg: g.value })}
+                        onClick={() =>
+                          setNewBannerData({ ...newBannerData, bg: g.value })
+                        }
                         className={`p-2 rounded border text-left flex items-center gap-2 ${
-                          newBannerData.bg === g.value && !newBannerData.image_url
+                          newBannerData.bg === g.value &&
+                          !newBannerData.image_url
                             ? "border-amber-500 ring-2 ring-amber-400"
                             : "border-slate-300"
                         }`}
                       >
-                        <div className={`w-5 h-5 rounded bg-gradient-to-r ${g.value}`}></div>
-                        <span className="text-[11px] font-bold text-slate-700">{g.label}</span>
+                        <div
+                          className={`w-5 h-5 rounded bg-gradient-to-r ${g.value}`}
+                        ></div>
+                        <span className="text-[11px] font-bold text-slate-700">
+                          {g.label}
+                        </span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Custom Photo Upload via ImgBB */}
                 <div className="pt-2 border-t border-slate-200">
                   <label className="block font-bold text-slate-700 mb-1">
                     Or Upload Custom Background Image (via ImgBB API)
@@ -1968,7 +2106,9 @@ export default function Admin() {
                     <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded flex items-center justify-between text-emerald-800 text-[11px] font-semibold">
                       <span className="flex items-center gap-1.5 truncate">
                         <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span className="truncate">Image URL: {newBannerData.image_url}</span>
+                        <span className="truncate">
+                          Image URL: {newBannerData.image_url}
+                        </span>
                       </span>
                     </div>
                   )}
@@ -1980,7 +2120,6 @@ export default function Admin() {
                 </div>
               </div>
 
-              {/* Scholar / Feature Badges (3 items) */}
               <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
                 <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                   <GraduationCap className="w-4 h-4 text-amber-500" />
@@ -1989,9 +2128,16 @@ export default function Admin() {
 
                 <div className="space-y-3">
                   {[0, 1, 2].map((idx) => {
-                    const st = newBannerData.students[idx] || { name: "", batch: "", rank: "" };
+                    const st = newBannerData.students[idx] || {
+                      name: "",
+                      batch: "",
+                      rank: "",
+                    };
                     return (
-                      <div key={idx} className="p-3 bg-white rounded border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div
+                        key={idx}
+                        className="p-3 bg-white rounded border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2"
+                      >
                         <div>
                           <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
                             Scholar Name #{idx + 1}
@@ -2002,7 +2148,10 @@ export default function Admin() {
                             onChange={(e) => {
                               const updated = [...newBannerData.students];
                               updated[idx] = { ...st, name: e.target.value };
-                              setNewBannerData({ ...newBannerData, students: updated });
+                              setNewBannerData({
+                                ...newBannerData,
+                                students: updated,
+                              });
                             }}
                             placeholder="e.g. ADARSH MOHANTY"
                             className="w-full p-1.5 border border-slate-300 rounded text-xs font-semibold"
@@ -2018,7 +2167,10 @@ export default function Admin() {
                             onChange={(e) => {
                               const updated = [...newBannerData.students];
                               updated[idx] = { ...st, batch: e.target.value };
-                              setNewBannerData({ ...newBannerData, students: updated });
+                              setNewBannerData({
+                                ...newBannerData,
+                                students: updated,
+                              });
                             }}
                             placeholder="e.g. MBA (2025-27)"
                             className="w-full p-1.5 border border-slate-300 rounded text-xs"
@@ -2034,7 +2186,10 @@ export default function Admin() {
                             onChange={(e) => {
                               const updated = [...newBannerData.students];
                               updated[idx] = { ...st, rank: e.target.value };
-                              setNewBannerData({ ...newBannerData, students: updated });
+                              setNewBannerData({
+                                ...newBannerData,
+                                students: updated,
+                              });
                             }}
                             placeholder="e.g. First Rank"
                             className="w-full p-1.5 border border-slate-300 rounded text-xs text-amber-700 font-bold"
@@ -2046,14 +2201,16 @@ export default function Admin() {
                 </div>
               </div>
 
-              {/* Status and Order */}
               <div className="flex items-center gap-4 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800">
                   <input
                     type="checkbox"
                     checked={Boolean(newBannerData.is_active)}
                     onChange={(e) =>
-                      setNewBannerData({ ...newBannerData, is_active: e.target.checked ? 1 : 0 })
+                      setNewBannerData({
+                        ...newBannerData,
+                        is_active: e.target.checked ? 1 : 0,
+                      })
                     }
                     className="w-4 h-4 text-[#0288D1] rounded"
                   />
@@ -2075,7 +2232,11 @@ export default function Admin() {
                   className="px-4 py-1.5 bg-[#0B1B3D] hover:bg-slate-900 text-amber-300 font-bold rounded flex items-center gap-1.5 border border-amber-400"
                 >
                   <Check className="w-4 h-4" />
-                  <span>{editingBannerId ? "Update Banner Slide" : "Save Banner Slide"}</span>
+                  <span>
+                    {editingBannerId
+                      ? "Update Banner Slide"
+                      : "Save Banner Slide"}
+                  </span>
                 </button>
               </div>
             </form>

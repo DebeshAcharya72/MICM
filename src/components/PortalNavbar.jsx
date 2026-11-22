@@ -131,7 +131,7 @@ export default function PortalNavbar() {
                   >
                     MoU's (National & International)
                   </Link>
-                  <Link
+                  {/* <Link
                     href="/collaboration/mous#national"
                     onClick={() => setCollabDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
@@ -144,7 +144,7 @@ export default function PortalNavbar() {
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
                   >
                     International Partnerships
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </div>
@@ -193,7 +193,7 @@ export default function PortalNavbar() {
                   >
                     HDCM (36-Week Diploma)
                   </Link>
-                  <Link
+                  {/* <Link
                     href="/training-calendar"
                     onClick={() => setAcademicsDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
@@ -206,7 +206,7 @@ export default function PortalNavbar() {
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
                     Downloads Centre (Syllabi & Circulars)
-                  </Link>
+                  </Link> */}
                   <Link
                     href="/admission-faqs"
                     onClick={() => setAcademicsDropdownOpen(false)}
@@ -253,13 +253,13 @@ export default function PortalNavbar() {
                   >
                     Statutory Committees (ICC, Ragging)
                   </Link>
-                  <Link
+                  {/* <Link
                     href="/compliance"
                     onClick={() => setCommitteesDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
                     AICTE Approvals & Disclosures
-                  </Link>
+                  </Link> */}
                   <Link
                     href="/grievance"
                     onClick={() => setCommitteesDropdownOpen(false)}
@@ -304,12 +304,12 @@ export default function PortalNavbar() {
             </Link> */}
 
             {/* Alumni Tab */}
-            <Link
+            {/* <Link
               href="/alumni"
               className={navItemClass(pathname.startsWith("/alumni"))}
             >
               Alumni
-            </Link>
+            </Link> */}
 
             {/* RTI & Careers Tab */}
             {/* <Link
