@@ -159,6 +159,22 @@ export const api = {
     return await res.json();
   },
 
+  updateFaculty: async (id, facultyData, token) => {
+    const res = await fetch(`${API_BASE_URL}/faculty/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(facultyData),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to update faculty');
+    }
+    return await res.json();
+  },
+
   deleteFaculty: async (id, token) => {
     const res = await fetch(`${API_BASE_URL}/faculty/${id}`, {
       method: 'DELETE',

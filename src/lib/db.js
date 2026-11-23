@@ -815,6 +815,21 @@ export const db = {
     return record;
   },
 
+  updateFaculty: (id, facUpdates) => {
+    const data = readDb();
+    if (!data.faculty) return null;
+    const index = data.faculty.findIndex(f => f.id === Number(id));
+    if (index === -1) return null;
+    data.faculty[index] = {
+      ...data.faculty[index],
+      ...facUpdates,
+      id: Number(id),
+      updated_at: new Date().toISOString()
+    };
+    writeDb(data);
+    return data.faculty[index];
+  },
+
   deleteFaculty: (id) => {
     const data = readDb();
     data.faculty = data.faculty.filter(f => f.id !== Number(id));

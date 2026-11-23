@@ -152,6 +152,7 @@ export default function Admin() {
 
   // Faculty Modal & Image State
   const [newFacultyModal, setNewFacultyModal] = useState(false);
+  const [editingFacultyId, setEditingFacultyId] = useState(null);
   const [newFacultyData, setNewFacultyData] = useState({
     name: "",
     designation: "",
@@ -551,11 +552,34 @@ export default function Admin() {
     }
   };
 
-  // Add Faculty
-  const handleAddFaculty = async (e) => {
+  // Edit Faculty
+  const handleEditFacultyClick = (facultyMember) => {
+    setEditingFacultyId(facultyMember.id);
+    setNewFacultyData({
+      name: facultyMember.name || "",
+      designation: facultyMember.designation || "",
+      department: facultyMember.department || "Management Studies",
+      qualifications: facultyMember.qualifications || "",
+      expertise: facultyMember.expertise || "",
+      email: facultyMember.email || "micmbbs@gmail.com",
+      phone: facultyMember.phone || "+91 674 2562826",
+      image_url: facultyMember.image_url || "",
+    });
+    setFacultyImagePreview(facultyMember.image_url || "");
+    setFacultyUploadError("");
+    setNewFacultyModal(true);
+  };
+
+  // Add / Update Faculty
+  const handleSaveFaculty = async (e) => {
     e.preventDefault();
     try {
-      await api.createFaculty(newFacultyData, token);
+      if (editingFacultyId) {
+        await api.updateFaculty(editingFacultyId, newFacultyData, token);
+      } else {
+        await api.createFaculty(newFacultyData, token);
+      }
+      setEditingFacultyId(null);
       setNewFacultyModal(false);
       setNewFacultyData({
         name: "",
@@ -570,9 +594,8 @@ export default function Admin() {
       setFacultyImagePreview("");
       setFacultyUploadError("");
       loadAdminData(token);
-    } catch {
-      alert("Faculty member added.");
-      setNewFacultyModal(false);
+    } catch (err) {
+      alert("Failed to save faculty member: " + err.message);
     }
   };
 
@@ -1537,7 +1560,22 @@ export default function Admin() {
                 Faculty Directory Management
               </h3>
               <button
-                onClick={() => setNewFacultyModal(true)}
+                onClick={() => {
+                  setEditingFacultyId(null);
+                  setNewFacultyData({
+                    name: "",
+                    designation: "",
+                    department: "Management Studies",
+                    qualifications: "",
+                    expertise: "",
+                    email: "micmbbs@gmail.com",
+                    phone: "+91 674 2562826",
+                    image_url: "",
+                  });
+                  setFacultyImagePreview("");
+                  setFacultyUploadError("");
+                  setNewFacultyModal(true);
+                }}
                 className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
               >
                 <Plus className="w-4 h-4" />
@@ -1610,12 +1648,22 @@ export default function Admin() {
                         {f.email}
                       </td>
                       <td className="p-3 text-center">
-                        <button
-                          onClick={() => handleDeleteFaculty(f.id)}
-                          className="text-red-600 hover:text-red-800 p-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleEditFacultyClick(f)}
+                            className="text-blue-600 hover:text-blue-800 p-1 transition-colors"
+                            title="Edit Faculty Member"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteFaculty(f.id)}
+                            className="text-red-600 hover:text-red-800 p-1 transition-colors"
+                            title="Delete Faculty Member"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -2310,14 +2358,25 @@ export default function Admin() {
             <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
               <span className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                <span>Add Faculty Member (with ImgBB Photo)</span>
+                <span>
+                  {editingFacultyId
+                    ? "Edit Faculty Member"
+                    : "Add Faculty Member (with ImgBB Photo)"}
+                </span>
               </span>
-              <button onClick={() => setNewFacultyModal(false)}>
+              <button
+                onClick={() => {
+                  setNewFacultyModal(false);
+                  setEditingFacultyId(null);
+                  setFacultyImagePreview("");
+                  setFacultyUploadError("");
+                }}
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAddFaculty} className="p-6 space-y-4 text-xs">
+            <form onSubmit={handleSaveFaculty} className="p-6 space-y-4 text-xs">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
                   Faculty Photo (ImgBB API Hosting)
@@ -2480,7 +2539,12 @@ export default function Admin() {
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button
                   type="button"
-                  onClick={() => setNewFacultyModal(false)}
+                  onClick={() => {
+                    setNewFacultyModal(false);
+                    setEditingFacultyId(null);
+                    setFacultyImagePreview("");
+                    setFacultyUploadError("");
+                  }}
                   className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
                 >
                   Cancel
@@ -2491,7 +2555,11 @@ export default function Admin() {
                   className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
                 >
                   <Check className="w-4 h-4" />
-                  <span>Save Faculty Member</span>
+                  <span>
+                    {editingFacultyId
+                      ? "Update Faculty Member"
+                      : "Save Faculty Member"}
+                  </span>
                 </button>
               </div>
             </form>

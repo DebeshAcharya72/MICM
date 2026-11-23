@@ -137,8 +137,9 @@
       "expertise": "Cooperative Banking, Strategic Governance, Public Policy",
       "email": "micmbbs@gmail.com",
       "phone": "+91 674 2562826",
-      "image_url": null,
-      "order_seq": 1
+      "image_url": "https://i.ibb.co/gbtRX70n/9b318cf30b55.png",
+      "order_seq": 1,
+      "updated_at": "2026-11-23T12:56:14.564Z"
     },
     {
       "id": 2,
@@ -149,8 +150,9 @@
       "expertise": "Organizational Behavior, Rural Enterprise, Agri-Business",
       "email": "micmbbs@gmail.com",
       "phone": "+91 674 2562826",
-      "image_url": null,
-      "order_seq": 2
+      "image_url": "https://i.ibb.co/3mrVkMnr/0c90922e6c85.jpg",
+      "order_seq": 2,
+      "updated_at": "2026-11-23T12:57:02.048Z"
     },
     {
       "id": 3,
@@ -161,8 +163,9 @@
       "expertise": "Financial Management, Cost Accounting, Project Finance",
       "email": "micmbbs@gmail.com",
       "phone": "+91 674 2562826",
-      "image_url": null,
-      "order_seq": 3
+      "image_url": "https://i.ibb.co/VYs44HCS/a66b7c035fb4.png",
+      "order_seq": 3,
+      "updated_at": "2026-11-23T12:57:40.242Z"
     },
     {
       "id": 4,
@@ -173,8 +176,9 @@
       "expertise": "Cooperative Law, Microfinance, Agricultural Credit",
       "email": "micmbbs@gmail.com",
       "phone": "+91 674 2562826",
-      "image_url": null,
-      "order_seq": 4
+      "image_url": "https://i.ibb.co/KctVKTDT/cb52e2c06ff6.jpg",
+      "order_seq": 4,
+      "updated_at": "2026-11-23T12:58:12.411Z"
     },
     {
       "id": 5,
@@ -185,8 +189,9 @@
       "expertise": "Operations Research, Marketing Analytics, Business Stats",
       "email": "micmbbs@gmail.com",
       "phone": "+91 674 2562826",
-      "image_url": null,
-      "order_seq": 5
+      "image_url": "https://i.ibb.co/7xNcYQy4/48431edfd9fb.jpg",
+      "order_seq": 5,
+      "updated_at": "2026-11-23T12:58:40.377Z"
     },
     {
       "id": 6,
@@ -197,8 +202,9 @@
       "expertise": "Banking Technology, Risk Analysis, Cooperative Audit",
       "email": "micmbbs@gmail.com",
       "phone": "+91 674 2562826",
-      "image_url": null,
-      "order_seq": 6
+      "image_url": "https://i.ibb.co/gZDkwLHf/48a857478770.jpg",
+      "order_seq": 6,
+      "updated_at": "2026-11-23T12:59:30.377Z"
     }
   ],
   "news_events": [
