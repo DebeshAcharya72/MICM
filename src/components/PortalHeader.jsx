@@ -1,15 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Search, Facebook, Twitter, Linkedin, Youtube, GraduationCap } from 'lucide-react';
-import { portalData } from '../data/portalData';
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Search,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Youtube,
+  GraduationCap,
+} from "lucide-react";
+import { portalData } from "../data/portalData";
 
 export default function PortalHeader({ onSearchClick }) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [fontSizeOffset, setFontSizeOffset] = useState(0);
-  const [selectedLang, setSelectedLang] = useState('English');
+  const [selectedLang, setSelectedLang] = useState("English");
   const router = useRouter();
 
   const handleSearchSubmit = (e) => {
@@ -25,7 +32,7 @@ export default function PortalHeader({ onSearchClick }) {
     const newOffset = Math.max(-2, Math.min(4, fontSizeOffset + delta));
     setFontSizeOffset(newOffset);
     if (newOffset === 0) {
-      document.documentElement.style.fontSize = '';
+      document.documentElement.style.fontSize = "";
     } else {
       document.documentElement.style.fontSize = `${100 + newOffset * 6}%`;
     }
@@ -35,37 +42,37 @@ export default function PortalHeader({ onSearchClick }) {
     <header className="w-full bg-white border-b border-slate-200 relative z-40">
       {/* Top Floating / Right Social Strip (Exactly like VAMNICOM screenshot) */}
       <div className="fixed right-0 top-1/3 z-50 hidden lg:flex flex-col shadow-lg rounded-l-md overflow-hidden text-white text-xs font-bold">
-        <a 
-          href="https://facebook.com" 
-          target="_blank" 
-          rel="noreferrer" 
+        <a
+          href="https://facebook.com"
+          target="_blank"
+          rel="noreferrer"
           aria-label="Facebook"
           className="w-9 h-9 bg-[#3b5998] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
           <Facebook className="w-4 h-4" />
         </a>
-        <a 
-          href="https://twitter.com" 
-          target="_blank" 
-          rel="noreferrer" 
+        <a
+          href="https://twitter.com"
+          target="_blank"
+          rel="noreferrer"
           aria-label="Twitter"
           className="w-9 h-9 bg-[#00acee] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
           <Twitter className="w-4 h-4" />
         </a>
-        <a 
-          href="https://linkedin.com" 
-          target="_blank" 
-          rel="noreferrer" 
+        <a
+          href="https://linkedin.com"
+          target="_blank"
+          rel="noreferrer"
           aria-label="LinkedIn"
           className="w-9 h-9 bg-[#0077b5] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
           <Linkedin className="w-4 h-4" />
         </a>
-        <a 
-          href="https://youtube.com" 
-          target="_blank" 
-          rel="noreferrer" 
+        <a
+          href="https://youtube.com"
+          target="_blank"
+          rel="noreferrer"
           aria-label="YouTube"
           className="w-9 h-9 bg-[#cd201f] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
@@ -76,9 +83,11 @@ export default function PortalHeader({ onSearchClick }) {
       {/* Main Official Header Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-          
           {/* Left: Official Emblem + Bilingual Name & Ministry Details */}
-          <Link href="/" className="flex items-center gap-3.5 sm:gap-5 text-left group">
+          <Link
+            href="/"
+            className="flex items-center gap-3.5 sm:gap-5 text-left group"
+          >
             {/* Official MICM Logo Image */}
             <div className="shrink-0 bg-white p-1 rounded-sm border border-slate-100 shadow-2xs group-hover:scale-102 transition-transform">
               <img
@@ -103,20 +112,20 @@ export default function PortalHeader({ onSearchClick }) {
                 {portalData.subEnglish}
               </p>
               <p className="text-[9px] sm:text-[11px] text-slate-600 font-medium leading-tight mt-0.5">
-                सहकारिता मंत्रालय, Ministry of Cooperation, भारत सरकार, Government of India
+                सहकारिता मंत्रालय, Ministry of Cooperation, भारत सरकार,
+                Government of India
               </p>
               <p className="text-[9px] sm:text-[10px] text-slate-500 font-semibold tracking-wide mt-0.5">
-                GSTIN No. : {portalData.gstin} &nbsp;|&nbsp; PAN : {portalData.pan}
+                GSTIN No. : {portalData.gstin} &nbsp;|&nbsp; PAN :{" "}
+                {portalData.pan}
               </p>
             </div>
           </Link>
 
           {/* Right: Search, Language, Font Resizer, Azadi 75 Logo */}
           <div className="flex flex-col items-center sm:items-end gap-2.5 shrink-0 w-full sm:w-auto">
-            
             {/* Top Utility Controls: Search, Lang, Font */}
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 text-xs">
-              
               {/* Search Bar with Blue Button */}
               <form onSubmit={handleSearchSubmit} className="flex items-center">
                 <div className="relative">
@@ -138,10 +147,10 @@ export default function PortalHeader({ onSearchClick }) {
               </form>
 
               {/* Language Selector */}
-              <div className="border border-slate-300 rounded px-2 py-0.5 bg-slate-50 text-[11px] text-slate-700 flex items-center gap-1">
+              {/* <div className="border border-slate-300 rounded px-2 py-0.5 bg-slate-50 text-[11px] text-slate-700 flex items-center gap-1">
                 <span>Select Language</span>
                 <span className="text-[9px]">▼</span>
-              </div>
+              </div> */}
 
               {/* Font Resizer [ - A + ] */}
               <div className="flex items-center border border-[#0288D1] rounded overflow-hidden text-[11px] font-bold">
@@ -170,7 +179,6 @@ export default function PortalHeader({ onSearchClick }) {
                   +
                 </button>
               </div>
-
             </div>
 
             {/* Azadi Ka Amrit Mahotsav 75 Logo & National Emblem */}
@@ -184,16 +192,14 @@ export default function PortalHeader({ onSearchClick }) {
                     Azadi Ka Amrit Mahotsav
                   </span>
                 </div>
-                <div className="h-8 w-12 bg-gradient-to-r from-orange-500 via-white to-green-600 rounded flex items-center justify-center shadow-xs border border-slate-200">
+                <div className="h-8 w-12 bg-gradient-to-b from-orange-500 via-white to-green-600 rounded flex items-center justify-center shadow-xs border border-slate-200">
                   <div className="w-3.5 h-3.5 rounded-full border border-blue-900 flex items-center justify-center text-[5px] text-blue-900 font-bold">
                     ☸
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
-
         </div>
       </div>
     </header>

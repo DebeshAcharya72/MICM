@@ -17,8 +17,8 @@ import {
   Briefcase,
   Newspaper
 } from 'lucide-react';
-import { portalData } from '../data/portalData';
 import { api } from '../services/api';
+import HomeFacultyShowcase from '../components/HomeFacultyShowcase';
 
 const DEFAULT_BANNER_SLIDES = [
   {
@@ -237,42 +237,21 @@ export default function Home() {
 
 
       {/* ========================================================
+          DYNAMIC FACULTY SHOWCASE (Replaces Static Dignitaries)
+      ======================================================== */}
+      <HomeFacultyShowcase />
+
+
+      {/* ========================================================
           MAIN HOMEPAGE SECTION (Grid Layout)
       ======================================================== */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
         
-        {/* ROW 1: Dignitaries (Left) | Announcements | Placements Highlights | Dignitaries (Right) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-stretch">
+        {/* ROW 1: Announcements | Placements Highlights */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
           
-          {/* Column 1: Left Dignitaries (Ministers) - lg:col-span-2 */}
-          <div className="lg:col-span-2 space-y-3.5">
-            {portalData.dignitaries.left.map((dig, idx) => (
-              <div 
-                key={idx}
-                className="bg-white border border-slate-300 rounded p-3 text-center shadow-2xs hover:shadow-xs transition-shadow flex flex-col items-center justify-between min-h-[160px]"
-              >
-                <div className="w-16 h-20 rounded border border-slate-300 bg-slate-100 overflow-hidden shadow-2xs mb-2">
-                  <img
-                    src={dig.image}
-                    alt={dig.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900 leading-tight">
-                    {dig.name}
-                  </h4>
-                  <p className="text-[10px] text-red-700 font-semibold mt-1 leading-snug">
-                    {dig.designation}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Column 2: Announcements Box (Dynamic from API, opens PDF in new tab) - lg:col-span-4 */}
-          <div className="lg:col-span-4 bg-white border border-slate-300 rounded shadow-2xs flex flex-col">
+          {/* Column 1: Announcements Box (Dynamic from API, opens PDF in new tab) - lg:col-span-6 */}
+          <div className="lg:col-span-6 bg-white border border-slate-300 rounded shadow-2xs flex flex-col">
             <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
               <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-[#0288D1]" />
@@ -315,8 +294,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Column 3: Placements Highlights Box (Dynamic from API) - lg:col-span-4 */}
-          <div className="lg:col-span-4 bg-white border border-slate-300 rounded shadow-2xs flex flex-col">
+          {/* Column 2: Placements Highlights Box (Dynamic from API) - lg:col-span-6 */}
+          <div className="lg:col-span-6 bg-white border border-slate-300 rounded shadow-2xs flex flex-col">
             <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
               <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
                 <Award className="w-4 h-4 text-amber-500" />
@@ -364,33 +343,6 @@ export default function Home() {
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Column 4: Right Dignitaries (Secretaries & Director) - lg:col-span-2 */}
-          <div className="lg:col-span-2 space-y-3.5">
-            {portalData.dignitaries.right.map((dig, idx) => (
-              <div 
-                key={idx}
-                className="bg-white border border-slate-300 rounded p-3 text-center shadow-2xs hover:shadow-xs transition-shadow flex flex-col items-center justify-between min-h-[160px]"
-              >
-                <div className="w-16 h-20 rounded border border-slate-300 bg-slate-100 overflow-hidden shadow-2xs mb-2">
-                  <img
-                    src={dig.image}
-                    alt={dig.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900 leading-tight">
-                    {dig.name}
-                  </h4>
-                  <p className="text-[10px] text-red-700 font-semibold mt-1 leading-snug">
-                    {dig.designation}
-                  </p>
-                </div>
-              </div>
-            ))}
           </div>
 
         </div>
