@@ -1,5 +1,4 @@
 import '../index.css';
-import ClientPortalLayout from '@/components/ClientPortalLayout';
 
 export const metadata = {
   title: 'Madhusudan Institute of Co-operative Management (MICM), Bhubaneswar',
@@ -13,9 +12,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="bg-white text-slate-800 antialiased font-sans">
-        <ClientPortalLayout>
-          {children}
-        </ClientPortalLayout>
+        {children}
       </body>
     </html>
   );

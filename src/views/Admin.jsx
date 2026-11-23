@@ -27,6 +27,10 @@ import {
   Camera,
   Sparkles,
   GraduationCap, // ✅ FIX: was missing — used in banner modal
+  Calendar,
+  Briefcase,
+  Newspaper,
+  ExternalLink,
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -73,6 +77,10 @@ export default function Admin() {
   const [grievances, setGrievances] = useState([]);
   const [faculty, setFaculty] = useState([]);
   const [banners, setBanners] = useState([]);
+  const [trainings, setTrainings] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [placements, setPlacements] = useState([]);
+  const [coopNews, setCoopNews] = useState([]);
 
   // Modals & Forms
   const [selectedApp, setSelectedApp] = useState(null);
@@ -89,6 +97,57 @@ export default function Admin() {
       .replace(/ /g, "-"),
     link: "#",
     is_new: 1,
+  });
+
+  // Training Modal State
+  const [newTrainingModal, setNewTrainingModal] = useState(false);
+  const [newTrainingData, setNewTrainingData] = useState({
+    title: "",
+    fromDate: "",
+    toDate: "",
+    venue: "MICM Campus, Bhubaneswar",
+    link: "#",
+  });
+
+  // Announcement Modal State
+  const [newAnnouncementModal, setNewAnnouncementModal] = useState(false);
+  const [announcementUploading, setAnnouncementUploading] = useState(false);
+  const [newAnnouncementData, setNewAnnouncementData] = useState({
+    title: "",
+    date: new Date()
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+      .replace(/ /g, "-"),
+    pdf_url: "",
+    is_new: 1,
+  });
+
+  // Placement Modal State
+  const [newPlacementModal, setNewPlacementModal] = useState(false);
+  const [placementUploading, setPlacementUploading] = useState(false);
+  const [newPlacementData, setNewPlacementData] = useState({
+    student_name: "",
+    company: "",
+    package: "",
+    year: new Date().getFullYear().toString(),
+    image_url: "",
+  });
+
+  // Co-op News Modal State
+  const [newCoopNewsModal, setNewCoopNewsModal] = useState(false);
+  const [newCoopNewsData, setNewCoopNewsData] = useState({
+    title: "",
+    date: new Date()
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+      .replace(/ /g, "-"),
+    link: "",
   });
 
   // Faculty Modal & Image State
@@ -139,7 +198,7 @@ export default function Admin() {
 
     setLoading(true);
     try {
-      const [s, a, e, n, g, f, b] = await Promise.allSettled([
+      const [s, a, e, n, g, f, b, tr, an, pl, cn] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
         api.getEnquiries(authToken),
@@ -147,6 +206,10 @@ export default function Admin() {
         api.getGrievances(authToken),
         api.getFaculty(),
         api.getBanners(false),
+        api.getTrainings(),
+        api.getAnnouncements(),
+        api.getPlacements(),
+        api.getCoopNews(),
       ]);
 
       if (s.status === "fulfilled" && s.value) setStats(s.value);
@@ -162,6 +225,14 @@ export default function Admin() {
         setFaculty(f.value);
       if (b.status === "fulfilled" && Array.isArray(b.value))
         setBanners(b.value);
+      if (tr.status === "fulfilled" && Array.isArray(tr.value))
+        setTrainings(tr.value);
+      if (an.status === "fulfilled" && Array.isArray(an.value))
+        setAnnouncements(an.value);
+      if (pl.status === "fulfilled" && Array.isArray(pl.value))
+        setPlacements(pl.value);
+      if (cn.status === "fulfilled" && Array.isArray(cn.value))
+        setCoopNews(cn.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
     } finally {
@@ -290,6 +361,167 @@ export default function Admin() {
         loadAdminData(token);
       } catch {
         setNotices(notices.filter((n) => n.id !== id));
+      }
+    }
+  };
+
+  // Trainings Handlers
+  const handleAddTraining = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createTraining(newTrainingData, token);
+      setNewTrainingModal(false);
+      setNewTrainingData({
+        title: "",
+        fromDate: "",
+        toDate: "",
+        venue: "MICM Campus, Bhubaneswar",
+        link: "#",
+      });
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to add training: " + err.message);
+    }
+  };
+
+  const handleDeleteTraining = async (id) => {
+    if (window.confirm("Are you sure you want to remove this training programme?")) {
+      try {
+        await api.deleteTraining(id, token);
+        loadAdminData(token);
+      } catch {
+        setTrainings(trainings.filter((t) => t.id !== id));
+      }
+    }
+  };
+
+  // Announcements Handlers
+  const handleAnnouncementFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAnnouncementUploading(true);
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setNewAnnouncementData((prev) => ({ ...prev, pdf_url: res.url }));
+      }
+    } catch {
+      alert("File upload could not complete. You can input the PDF URL directly.");
+    } finally {
+      setAnnouncementUploading(false);
+    }
+  };
+
+  const handleAddAnnouncement = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createAnnouncement(newAnnouncementData, token);
+      setNewAnnouncementModal(false);
+      setNewAnnouncementData({
+        title: "",
+        date: new Date()
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .replace(/ /g, "-"),
+        pdf_url: "",
+        is_new: 1,
+      });
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to publish announcement: " + err.message);
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id) => {
+    if (window.confirm("Are you sure you want to remove this announcement?")) {
+      try {
+        await api.deleteAnnouncement(id, token);
+        loadAdminData(token);
+      } catch {
+        setAnnouncements(announcements.filter((a) => a.id !== id));
+      }
+    }
+  };
+
+  // Placements Handlers
+  const handlePlacementPhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPlacementUploading(true);
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setNewPlacementData((prev) => ({ ...prev, image_url: res.url }));
+      }
+    } catch {
+      alert("Image upload failed. You can paste the image URL directly.");
+    } finally {
+      setPlacementUploading(false);
+    }
+  };
+
+  const handleAddPlacement = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createPlacement(newPlacementData, token);
+      setNewPlacementModal(false);
+      setNewPlacementData({
+        student_name: "",
+        company: "",
+        package: "",
+        year: new Date().getFullYear().toString(),
+        image_url: "",
+      });
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to add placement record: " + err.message);
+    }
+  };
+
+  const handleDeletePlacement = async (id) => {
+    if (window.confirm("Are you sure you want to remove this placement record?")) {
+      try {
+        await api.deletePlacement(id, token);
+        loadAdminData(token);
+      } catch {
+        setPlacements(placements.filter((p) => p.id !== id));
+      }
+    }
+  };
+
+  // Co-op News Handlers
+  const handleAddCoopNews = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createCoopNews(newCoopNewsData, token);
+      setNewCoopNewsModal(false);
+      setNewCoopNewsData({
+        title: "",
+        date: new Date()
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .replace(/ /g, "-"),
+        link: "",
+      });
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to publish cooperative news: " + err.message);
+    }
+  };
+
+  const handleDeleteCoopNews = async (id) => {
+    if (window.confirm("Are you sure you want to remove this news item?")) {
+      try {
+        await api.deleteCoopNews(id, token);
+        loadAdminData(token);
+      } catch {
+        setCoopNews(coopNews.filter((n) => n.id !== id));
       }
     }
   };
@@ -685,6 +917,26 @@ export default function Admin() {
               id: "notices",
               label: `Notice Board CMS (${notices.length})`,
               icon: Bell,
+            },
+            {
+              id: "trainings",
+              label: `Trainings CMS (${trainings.length})`,
+              icon: Calendar,
+            },
+            {
+              id: "announcements",
+              label: `Announcements CMS (${announcements.length})`,
+              icon: FileText,
+            },
+            {
+              id: "placements",
+              label: `Placements CMS (${placements.length})`,
+              icon: Briefcase,
+            },
+            {
+              id: "coop_news",
+              label: `Co-op News CMS (${coopNews.length})`,
+              icon: Newspaper,
             },
             {
               id: "grievances",
@@ -1561,6 +1813,322 @@ export default function Admin() {
             </div>
           </div>
         )}
+
+        {/* TAB: TRAININGS CMS */}
+        {activeTab === "trainings" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-sm text-[#0B1B3D]">
+                  Upcoming Training Programmes Management
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Control the MDP and training calendar programmes displayed on the homepage
+                </p>
+              </div>
+              <button
+                onClick={() => setNewTrainingModal(true)}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Training Programme</span>
+              </button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0288D1] text-white">
+                    <tr>
+                      <th className="p-3 font-bold border-r border-sky-600 w-12 text-center">#</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Programme Title</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-28 whitespace-nowrap">From Date</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-28 whitespace-nowrap">To Date</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-44">Venue</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-24 text-center">Link / PDF</th>
+                      <th className="p-3 font-bold w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {trainings.map((tr, idx) => (
+                      <tr key={tr.id || idx} className="hover:bg-slate-50">
+                        <td className="p-3 text-center font-bold text-slate-400 border-r">{idx + 1}</td>
+                        <td className="p-3 font-bold text-slate-900 border-r">{tr.title}</td>
+                        <td className="p-3 font-mono text-slate-600 border-r whitespace-nowrap">{tr.fromDate}</td>
+                        <td className="p-3 font-mono text-slate-600 border-r whitespace-nowrap">{tr.toDate}</td>
+                        <td className="p-3 text-slate-700 border-r">{tr.venue}</td>
+                        <td className="p-3 text-center border-r">
+                          {tr.link && tr.link !== '#' ? (
+                            <a href={tr.link} target="_blank" rel="noreferrer" className="text-[#0288D1] font-bold hover:underline inline-flex items-center gap-1">
+                              <span>View</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteTraining(tr.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Programme"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {trainings.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-slate-400">
+                          No training programmes found. Click "Add Training Programme" to create one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: ANNOUNCEMENTS CMS */}
+        {activeTab === "announcements" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-sm text-[#0B1B3D]">
+                  Announcements & Circulars Management
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Manage clickable public announcements and circulars with PDF document links
+                </p>
+              </div>
+              <button
+                onClick={() => setNewAnnouncementModal(true)}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Announcement</span>
+              </button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0288D1] text-white">
+                    <tr>
+                      <th className="p-3 font-bold border-r border-sky-600 w-12 text-center">#</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Announcement Title</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-28 whitespace-nowrap">Date</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-48">PDF Document URL</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-24 text-center">Badge</th>
+                      <th className="p-3 font-bold w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {announcements.map((ann, idx) => (
+                      <tr key={ann.id || idx} className="hover:bg-slate-50">
+                        <td className="p-3 text-center font-bold text-slate-400 border-r">{idx + 1}</td>
+                        <td className="p-3 font-bold text-slate-900 border-r">{ann.title}</td>
+                        <td className="p-3 font-mono text-slate-600 border-r whitespace-nowrap">{ann.date}</td>
+                        <td className="p-3 font-mono text-slate-600 border-r truncate max-w-xs">
+                          {ann.pdf_url ? (
+                            <a href={ann.pdf_url} target="_blank" rel="noreferrer" className="text-[#0288D1] font-bold hover:underline inline-flex items-center gap-1">
+                              <FileText className="w-3.5 h-3.5 text-red-600" />
+                              <span className="truncate">{ann.pdf_url}</span>
+                            </a>
+                          ) : (
+                            <span className="text-slate-400">None</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-center border-r">
+                          {ann.is_new ? (
+                            <span className="px-2 py-0.5 bg-red-100 text-red-700 font-bold text-[10px] rounded">
+                              NEW
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 text-[10px]">Standard</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteAnnouncement(ann.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Announcement"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {announcements.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-slate-400">
+                          No announcements found. Click "Add Announcement" to publish one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: PLACEMENTS CMS */}
+        {activeTab === "placements" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-sm text-[#0B1B3D]">
+                  Placements & Recruiter Highlights CMS
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Manage student placement records displayed in the homepage highlight wall
+                </p>
+              </div>
+              <button
+                onClick={() => setNewPlacementModal(true)}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Placement Record</span>
+              </button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0288D1] text-white">
+                    <tr>
+                      <th className="p-3 font-bold border-r border-sky-600 w-12 text-center">#</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Student Name</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Recruiting Company</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-32">Package</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-24 text-center">Batch / Year</th>
+                      <th className="p-3 font-bold w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {placements.map((plc, idx) => (
+                      <tr key={plc.id || idx} className="hover:bg-slate-50">
+                        <td className="p-3 text-center font-bold text-slate-400 border-r">{idx + 1}</td>
+                        <td className="p-3 font-bold text-slate-900 border-r flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs uppercase overflow-hidden shrink-0">
+                            {plc.image_url ? (
+                              <img src={plc.image_url} alt={plc.student_name} className="w-full h-full object-cover" />
+                            ) : (
+                              plc.student_name?.charAt(0) || "S"
+                            )}
+                          </div>
+                          <span>{plc.student_name}</span>
+                        </td>
+                        <td className="p-3 font-semibold text-slate-800 border-r">{plc.company}</td>
+                        <td className="p-3 border-r">
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded">
+                            {plc.package}
+                          </span>
+                        </td>
+                        <td className="p-3 font-mono text-center text-slate-600 border-r">{plc.year}</td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeletePlacement(plc.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Placement Record"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {placements.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-slate-400">
+                          No placement records found. Click "Add Placement Record" to add top achievers.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CO-OP NEWS CMS */}
+        {activeTab === "coop_news" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-sm text-[#0B1B3D]">
+                  Cooperative Sector News & What's New CMS
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Publish national and regional cooperative movement news displayed on the homepage
+                </p>
+              </div>
+              <button
+                onClick={() => setNewCoopNewsModal(true)}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Publish News Item</span>
+              </button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0288D1] text-white">
+                    <tr>
+                      <th className="p-3 font-bold border-r border-sky-600 w-12 text-center">#</th>
+                      <th className="p-3 font-bold border-r border-sky-600">News Headline / Title</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-28 whitespace-nowrap">Date</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-48">Link / Source</th>
+                      <th className="p-3 font-bold w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {coopNews.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50">
+                        <td className="p-3 text-center font-bold text-slate-400 border-r">{idx + 1}</td>
+                        <td className="p-3 font-bold text-slate-900 border-r">{item.title}</td>
+                        <td className="p-3 font-mono text-slate-600 border-r whitespace-nowrap">{item.date}</td>
+                        <td className="p-3 font-mono text-slate-600 border-r truncate max-w-xs">
+                          {item.link && item.link !== '#' ? (
+                            <a href={item.link} target="_blank" rel="noreferrer" className="text-[#0288D1] font-bold hover:underline inline-flex items-center gap-1">
+                              <span>Source</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteCoopNews(item.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete News Item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {coopNews.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-slate-400">
+                          No news items found. Click "Publish News Item" to post one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* MODAL: APPLICATION FULL PROFILE VIEWER */}
@@ -2237,6 +2805,395 @@ export default function Admin() {
                       ? "Update Banner Slide"
                       : "Save Banner Slide"}
                   </span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD TRAINING PROGRAMME */}
+      {newTrainingModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add Upcoming Training Programme</span>
+              <button onClick={() => setNewTrainingModal(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddTraining} className="p-6 space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Programme Title <span className="text-red-600">*</span>
+                </label>
+                <textarea
+                  rows={2}
+                  required
+                  value={newTrainingData.title}
+                  onChange={(e) => setNewTrainingData({ ...newTrainingData, title: e.target.value })}
+                  placeholder="e.g. MDP on Financial Management & Statutory Audit for Cooperative Banks"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    From Date <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newTrainingData.fromDate}
+                    onChange={(e) => setNewTrainingData({ ...newTrainingData, fromDate: e.target.value })}
+                    placeholder="e.g. 02-Dec-2026"
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    To Date <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newTrainingData.toDate}
+                    onChange={(e) => setNewTrainingData({ ...newTrainingData, toDate: e.target.value })}
+                    placeholder="e.g. 06-Dec-2026"
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Venue / Location
+                </label>
+                <input
+                  type="text"
+                  value={newTrainingData.venue}
+                  onChange={(e) => setNewTrainingData({ ...newTrainingData, venue: e.target.value })}
+                  placeholder="e.g. MICM Campus, BBSR"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Brochure / Details Link (or #)
+                </label>
+                <input
+                  type="text"
+                  value={newTrainingData.link}
+                  onChange={(e) => setNewTrainingData({ ...newTrainingData, link: e.target.value })}
+                  placeholder="e.g. /downloads/training-calendar.pdf"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setNewTrainingModal(false)}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Programme</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD ANNOUNCEMENT */}
+      {newAnnouncementModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Publish Institutional Announcement</span>
+              <button onClick={() => setNewAnnouncementModal(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAnnouncement} className="p-6 space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Announcement Title <span className="text-red-600">*</span>
+                </label>
+                <textarea
+                  rows={2}
+                  required
+                  value={newAnnouncementData.title}
+                  onChange={(e) => setNewAnnouncementData({ ...newAnnouncementData, title: e.target.value })}
+                  placeholder="e.g. Schedule of Counselling & GD/PI for MBA Admission Batch 2026-28"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Date
+                </label>
+                <input
+                  type="text"
+                  value={newAnnouncementData.date}
+                  onChange={(e) => setNewAnnouncementData({ ...newAnnouncementData, date: e.target.value })}
+                  placeholder="e.g. 18-Nov-2026"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  PDF Document URL / Link <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newAnnouncementData.pdf_url}
+                  onChange={(e) => setNewAnnouncementData({ ...newAnnouncementData, pdf_url: e.target.value })}
+                  placeholder="e.g. /uploads/counselling-schedule.pdf or https://..."
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-[11px] text-slate-500">Or upload document:</span>
+                  <input
+                    type="file"
+                    onChange={handleAnnouncementFileUpload}
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-[#0288D1] hover:file:bg-sky-100"
+                  />
+                  {announcementUploading && (
+                    <span className="text-[11px] text-sky-600 animate-pulse font-semibold">Uploading...</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <label className="inline-flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(newAnnouncementData.is_new)}
+                    onChange={(e) => setNewAnnouncementData({ ...newAnnouncementData, is_new: e.target.checked ? 1 : 0 })}
+                    className="w-4 h-4 text-[#0288D1] rounded"
+                  />
+                  <span>Mark as "NEW" Announcement</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setNewAnnouncementModal(false)}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={announcementUploading}
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Publish Announcement</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD PLACEMENT RECORD */}
+      {newPlacementModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add Placement Record</span>
+              <button onClick={() => setNewPlacementModal(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPlacement} className="p-6 space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Student Name <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newPlacementData.student_name}
+                  onChange={(e) => setNewPlacementData({ ...newPlacementData, student_name: e.target.value })}
+                  placeholder="e.g. Soumya Ranjan Dash"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Recruiting Organization / Company <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newPlacementData.company}
+                  onChange={(e) => setNewPlacementData({ ...newPlacementData, company: e.target.value })}
+                  placeholder="e.g. Amul (GCMMF) / IFFCO / HDFC Bank"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Salary Package <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newPlacementData.package}
+                    onChange={(e) => setNewPlacementData({ ...newPlacementData, package: e.target.value })}
+                    placeholder="e.g. ₹ 8.5 LPA"
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Passing Year / Batch
+                  </label>
+                  <input
+                    type="text"
+                    value={newPlacementData.year}
+                    onChange={(e) => setNewPlacementData({ ...newPlacementData, year: e.target.value })}
+                    placeholder="e.g. 2026"
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Student Photo URL (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={newPlacementData.image_url}
+                  onChange={(e) => setNewPlacementData({ ...newPlacementData, image_url: e.target.value })}
+                  placeholder="https://... or leave blank for initials"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-[11px] text-slate-500">Or upload photo:</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePlacementPhotoUpload}
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-[#0288D1] hover:file:bg-sky-100"
+                  />
+                  {placementUploading && (
+                    <span className="text-[11px] text-sky-600 animate-pulse font-semibold">Uploading...</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setNewPlacementModal(false)}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={placementUploading}
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Record</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD CO-OP NEWS */}
+      {newCoopNewsModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Publish Cooperative Sector News</span>
+              <button onClick={() => setNewCoopNewsModal(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCoopNews} className="p-6 space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  News Headline / Story <span className="text-red-600">*</span>
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={newCoopNewsData.title}
+                  onChange={(e) => setNewCoopNewsData({ ...newCoopNewsData, title: e.target.value })}
+                  placeholder="e.g. Ministry of Cooperation inaugurates national cooperative database..."
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="text"
+                    value={newCoopNewsData.date}
+                    onChange={(e) => setNewCoopNewsData({ ...newCoopNewsData, date: e.target.value })}
+                    placeholder="e.g. 23-Nov-2026"
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Source Link / URL
+                  </label>
+                  <input
+                    type="text"
+                    value={newCoopNewsData.link}
+                    onChange={(e) => setNewCoopNewsData({ ...newCoopNewsData, link: e.target.value })}
+                    placeholder="e.g. https://cooperation.gov.in"
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setNewCoopNewsModal(false)}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Publish News</span>
                 </button>
               </div>
             </form>

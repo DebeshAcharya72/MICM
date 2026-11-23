@@ -329,6 +329,155 @@ const DEFAULT_DATA = {
       upload_date: "14-Jul-2025",
       file_type: "PDF"
     }
+  ],
+  trainings: [
+    {
+      id: 1,
+      title: "MDP on Financial Management & Statutory Audit for Cooperative Banks",
+      fromDate: "02-Dec-2026",
+      toDate: "06-Dec-2026",
+      venue: "MICM Campus, BBSR",
+      link: "#",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: "Capacity Building Programme on PACS Computerization & Cyber Security",
+      fromDate: "09-Dec-2026",
+      toDate: "13-Dec-2026",
+      venue: "IT Lab, MICM",
+      link: "#",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      title: "Executive Leadership & Governance in Dairy & Fishery Cooperatives",
+      fromDate: "16-Dec-2026",
+      toDate: "18-Dec-2026",
+      venue: "Auditorium, MICM",
+      link: "#",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 4,
+      title: "Refresher Course on Cooperative Law, Recovery Procedures & Arbitration",
+      fromDate: "22-Dec-2026",
+      toDate: "24-Dec-2026",
+      venue: "Seminar Hall-1",
+      link: "#",
+      created_at: new Date().toISOString()
+    }
+  ],
+  announcements: [
+    {
+      id: 1,
+      title: "MBA 2026-28 Admissions: Group Discussion & Personal Interview Schedule",
+      date: "18-Nov-2026",
+      pdf_url: "/uploads/mba-admission-schedule-2026.pdf",
+      is_new: 1,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: "Notification for BPUT 3rd Semester Regular & Back Examinations Registration",
+      date: "14-Nov-2026",
+      pdf_url: "/uploads/bput-exam-notification.pdf",
+      is_new: 1,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      title: "Empanelment of Guest Faculty in Strategic Management & Cooperative Banking",
+      date: "08-Nov-2026",
+      pdf_url: "/uploads/guest-faculty-empanelment.pdf",
+      is_new: 0,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 4,
+      title: "Annual Sports & Cultural Meet SANCHAR-2026 Guidelines & Circular",
+      date: "01-Nov-2026",
+      pdf_url: "/uploads/sanchar-circular-2026.pdf",
+      is_new: 0,
+      created_at: new Date().toISOString()
+    }
+  ],
+  placements: [
+    {
+      id: 1,
+      student_name: "Soumya Ranjan Dash",
+      company: "Amul (GCMMF)",
+      package: "₹ 8.5 LPA",
+      year: "2026",
+      image_url: "",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      student_name: "Priyanka Mohanty",
+      company: "IFFCO Tokio",
+      package: "₹ 7.2 LPA",
+      year: "2026",
+      image_url: "",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      student_name: "Debashish Nayak",
+      company: "HDFC Bank (Rural Banking)",
+      package: "₹ 6.8 LPA",
+      year: "2026",
+      image_url: "",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 4,
+      student_name: "Ananya Tripathy",
+      company: "OSCB (Odisha State Co-op Bank)",
+      package: "₹ 6.5 LPA",
+      year: "2026",
+      image_url: "",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 5,
+      student_name: "Rakesh Kumar Rout",
+      company: "KRIBHCO",
+      package: "₹ 7.0 LPA",
+      year: "2026",
+      image_url: "",
+      created_at: new Date().toISOString()
+    }
+  ],
+  coop_news: [
+    {
+      id: 1,
+      title: "Ministry of Cooperation inaugurates national cooperative database covering 8 lakh societies across India",
+      date: "17-Nov-2026",
+      link: "https://cooperation.gov.in",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: "NCCT announces new competency-based curriculum framework for Cooperative Management Institutes",
+      date: "12-Nov-2026",
+      link: "https://ncct.ac.in",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      title: "PACS transformation into Multipurpose Prathmik Krishi Rin Samiti gets cabinet approval with digital push",
+      date: "05-Nov-2026",
+      link: "https://pib.gov.in",
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 4,
+      title: "National Organic Cooperative Federation exports first consignments of indigenous millets from eastern region",
+      date: "28-Oct-2026",
+      link: "https://cooperation.gov.in",
+      created_at: new Date().toISOString()
+    }
   ]
 };
 
@@ -343,8 +492,28 @@ function readDb() {
     }
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
     const parsed = JSON.parse(raw);
+    let updated = false;
     if (!parsed.banners) {
       parsed.banners = JSON.parse(JSON.stringify(DEFAULT_DATA.banners));
+      updated = true;
+    }
+    if (!parsed.trainings) {
+      parsed.trainings = JSON.parse(JSON.stringify(DEFAULT_DATA.trainings || []));
+      updated = true;
+    }
+    if (!parsed.announcements) {
+      parsed.announcements = JSON.parse(JSON.stringify(DEFAULT_DATA.announcements || []));
+      updated = true;
+    }
+    if (!parsed.placements) {
+      parsed.placements = JSON.parse(JSON.stringify(DEFAULT_DATA.placements || []));
+      updated = true;
+    }
+    if (!parsed.coop_news) {
+      parsed.coop_news = JSON.parse(JSON.stringify(DEFAULT_DATA.coop_news || []));
+      updated = true;
+    }
+    if (updated) {
       writeDb(parsed);
     }
     return parsed;
@@ -719,6 +888,131 @@ export const db = {
     return (data.news_events || []).filter(n => n.is_active !== 0).slice().reverse();
   },
 
+  // Trainings
+  getTrainings: () => {
+    const data = readDb();
+    return (data.trainings || []).slice().reverse();
+  },
+
+  createTraining: (training) => {
+    const data = readDb();
+    if (!data.trainings) data.trainings = [];
+    const newId = (data.trainings.length > 0 ? Math.max(...data.trainings.map(t => t.id || 0)) : 0) + 1;
+    const record = {
+      id: newId,
+      title: training.title || '',
+      fromDate: training.fromDate || '',
+      toDate: training.toDate || '',
+      venue: training.venue || 'MICM Campus, Bhubaneswar',
+      link: training.link || '#',
+      created_at: new Date().toISOString()
+    };
+    data.trainings.push(record);
+    writeDb(data);
+    return record;
+  },
+
+  deleteTraining: (id) => {
+    const data = readDb();
+    if (!data.trainings) return false;
+    data.trainings = data.trainings.filter(t => t.id !== Number(id));
+    writeDb(data);
+    return true;
+  },
+
+  // Announcements
+  getAnnouncements: () => {
+    const data = readDb();
+    return (data.announcements || []).slice().reverse();
+  },
+
+  createAnnouncement: (ann) => {
+    const data = readDb();
+    if (!data.announcements) data.announcements = [];
+    const newId = (data.announcements.length > 0 ? Math.max(...data.announcements.map(a => a.id || 0)) : 0) + 1;
+    const record = {
+      id: newId,
+      title: ann.title || '',
+      date: ann.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
+      pdf_url: ann.pdf_url || '#',
+      is_new: ann.is_new !== undefined ? (ann.is_new ? 1 : 0) : 1,
+      created_at: new Date().toISOString()
+    };
+    data.announcements.push(record);
+    writeDb(data);
+    return record;
+  },
+
+  deleteAnnouncement: (id) => {
+    const data = readDb();
+    if (!data.announcements) return false;
+    data.announcements = data.announcements.filter(a => a.id !== Number(id));
+    writeDb(data);
+    return true;
+  },
+
+  // Placements
+  getPlacements: () => {
+    const data = readDb();
+    return (data.placements || []).slice().reverse();
+  },
+
+  createPlacement: (plc) => {
+    const data = readDb();
+    if (!data.placements) data.placements = [];
+    const newId = (data.placements.length > 0 ? Math.max(...data.placements.map(p => p.id || 0)) : 0) + 1;
+    const record = {
+      id: newId,
+      student_name: plc.student_name || '',
+      company: plc.company || '',
+      package: plc.package || '',
+      year: plc.year || new Date().getFullYear().toString(),
+      image_url: plc.image_url || '',
+      created_at: new Date().toISOString()
+    };
+    data.placements.push(record);
+    writeDb(data);
+    return record;
+  },
+
+  deletePlacement: (id) => {
+    const data = readDb();
+    if (!data.placements) return false;
+    data.placements = data.placements.filter(p => p.id !== Number(id));
+    writeDb(data);
+    return true;
+  },
+
+  // Cooperative News
+  getCoopNews: () => {
+    const data = readDb();
+    return (data.coop_news || []).slice().reverse();
+  },
+
+  createCoopNews: (item) => {
+    const data = readDb();
+    if (!data.coop_news) data.coop_news = [];
+    const newId = (data.coop_news.length > 0 ? Math.max(...data.coop_news.map(n => n.id || 0)) : 0) + 1;
+    const record = {
+      id: newId,
+      title: item.title || '',
+      date: item.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
+      link: item.link || '#',
+      created_at: new Date().toISOString()
+    };
+    data.coop_news.push(record);
+    writeDb(data);
+    return record;
+  },
+
+  deleteCoopNews: (id) => {
+    const data = readDb();
+    if (!data.coop_news) return false;
+    data.coop_news = data.coop_news.filter(n => n.id !== Number(id));
+    writeDb(data);
+    return true;
+  },
+
   // Dashboard Stats
   getDashboardStats: () => {
     const data = readDb();
@@ -729,6 +1023,10 @@ export const db = {
       grievances_total: (data.grievances || []).length,
       faculty_members: (data.faculty || []).length,
       banners_total: (data.banners || []).length,
+      trainings_total: (data.trainings || []).length,
+      announcements_total: (data.announcements || []).length,
+      placements_total: (data.placements || []).length,
+      coop_news_total: (data.coop_news || []).length,
       server_status: "Online (Next.js 14 Full-Stack)",
       last_backup: new Date().toLocaleString('en-GB')
     };

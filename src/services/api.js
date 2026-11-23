@@ -256,6 +256,126 @@ export const api = {
     }
   },
 
+  // Trainings
+  getTrainings: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/trainings`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createTraining: async (trainingData, token) => {
+    const res = await fetch(`${API_BASE_URL}/trainings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(trainingData),
+    });
+    return await res.json();
+  },
+
+  deleteTraining: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/trainings/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
+  // Announcements
+  getAnnouncements: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/announcements`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createAnnouncement: async (announcementData, token) => {
+    const res = await fetch(`${API_BASE_URL}/announcements`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(announcementData),
+    });
+    return await res.json();
+  },
+
+  deleteAnnouncement: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/announcements/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
+  // Placements
+  getPlacements: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/placements`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createPlacement: async (placementData, token) => {
+    const res = await fetch(`${API_BASE_URL}/placements`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(placementData),
+    });
+    return await res.json();
+  },
+
+  deletePlacement: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/placements/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
+  // Cooperative News
+  getCoopNews: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/coop-news`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createCoopNews: async (newsData, token) => {
+    const res = await fetch(`${API_BASE_URL}/coop-news`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(newsData),
+    });
+    return await res.json();
+  },
+
+  deleteCoopNews: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/coop-news/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
   // Dashboard Stats
   getDashboardStats: async (token) => {
     const res = await fetch(`${API_BASE_URL}/stats/dashboard`, {
