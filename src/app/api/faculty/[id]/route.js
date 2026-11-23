@@ -10,7 +10,7 @@ export async function PUT(request, { params }) {
   const { id } = params;
   try {
     const body = await request.json();
-    const updated = db.updateFaculty(id, body);
+    const updated = await db.updateFaculty(id, body);
     if (!updated) {
       return NextResponse.json({ detail: "Faculty member not found" }, { status: 404 });
     }
@@ -27,7 +27,7 @@ export async function DELETE(request, { params }) {
   }
 
   const { id } = params;
-  const deleted = db.deleteFaculty(id);
+  const deleted = await db.deleteFaculty(id);
   if (!deleted) {
     return NextResponse.json({ detail: "Faculty member not found" }, { status: 404 });
   }

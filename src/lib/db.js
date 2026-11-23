@@ -1,627 +1,330 @@
-import fs from 'fs';
-import path from 'path';
+import mongoose from 'mongoose';
 import crypto from 'crypto';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'micm_portal.json');
+import connectToDatabase from './mongoose.js';
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-const DEFAULT_DATA = {
-  admin_users: [
-    {
-      id: 1,
-      username: 'admin',
-      password_hash: hashPassword('admin@micm2026'),
-      full_name: 'MICM Portal Administrator',
-      role: 'superadmin',
-      created_at: new Date().toISOString()
-    }
-  ],
-  notices: [
-    {
-      id: 1,
-      title: "MBA 2026-28 Batch Prospectus & OJEE Counselling Guidelines Released",
-      category: "Admissions",
-      date: "12-Nov-2026",
-      link: "/programmes",
-      is_new: 1,
-      is_active: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      title: "Prospectus (2026-2027) Higher Diploma in Co-operative Management (HDCM)",
-      category: "Admissions",
-      date: "10-Nov-2026",
-      link: "/programmes",
-      is_new: 1,
-      is_active: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 3,
-      title: "MICM received ISO 9001:2015 Certificate by STQC, MeitY, Govt. of India",
-      category: "Compliance",
-      date: "05-Nov-2026",
-      link: "/about",
-      is_new: 0,
-      is_active: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 4,
-      title: "Recruitment for Post of Registrar, Finance Officer & Assistant Director 2026",
-      category: "Careers",
-      date: "01-Nov-2026",
-      link: "/rti-careers",
-      is_new: 1,
-      is_active: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 5,
-      title: "National Workshop on Primary Agricultural Credit Societies (PACS) Computerization",
-      category: "Events",
-      date: "25-Oct-2026",
-      link: "/about",
-      is_new: 0,
-      is_active: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 6,
-      title: "Procurement Tender: High-End Workstations for Computing Centre",
-      category: "Tenders",
-      date: "20-Oct-2026",
-      link: "/downloads",
-      is_new: 0,
-      is_active: 1,
-      created_at: new Date().toISOString()
-    }
-  ],
-  enquiries: [
-    {
-      id: 1,
-      full_name: "Amitav Patnaik",
-      email: "amitav.patnaik@example.com",
-      phone: "+91 9437012345",
-      programme: "MBA (2-Year Full-Time)",
-      message: "Inquiring about OJEE cutoff ranks and hostel availability for MBA 2026 batch.",
-      status: "New",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      full_name: "Sasmita Sahoo",
-      email: "sasmita.s@example.com",
-      phone: "+91 9861054321",
-      programme: "HDCM (Correspondence)",
-      message: "Please share fee structure and examination centre details for HDCM.",
-      status: "Contacted",
-      created_at: new Date().toISOString()
-    }
-  ],
-  applications: [
-    {
-      id: 1,
-      app_number: "MICM-2026-MBA-59273",
-      programme: "MBA (2-Year Full-Time)",
-      full_name: "Rahul Kumar Mohapatra",
-      gender: "Male",
-      dob: "2001-05-15",
-      category: "General",
-      father_name: "Ramesh Chandra Mohapatra",
-      email: "rahul.mohapatra@example.com",
-      phone: "+91 9876543210",
-      address: "Plot 42, Saheed Nagar, Bhubaneswar, Odisha - 751007",
-      qualification: "B.Sc. (Science / Agriculture)",
-      grad_percentage: "74.5%",
-      entrance_exam: "OJEE",
-      entrance_roll: "OJEE26019482",
-      entrance_score: "Rank 1420",
-      documents_status: "Verified Online",
-      status: "Submitted",
-      created_at: new Date().toISOString()
-    }
-  ],
-  faculty: [
-    {
-      id: 1,
-      name: "Dr. P. Kannaiah",
-      designation: "Director",
-      department: "Executive Administration & Management",
-      qualifications: "Ph.D., MBA, M.Com",
-      expertise: "Cooperative Banking, Strategic Governance, Public Policy",
-      email: "micmbbs@gmail.com",
-      phone: "+91 674 2562826",
-      image_url: null,
-      order_seq: 1
-    },
-    {
-      id: 2,
-      name: "Dr. Sanjib Kumar Hota",
-      designation: "Dy. Director",
-      department: "Academic Administration & Research",
-      qualifications: "Ph.D., MBA (HR & Mktg)",
-      expertise: "Organizational Behavior, Rural Enterprise, Agri-Business",
-      email: "micmbbs@gmail.com",
-      phone: "+91 674 2562826",
-      image_url: null,
-      order_seq: 2
-    },
-    {
-      id: 3,
-      name: "Dr. P.K. Upadhyaya",
-      designation: "Guest Lecturer",
-      department: "Management Studies",
-      qualifications: "Ph.D., M.Com, FICWA",
-      expertise: "Financial Management, Cost Accounting, Project Finance",
-      email: "micmbbs@gmail.com",
-      phone: "+91 674 2562826",
-      image_url: null,
-      order_seq: 3
-    },
-    {
-      id: 4,
-      name: "Dr. Pranaba Nanda Das",
-      designation: "Lecturer",
-      department: "Co-operative Management & Economics",
-      qualifications: "Ph.D., MA (Economics), HDCM",
-      expertise: "Cooperative Law, Microfinance, Agricultural Credit",
-      email: "micmbbs@gmail.com",
-      phone: "+91 674 2562826",
-      image_url: null,
-      order_seq: 4
-    },
-    {
-      id: 5,
-      name: "Ms. Priyadarshini Dash",
-      designation: "Lecturer",
-      department: "Business Administration & Quantitative Methods",
-      qualifications: "MBA, M.Phil",
-      expertise: "Operations Research, Marketing Analytics, Business Stats",
-      email: "micmbbs@gmail.com",
-      phone: "+91 674 2562826",
-      image_url: null,
-      order_seq: 5
-    },
-    {
-      id: 6,
-      name: "Dr. Dilip Kumar Mahapatra",
-      designation: "Lecturer",
-      department: "Financial Management & Banking",
-      qualifications: "Ph.D., MBA (Finance)",
-      expertise: "Banking Technology, Risk Analysis, Cooperative Audit",
-      email: "micmbbs@gmail.com",
-      phone: "+91 674 2562826",
-      image_url: null,
-      order_seq: 6
-    }
-  ],
-  news_events: [
-    {
-      id: 1,
-      title: "Convocation Ceremony for MBA Batch 2023-25",
-      category: "Academic Event",
-      date: "14-Feb-2026",
-      summary: "Annual convocation address delivered by Hon'ble Minister of State for Cooperation.",
-      content: "",
-      image_url: null,
-      is_active: 1,
-      created_at: new Date().toISOString()
-    }
-  ],
-  banners: [
-    {
-      id: 1,
-      title: "CONGRATULATIONS",
-      subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
-      location: "AT NATIONAL COOPERATIVE SUMMIT",
-      bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
-      image_url: null,
-      students: [
-        { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
-        { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-        { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
-      ],
-      is_active: 1,
-      order_seq: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      title: "PIONEERING LEGACY",
-      subtitle: "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
-      location: "MINISTRY OF CO-OPERATION, GOVT. OF INDIA",
-      bg: "from-[#093a47] via-[#0288D1] to-[#093a47]",
-      image_url: null,
-      students: [
-        { name: "AICTE APPROVED", batch: "2-Year MBA", rank: "BPUT Affiliated" },
-        { name: "NCCT UNIT", batch: "New Delhi", rank: "Apex Body" },
-        { name: "3.4 ACRES", batch: "Nayapalli, BBSR", rank: "Green Campus" }
-      ],
-      is_active: 1,
-      order_seq: 2,
-      created_at: new Date().toISOString()
-    }
-  ],
-  grievances: [
-    {
-      id: 1,
-      tracking_id: "MICM-GRV-2026-A92B1",
-      grievant_type: "Student",
-      full_name: "Subhashree Pradhan",
-      email: "subhashree@example.com",
-      phone: "+91 9938012345",
-      category: "Academic & Teaching",
-      subject: "BPUT Semester Marksheet Dispatch Clarification",
-      description: "Requesting update on original degree marksheet receipt from affiliating university BPUT.",
-      status: "Under Review",
-      resolution_notes: "Forwarded to Examination Cell. University verification in progress.",
-      created_at: new Date().toISOString()
-    }
-  ],
-  downloads: [
-    {
-      id: 1,
-      title: "MBA 2-Year Full-Time Course Curriculum & Syllabus (BPUT Regulations)",
-      category: "Syllabi & Curriculum",
-      file_size: "2.4 MB",
-      upload_date: "10-Jan-2026",
-      file_type: "PDF"
-    },
-    {
-      id: 2,
-      title: "Higher Diploma in Co-operative Management (HDCM) 36-Week Scheme of Study",
-      category: "Syllabi & Curriculum",
-      file_size: "1.8 MB",
-      upload_date: "15-Dec-2025",
-      file_type: "PDF"
-    },
-    {
-      id: 3,
-      title: "Academic Rules, Examination Guidelines & Attendance Regulations",
-      category: "Rules & Regulations",
-      file_size: "950 KB",
-      upload_date: "04-Nov-2025",
-      file_type: "PDF"
-    },
-    {
-      id: 4,
-      title: "MICM Offline Admission Application Form (MBA & HDCM 2026-27)",
-      category: "Application Forms",
-      file_size: "1.1 MB",
-      upload_date: "02-Feb-2026",
-      file_type: "PDF"
-    },
-    {
-      id: 5,
-      title: "Cooperative Training Nomination Form (For Sponsoring Organizations)",
-      category: "Application Forms",
-      file_size: "820 KB",
-      upload_date: "20-Jan-2026",
-      file_type: "PDF"
-    },
-    {
-      id: 6,
-      title: "Anti-Ragging Undertaking Format for Students & Guardians (UGC Regulations)",
-      category: "Rules & Regulations",
-      file_size: "640 KB",
-      upload_date: "12-Sep-2025",
-      file_type: "PDF"
-    },
-    {
-      id: 7,
-      title: "AICTE Mandatory Disclosure (Form A & B) 2025-26",
-      category: "Institutional Circulars",
-      file_size: "3.2 MB",
-      upload_date: "28-Aug-2025",
-      file_type: "PDF"
-    },
-    {
-      id: 8,
-      title: "Internal Complaints Committee (ICC) Policy & Guidelines on Workplace Safety",
-      category: "Institutional Circulars",
-      file_size: "780 KB",
-      upload_date: "14-Jul-2025",
-      file_type: "PDF"
-    }
-  ],
-  trainings: [
-    {
-      id: 1,
-      title: "MDP on Financial Management & Statutory Audit for Cooperative Banks",
-      fromDate: "02-Dec-2026",
-      toDate: "06-Dec-2026",
-      venue: "MICM Campus, BBSR",
-      link: "#",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      title: "Capacity Building Programme on PACS Computerization & Cyber Security",
-      fromDate: "09-Dec-2026",
-      toDate: "13-Dec-2026",
-      venue: "IT Lab, MICM",
-      link: "#",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 3,
-      title: "Executive Leadership & Governance in Dairy & Fishery Cooperatives",
-      fromDate: "16-Dec-2026",
-      toDate: "18-Dec-2026",
-      venue: "Auditorium, MICM",
-      link: "#",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 4,
-      title: "Refresher Course on Cooperative Law, Recovery Procedures & Arbitration",
-      fromDate: "22-Dec-2026",
-      toDate: "24-Dec-2026",
-      venue: "Seminar Hall-1",
-      link: "#",
-      created_at: new Date().toISOString()
-    }
-  ],
-  announcements: [
-    {
-      id: 1,
-      title: "MBA 2026-28 Admissions: Group Discussion & Personal Interview Schedule",
-      date: "18-Nov-2026",
-      pdf_url: "/uploads/mba-admission-schedule-2026.pdf",
-      is_new: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      title: "Notification for BPUT 3rd Semester Regular & Back Examinations Registration",
-      date: "14-Nov-2026",
-      pdf_url: "/uploads/bput-exam-notification.pdf",
-      is_new: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 3,
-      title: "Empanelment of Guest Faculty in Strategic Management & Cooperative Banking",
-      date: "08-Nov-2026",
-      pdf_url: "/uploads/guest-faculty-empanelment.pdf",
-      is_new: 0,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 4,
-      title: "Annual Sports & Cultural Meet SANCHAR-2026 Guidelines & Circular",
-      date: "01-Nov-2026",
-      pdf_url: "/uploads/sanchar-circular-2026.pdf",
-      is_new: 0,
-      created_at: new Date().toISOString()
-    }
-  ],
-  placements: [
-    {
-      id: 1,
-      student_name: "Soumya Ranjan Dash",
-      company: "Amul (GCMMF)",
-      package: "₹ 8.5 LPA",
-      year: "2026",
-      image_url: "",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      student_name: "Priyanka Mohanty",
-      company: "IFFCO Tokio",
-      package: "₹ 7.2 LPA",
-      year: "2026",
-      image_url: "",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 3,
-      student_name: "Debashish Nayak",
-      company: "HDFC Bank (Rural Banking)",
-      package: "₹ 6.8 LPA",
-      year: "2026",
-      image_url: "",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 4,
-      student_name: "Ananya Tripathy",
-      company: "OSCB (Odisha State Co-op Bank)",
-      package: "₹ 6.5 LPA",
-      year: "2026",
-      image_url: "",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 5,
-      student_name: "Rakesh Kumar Rout",
-      company: "KRIBHCO",
-      package: "₹ 7.0 LPA",
-      year: "2026",
-      image_url: "",
-      created_at: new Date().toISOString()
-    }
-  ],
-  coop_news: [
-    {
-      id: 1,
-      title: "Ministry of Cooperation inaugurates national cooperative database covering 8 lakh societies across India",
-      date: "17-Nov-2026",
-      link: "https://cooperation.gov.in",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      title: "NCCT announces new competency-based curriculum framework for Cooperative Management Institutes",
-      date: "12-Nov-2026",
-      link: "https://ncct.ac.in",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 3,
-      title: "PACS transformation into Multipurpose Prathmik Krishi Rin Samiti gets cabinet approval with digital push",
-      date: "05-Nov-2026",
-      link: "https://pib.gov.in",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 4,
-      title: "National Organic Cooperative Federation exports first consignments of indigenous millets from eastern region",
-      date: "28-Oct-2026",
-      link: "https://cooperation.gov.in",
-      created_at: new Date().toISOString()
-    }
-  ]
-};
+// --------------------------------------------------------------------------
+// Mongoose Schemas & Models
+// --------------------------------------------------------------------------
 
-function readDb() {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(DB_FILE)) {
-      fs.writeFileSync(DB_FILE, JSON.stringify(DEFAULT_DATA, null, 2), 'utf-8');
-      return JSON.parse(JSON.stringify(DEFAULT_DATA));
-    }
-    const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
-    let updated = false;
-    if (!parsed.banners) {
-      parsed.banners = JSON.parse(JSON.stringify(DEFAULT_DATA.banners));
-      updated = true;
-    }
-    if (!parsed.trainings) {
-      parsed.trainings = JSON.parse(JSON.stringify(DEFAULT_DATA.trainings || []));
-      updated = true;
-    }
-    if (!parsed.announcements) {
-      parsed.announcements = JSON.parse(JSON.stringify(DEFAULT_DATA.announcements || []));
-      updated = true;
-    }
-    if (!parsed.placements) {
-      parsed.placements = JSON.parse(JSON.stringify(DEFAULT_DATA.placements || []));
-      updated = true;
-    }
-    if (!parsed.coop_news) {
-      parsed.coop_news = JSON.parse(JSON.stringify(DEFAULT_DATA.coop_news || []));
-      updated = true;
-    }
-    if (updated) {
-      writeDb(parsed);
-    }
-    return parsed;
-  } catch (err) {
-    console.error('Error reading database file:', err);
-    return JSON.parse(JSON.stringify(DEFAULT_DATA));
+const AdminUserSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  username: { type: String, required: true, unique: true },
+  password_hash: { type: String, required: true },
+  full_name: { type: String, default: 'MICM Portal Administrator' },
+  role: { type: String, default: 'superadmin' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const NoticeSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  category: { type: String, default: 'Admissions' },
+  date: { type: String },
+  link: { type: String, default: '#' },
+  is_new: { type: Number, default: 1 },
+  is_active: { type: Number, default: 1 },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const ApplicationSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  app_number: { type: String, required: true, unique: true },
+  programme: { type: String, required: true },
+  full_name: { type: String, required: true },
+  gender: { type: String },
+  dob: { type: String },
+  category: { type: String },
+  father_name: { type: String, default: '' },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  address: { type: String },
+  qualification: { type: String },
+  grad_percentage: { type: String },
+  entrance_exam: { type: String },
+  entrance_roll: { type: String, default: '' },
+  entrance_score: { type: String, default: '' },
+  documents_status: { type: String, default: 'Verified Online' },
+  status: { type: String, default: 'Submitted' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const EnquirySchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  full_name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  programme: { type: String },
+  message: { type: String, default: '' },
+  status: { type: String, default: 'New' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const GrievanceSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  tracking_id: { type: String, required: true, unique: true },
+  grievant_type: { type: String },
+  full_name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  category: { type: String },
+  subject: { type: String, required: true },
+  description: { type: String, required: true },
+  status: { type: String, default: 'Under Review' },
+  resolution_notes: { type: String, default: 'Forwarded to Designated Grievance Officer' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const FacultySchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  name: { type: String, required: true },
+  designation: { type: String, required: true },
+  department: { type: String, default: 'Management Studies' },
+  qualifications: { type: String },
+  expertise: { type: String },
+  email: { type: String, default: 'micmbbs@gmail.com' },
+  phone: { type: String, default: '+91 674 2562826' },
+  image_url: { type: String, default: null },
+  order_seq: { type: Number, default: 9 },
+  created_at: { type: String, default: () => new Date().toISOString() },
+  updated_at: { type: String }
+}, { timestamps: true });
+
+const BannerSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, default: "CONGRATULATIONS" },
+  subtitle: { type: String, default: "" },
+  location: { type: String, default: "MADHUSUDAN INSTITUTE OF CO-OPERATIVE MANAGEMENT" },
+  bg: { type: String, default: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]" },
+  image_url: { type: String, default: null },
+  students: { type: Array, default: [] },
+  is_active: { type: Number, default: 1 },
+  order_seq: { type: Number, default: 1 },
+  created_at: { type: String, default: () => new Date().toISOString() },
+  updated_at: { type: String }
+}, { timestamps: true });
+
+const DownloadSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  category: { type: String, default: 'General' },
+  file_size: { type: String },
+  upload_date: { type: String },
+  file_type: { type: String, default: 'PDF' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const NewsEventSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  category: { type: String },
+  date: { type: String },
+  summary: { type: String },
+  content: { type: String },
+  image_url: { type: String },
+  is_active: { type: Number, default: 1 },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const TrainingSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  fromDate: { type: String },
+  toDate: { type: String },
+  venue: { type: String, default: 'MICM Campus, Bhubaneswar' },
+  link: { type: String, default: '#' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const AnnouncementSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  date: { type: String },
+  pdf_url: { type: String, default: '#' },
+  is_new: { type: Number, default: 1 },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const PlacementSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  student_name: { type: String, required: true },
+  company: { type: String, required: true },
+  package: { type: String, required: true },
+  year: { type: String },
+  image_url: { type: String, default: '' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const CoopNewsSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  date: { type: String },
+  link: { type: String, default: '#' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+// Export Models (prevent overwrite in dev)
+export const AdminUser = mongoose.models.AdminUser || mongoose.model('AdminUser', AdminUserSchema);
+export const Notice = mongoose.models.Notice || mongoose.model('Notice', NoticeSchema);
+export const Application = mongoose.models.Application || mongoose.model('Application', ApplicationSchema);
+export const Enquiry = mongoose.models.Enquiry || mongoose.model('Enquiry', EnquirySchema);
+export const Grievance = mongoose.models.Grievance || mongoose.model('Grievance', GrievanceSchema);
+export const Faculty = mongoose.models.Faculty || mongoose.model('Faculty', FacultySchema);
+export const Banner = mongoose.models.Banner || mongoose.model('Banner', BannerSchema);
+export const Download = mongoose.models.Download || mongoose.model('Download', DownloadSchema);
+export const NewsEvent = mongoose.models.NewsEvent || mongoose.model('NewsEvent', NewsEventSchema);
+export const Training = mongoose.models.Training || mongoose.model('Training', TrainingSchema);
+export const Announcement = mongoose.models.Announcement || mongoose.model('Announcement', AnnouncementSchema);
+export const Placement = mongoose.models.Placement || mongoose.model('Placement', PlacementSchema);
+export const CoopNews = mongoose.models.CoopNews || mongoose.model('CoopNews', CoopNewsSchema);
+
+// --------------------------------------------------------------------------
+// Helpers
+// --------------------------------------------------------------------------
+
+function formatDoc(doc) {
+  if (!doc) return null;
+  const obj = doc.toObject ? doc.toObject({ virtuals: true }) : { ...doc };
+  if (!obj.id && obj._id) {
+    obj.id = obj._id.toString();
   }
+  if (obj._id) {
+    obj._id = obj._id.toString();
+  }
+  return obj;
 }
 
-function writeDb(data) {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error writing database file:', err);
-  }
+function formatDocs(docs) {
+  if (!Array.isArray(docs)) return [];
+  return docs.map(formatDoc);
 }
 
-// =============================================================================
-// PURE JAVASCRIPT DATABASE ENGINE & QUERY INTERFACE (Next.js Server-Side)
-// All data queries, filters, mutations, transactions, and indexing in JavaScript.
-// =============================================================================
+function buildIdQuery(id) {
+  const queries = [];
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    queries.push({ _id: id });
+  }
+  queries.push({ id: id });
+  const num = Number(id);
+  if (!isNaN(num)) {
+    queries.push({ id: num });
+  }
+  return queries.length === 1 ? queries[0] : { $or: queries };
+}
+
+async function getNextId(Model) {
+  const last = await Model.findOne().sort({ id: -1 }).select('id').lean();
+  if (last && typeof last.id === 'number') {
+    return last.id + 1;
+  }
+  const count = await Model.countDocuments();
+  return count + 1;
+}
+
+// --------------------------------------------------------------------------
+// Database Query Engine & Methods (Identical signatures and return formats)
+// --------------------------------------------------------------------------
+
 export const db = {
-  // Generic JavaScript Query Operations
-  query: {
-    find: (collection, filterFn = () => true, { sort, limit, skip = 0 } = {}) => {
-      const data = readDb();
-      let results = (data[collection] || []).filter(filterFn);
-      if (typeof sort === 'function') {
-        results = results.slice().sort(sort);
-      }
-      if (skip > 0 || limit !== undefined) {
-        results = results.slice(skip, limit !== undefined ? skip + limit : undefined);
-      }
-      return results;
-    },
-
-    findOne: (collection, filterFn) => {
-      const data = readDb();
-      return (data[collection] || []).find(filterFn) || null;
-    },
-
-    findById: (collection, id) => {
-      const data = readDb();
-      return (data[collection] || []).find(item => item.id === Number(id)) || null;
-    },
-
-    insert: (collection, document) => {
-      const data = readDb();
-      if (!data[collection]) data[collection] = [];
-      const newId = (data[collection].length > 0 ? Math.max(...data[collection].map(i => i.id || 0)) : 0) + 1;
-      const record = {
-        id: newId,
-        ...document,
-        created_at: new Date().toISOString()
-      };
-      data[collection].push(record);
-      writeDb(data);
-      return record;
-    },
-
-    update: (collection, id, updates) => {
-      const data = readDb();
-      if (!data[collection]) return null;
-      const index = data[collection].findIndex(item => item.id === Number(id));
-      if (index === -1) return null;
-      data[collection][index] = {
-        ...data[collection][index],
-        ...updates,
-        id: Number(id),
-        updated_at: new Date().toISOString()
-      };
-      writeDb(data);
-      return data[collection][index];
-    },
-
-    delete: (collection, id) => {
-      const data = readDb();
-      if (!data[collection]) return false;
-      const prevLen = data[collection].length;
-      data[collection] = data[collection].filter(item => item.id !== Number(id));
-      if (data[collection].length !== prevLen) {
-        writeDb(data);
-        return true;
-      }
-      return false;
-    },
-
-    count: (collection, filterFn = () => true) => {
-      const data = readDb();
-      return (data[collection] || []).filter(filterFn).length;
+  // Generic collection lookup mapping
+  _getModel: (collection) => {
+    switch (collection) {
+      case 'admin_users': return AdminUser;
+      case 'notices': return Notice;
+      case 'applications': return Application;
+      case 'enquiries': return Enquiry;
+      case 'grievances': return Grievance;
+      case 'faculty': return Faculty;
+      case 'banners': return Banner;
+      case 'downloads': return Download;
+      case 'news_events': return NewsEvent;
+      case 'trainings': return Training;
+      case 'announcements': return Announcement;
+      case 'placements': return Placement;
+      case 'coop_news': return CoopNews;
+      default: return null;
     }
   },
 
-  // Auth (Pure JS crypto & hash validation)
-  authenticateAdmin: (username, password) => {
-    const data = readDb();
+  query: {
+    find: async (collection, filter = {}, { sort, limit, skip = 0 } = {}) => {
+      await connectToDatabase();
+      const Model = db._getModel(collection);
+      if (!Model) return [];
+      let q = Model.find(filter).skip(skip);
+      if (sort) q = q.sort(sort);
+      if (limit) q = q.limit(limit);
+      const docs = await q.lean();
+      return formatDocs(docs);
+    },
+    findOne: async (collection, filter = {}) => {
+      await connectToDatabase();
+      const Model = db._getModel(collection);
+      if (!Model) return null;
+      const doc = await Model.findOne(filter).lean();
+      return formatDoc(doc);
+    },
+    findById: async (collection, id) => {
+      await connectToDatabase();
+      const Model = db._getModel(collection);
+      if (!Model) return null;
+      const doc = await Model.findOne(buildIdQuery(id)).lean();
+      return formatDoc(doc);
+    },
+    insert: async (collection, document) => {
+      await connectToDatabase();
+      const Model = db._getModel(collection);
+      if (!Model) return null;
+      const id = document.id || (await getNextId(Model));
+      const created = await Model.create({
+        ...document,
+        id,
+        created_at: document.created_at || new Date().toISOString()
+      });
+      return formatDoc(created);
+    },
+    update: async (collection, id, updates) => {
+      await connectToDatabase();
+      const Model = db._getModel(collection);
+      if (!Model) return null;
+      const updated = await Model.findOneAndUpdate(
+        buildIdQuery(id),
+        { ...updates, updated_at: new Date().toISOString() },
+        { new: true }
+      ).lean();
+      return formatDoc(updated);
+    },
+    delete: async (collection, id) => {
+      await connectToDatabase();
+      const Model = db._getModel(collection);
+      if (!Model) return false;
+      const res = await Model.findOneAndDelete(buildIdQuery(id));
+      return !!res;
+    },
+    count: async (collection, filter = {}) => {
+      await connectToDatabase();
+      const Model = db._getModel(collection);
+      if (!Model) return 0;
+      return await Model.countDocuments(filter);
+    }
+  },
+
+  // Authentication
+  authenticateAdmin: async (username, password) => {
+    await connectToDatabase();
     const hash = hashPassword(password);
-    const user = data.admin_users.find(u => u.username === username && u.password_hash === hash);
+    const user = await AdminUser.findOne({ username, password_hash: hash }).lean();
     if (!user) return null;
-    const token = `micm_admin_token_${user.id}_${Math.floor(100000 + Math.random() * 900000)}`;
+    const userId = user.id || user._id.toString();
+    const token = `micm_admin_token_${userId}_${Math.floor(100000 + Math.random() * 900000)}`;
     return {
       access_token: token,
       token_type: 'bearer',
       user: {
-        id: user.id,
+        id: userId,
         username: user.username,
         full_name: user.full_name,
         role: user.role
@@ -636,61 +339,59 @@ export const db = {
   },
 
   // Notices
-  getNotices: (activeOnly = true) => {
-    const data = readDb();
-    let list = data.notices || [];
-    if (activeOnly) {
-      list = list.filter(n => n.is_active !== 0);
-    }
-    return list.slice().reverse();
+  getNotices: async (activeOnly = true) => {
+    await connectToDatabase();
+    const query = activeOnly ? { is_active: { $ne: 0 } } : {};
+    const docs = await Notice.find(query).sort({ created_at: -1, _id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  createNotice: (notice) => {
-    const data = readDb();
-    const newId = (data.notices.length > 0 ? Math.max(...data.notices.map(n => n.id)) : 0) + 1;
-    const record = {
-      id: newId,
+  createNotice: async (notice) => {
+    await connectToDatabase();
+    const id = notice.id || (await getNextId(Notice));
+    const now = new Date();
+    const dateStr = notice.date || now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+    const created = await Notice.create({
+      id,
       title: notice.title,
       category: notice.category || 'Admissions',
-      date: notice.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
+      date: dateStr,
       link: notice.link || '#',
-      is_new: notice.is_new !== undefined ? notice.is_new : 1,
+      is_new: notice.is_new !== undefined ? Number(notice.is_new) : 1,
       is_active: 1,
       created_at: new Date().toISOString()
-    };
-    data.notices.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
-  deleteNotice: (id) => {
-    const data = readDb();
-    data.notices = data.notices.filter(n => n.id !== Number(id));
-    writeDb(data);
-    return true;
+  deleteNotice: async (id) => {
+    await connectToDatabase();
+    const res = await Notice.findOneAndDelete(buildIdQuery(id));
+    return !!res;
   },
 
   // Applications
-  getApplications: () => {
-    const data = readDb();
-    return (data.applications || []).slice().reverse();
+  getApplications: async () => {
+    await connectToDatabase();
+    const docs = await Application.find().sort({ created_at: -1, _id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  getApplicationByNumber: (appNumber) => {
-    const data = readDb();
-    return data.applications.find(a => a.app_number === appNumber.trim());
+  getApplicationByNumber: async (appNumber) => {
+    await connectToDatabase();
+    const doc = await Application.findOne({ app_number: appNumber }).lean();
+    return formatDoc(doc);
   },
 
-  createApplication: (app) => {
-    const data = readDb();
-    const newId = (data.applications.length > 0 ? Math.max(...data.applications.map(a => a.id)) : 0) + 1;
-    const progCode = app.programme && app.programme.toUpperCase().includes('MBA') ? 'MBA' : 'HDCM';
+  createApplication: async (app) => {
+    await connectToDatabase();
+    const id = app.id || (await getNextId(Application));
     const year = new Date().getFullYear();
-    const randomDigits = Math.floor(10000 + Math.random() * 90000);
-    const appNumber = `MICM-${year}-${progCode}-${randomDigits}`;
+    const random = Math.floor(10000 + Math.random() * 90000);
+    const appNumber = app.app_number || `MICM-${year}-${random}`;
 
-    const record = {
-      id: newId,
+    const created = await Application.create({
+      id,
       app_number: appNumber,
       programme: app.programme,
       full_name: app.full_name,
@@ -709,24 +410,22 @@ export const db = {
       documents_status: 'Verified Online',
       status: 'Submitted',
       created_at: new Date().toISOString()
-    };
-
-    data.applications.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
   // Enquiries
-  getEnquiries: () => {
-    const data = readDb();
-    return (data.enquiries || []).slice().reverse();
+  getEnquiries: async () => {
+    await connectToDatabase();
+    const docs = await Enquiry.find().sort({ created_at: -1, _id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  createEnquiry: (enq) => {
-    const data = readDb();
-    const newId = (data.enquiries.length > 0 ? Math.max(...data.enquiries.map(e => e.id)) : 0) + 1;
-    const record = {
-      id: newId,
+  createEnquiry: async (enq) => {
+    await connectToDatabase();
+    const id = enq.id || (await getNextId(Enquiry));
+    const created = await Enquiry.create({
+      id,
       full_name: enq.full_name,
       email: enq.email,
       phone: enq.phone,
@@ -734,43 +433,42 @@ export const db = {
       message: enq.message || '',
       status: 'New',
       created_at: new Date().toISOString()
-    };
-    data.enquiries.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
-  updateEnquiryStatus: (id, status) => {
-    const data = readDb();
-    const enq = data.enquiries.find(e => e.id === Number(id));
-    if (enq) {
-      enq.status = status;
-      writeDb(data);
-      return true;
-    }
-    return false;
+  updateEnquiryStatus: async (id, status) => {
+    await connectToDatabase();
+    const updated = await Enquiry.findOneAndUpdate(
+      buildIdQuery(id),
+      { status, updated_at: new Date().toISOString() },
+      { new: true }
+    ).lean();
+    return formatDoc(updated);
   },
 
   // Grievances
-  getGrievances: () => {
-    const data = readDb();
-    return (data.grievances || []).slice().reverse();
+  getGrievances: async () => {
+    await connectToDatabase();
+    const docs = await Grievance.find().sort({ created_at: -1, _id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  trackGrievance: (trackingId) => {
-    const data = readDb();
-    return data.grievances.find(g => g.tracking_id.toUpperCase() === trackingId.trim().toUpperCase());
+  trackGrievance: async (trackingId) => {
+    await connectToDatabase();
+    const doc = await Grievance.findOne({ tracking_id: trackingId }).lean();
+    return formatDoc(doc);
   },
 
-  createGrievance: (grv) => {
-    const data = readDb();
-    const newId = (data.grievances.length > 0 ? Math.max(...data.grievances.map(g => g.id)) : 0) + 1;
+  createGrievance: async (grv) => {
+    await connectToDatabase();
+    const id = grv.id || (await getNextId(Grievance));
     const year = new Date().getFullYear();
-    const randomChars = Math.random().toString(36).substring(2, 7).toUpperCase();
-    const trackingId = `MICM-GRV-${year}-${randomChars}`;
+    const random = Math.floor(1000 + Math.random() * 9000);
+    const trackingId = grv.tracking_id || `GRV-${year}-${random}`;
 
-    const record = {
-      id: newId,
+    const created = await Grievance.create({
+      id,
       tracking_id: trackingId,
       grievant_type: grv.grievant_type,
       full_name: grv.full_name,
@@ -782,24 +480,22 @@ export const db = {
       status: 'Under Review',
       resolution_notes: 'Forwarded to Designated Grievance Officer',
       created_at: new Date().toISOString()
-    };
-
-    data.grievances.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
   // Faculty
-  getFaculty: () => {
-    const data = readDb();
-    return (data.faculty || []).slice().sort((a, b) => (a.order_seq || 99) - (b.order_seq || 99));
+  getFaculty: async () => {
+    await connectToDatabase();
+    const docs = await Faculty.find().sort({ order_seq: 1, id: 1 }).lean();
+    return formatDocs(docs);
   },
 
-  createFaculty: (fac) => {
-    const data = readDb();
-    const newId = (data.faculty.length > 0 ? Math.max(...data.faculty.map(f => f.id)) : 0) + 1;
-    const record = {
-      id: newId,
+  createFaculty: async (fac) => {
+    await connectToDatabase();
+    const id = fac.id || (await getNextId(Faculty));
+    const created = await Faculty.create({
+      id,
       name: fac.name,
       designation: fac.designation,
       department: fac.department || 'Management Studies',
@@ -808,51 +504,42 @@ export const db = {
       email: fac.email || 'micmbbs@gmail.com',
       phone: fac.phone || '+91 674 2562826',
       image_url: fac.image_url || null,
-      order_seq: fac.order_seq || 9
-    };
-    data.faculty.push(record);
-    writeDb(data);
-    return record;
+      order_seq: fac.order_seq !== undefined ? Number(fac.order_seq) : 9,
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
   },
 
-  updateFaculty: (id, facUpdates) => {
-    const data = readDb();
-    if (!data.faculty) return null;
-    const index = data.faculty.findIndex(f => f.id === Number(id));
-    if (index === -1) return null;
-    data.faculty[index] = {
-      ...data.faculty[index],
-      ...facUpdates,
-      id: Number(id),
-      updated_at: new Date().toISOString()
-    };
-    writeDb(data);
-    return data.faculty[index];
+  updateFaculty: async (id, facUpdates) => {
+    await connectToDatabase();
+    const updated = await Faculty.findOneAndUpdate(
+      buildIdQuery(id),
+      { ...facUpdates, updated_at: new Date().toISOString() },
+      { new: true }
+    ).lean();
+    return formatDoc(updated);
   },
 
-  deleteFaculty: (id) => {
-    const data = readDb();
-    data.faculty = data.faculty.filter(f => f.id !== Number(id));
-    writeDb(data);
-    return true;
+  deleteFaculty: async (id) => {
+    await connectToDatabase();
+    const res = await Faculty.findOneAndDelete(buildIdQuery(id));
+    return !!res;
   },
 
   // Banners
-  getBanners: (activeOnly = true) => {
-    const data = readDb();
-    let list = data.banners || [];
-    if (activeOnly) {
-      list = list.filter(b => b.is_active !== 0);
-    }
-    return list.slice().sort((a, b) => (a.order_seq || 99) - (b.order_seq || 99));
+  getBanners: async (activeOnly = true) => {
+    await connectToDatabase();
+    const query = activeOnly ? { is_active: { $ne: 0 } } : {};
+    const docs = await Banner.find(query).sort({ order_seq: 1, id: 1 }).lean();
+    return formatDocs(docs);
   },
 
-  createBanner: (bannerData) => {
-    const data = readDb();
-    if (!data.banners) data.banners = [];
-    const newId = (data.banners.length > 0 ? Math.max(...data.banners.map(b => b.id)) : 0) + 1;
-    const record = {
-      id: newId,
+  createBanner: async (bannerData) => {
+    await connectToDatabase();
+    const id = bannerData.id || (await getNextId(Banner));
+    const count = await Banner.countDocuments();
+    const created = await Banner.create({
+      id,
       title: bannerData.title || "CONGRATULATIONS",
       subtitle: bannerData.subtitle || "",
       location: bannerData.location || "MADHUSUDAN INSTITUTE OF CO-OPERATIVE MANAGEMENT",
@@ -860,190 +547,195 @@ export const db = {
       image_url: bannerData.image_url || null,
       students: Array.isArray(bannerData.students) ? bannerData.students : [],
       is_active: bannerData.is_active !== undefined ? (bannerData.is_active ? 1 : 0) : 1,
-      order_seq: bannerData.order_seq || data.banners.length + 1,
+      order_seq: bannerData.order_seq || count + 1,
       created_at: new Date().toISOString()
-    };
-    data.banners.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
-  updateBanner: (id, bannerData) => {
-    const data = readDb();
-    if (!data.banners) data.banners = [];
-    const index = data.banners.findIndex(b => b.id === Number(id));
-    if (index === -1) return null;
-    data.banners[index] = {
-      ...data.banners[index],
-      ...bannerData,
-      id: Number(id),
-      updated_at: new Date().toISOString()
-    };
-    writeDb(data);
-    return data.banners[index];
+  updateBanner: async (id, bannerData) => {
+    await connectToDatabase();
+    const updated = await Banner.findOneAndUpdate(
+      buildIdQuery(id),
+      { ...bannerData, updated_at: new Date().toISOString() },
+      { new: true }
+    ).lean();
+    return formatDoc(updated);
   },
 
-  deleteBanner: (id) => {
-    const data = readDb();
-    if (!data.banners) data.banners = [];
-    data.banners = data.banners.filter(b => b.id !== Number(id));
-    writeDb(data);
-    return true;
+  deleteBanner: async (id) => {
+    await connectToDatabase();
+    const res = await Banner.findOneAndDelete(buildIdQuery(id));
+    return !!res;
   },
 
   // Downloads
-  getDownloads: () => {
-    const data = readDb();
-    return (data.downloads || []).slice().reverse();
+  getDownloads: async () => {
+    await connectToDatabase();
+    const docs = await Download.find().sort({ created_at: -1, id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  // News
-  getNews: () => {
-    const data = readDb();
-    return (data.news_events || []).filter(n => n.is_active !== 0).slice().reverse();
+  // News Events
+  getNews: async () => {
+    await connectToDatabase();
+    const docs = await NewsEvent.find({ is_active: { $ne: 0 } }).sort({ created_at: -1, id: -1 }).lean();
+    return formatDocs(docs);
   },
 
   // Trainings
-  getTrainings: () => {
-    const data = readDb();
-    return (data.trainings || []).slice().reverse();
+  getTrainings: async () => {
+    await connectToDatabase();
+    const docs = await Training.find().sort({ created_at: -1, id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  createTraining: (training) => {
-    const data = readDb();
-    if (!data.trainings) data.trainings = [];
-    const newId = (data.trainings.length > 0 ? Math.max(...data.trainings.map(t => t.id || 0)) : 0) + 1;
-    const record = {
-      id: newId,
+  createTraining: async (training) => {
+    await connectToDatabase();
+    const id = training.id || (await getNextId(Training));
+    const created = await Training.create({
+      id,
       title: training.title || '',
       fromDate: training.fromDate || '',
       toDate: training.toDate || '',
       venue: training.venue || 'MICM Campus, Bhubaneswar',
       link: training.link || '#',
       created_at: new Date().toISOString()
-    };
-    data.trainings.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
-  deleteTraining: (id) => {
-    const data = readDb();
-    if (!data.trainings) return false;
-    data.trainings = data.trainings.filter(t => t.id !== Number(id));
-    writeDb(data);
-    return true;
+  deleteTraining: async (id) => {
+    await connectToDatabase();
+    const res = await Training.findOneAndDelete(buildIdQuery(id));
+    return !!res;
   },
 
   // Announcements
-  getAnnouncements: () => {
-    const data = readDb();
-    return (data.announcements || []).slice().reverse();
+  getAnnouncements: async () => {
+    await connectToDatabase();
+    const docs = await Announcement.find().sort({ created_at: -1, id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  createAnnouncement: (ann) => {
-    const data = readDb();
-    if (!data.announcements) data.announcements = [];
-    const newId = (data.announcements.length > 0 ? Math.max(...data.announcements.map(a => a.id || 0)) : 0) + 1;
-    const record = {
-      id: newId,
+  createAnnouncement: async (ann) => {
+    await connectToDatabase();
+    const id = ann.id || (await getNextId(Announcement));
+    const dateStr = ann.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+    const created = await Announcement.create({
+      id,
       title: ann.title || '',
-      date: ann.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
+      date: dateStr,
       pdf_url: ann.pdf_url || '#',
       is_new: ann.is_new !== undefined ? (ann.is_new ? 1 : 0) : 1,
       created_at: new Date().toISOString()
-    };
-    data.announcements.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
-  deleteAnnouncement: (id) => {
-    const data = readDb();
-    if (!data.announcements) return false;
-    data.announcements = data.announcements.filter(a => a.id !== Number(id));
-    writeDb(data);
-    return true;
+  deleteAnnouncement: async (id) => {
+    await connectToDatabase();
+    const res = await Announcement.findOneAndDelete(buildIdQuery(id));
+    return !!res;
   },
 
   // Placements
-  getPlacements: () => {
-    const data = readDb();
-    return (data.placements || []).slice().reverse();
+  getPlacements: async () => {
+    await connectToDatabase();
+    const docs = await Placement.find().sort({ created_at: -1, id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  createPlacement: (plc) => {
-    const data = readDb();
-    if (!data.placements) data.placements = [];
-    const newId = (data.placements.length > 0 ? Math.max(...data.placements.map(p => p.id || 0)) : 0) + 1;
-    const record = {
-      id: newId,
+  createPlacement: async (plc) => {
+    await connectToDatabase();
+    const id = plc.id || (await getNextId(Placement));
+    const created = await Placement.create({
+      id,
       student_name: plc.student_name || '',
       company: plc.company || '',
       package: plc.package || '',
       year: plc.year || new Date().getFullYear().toString(),
       image_url: plc.image_url || '',
       created_at: new Date().toISOString()
-    };
-    data.placements.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
-  deletePlacement: (id) => {
-    const data = readDb();
-    if (!data.placements) return false;
-    data.placements = data.placements.filter(p => p.id !== Number(id));
-    writeDb(data);
-    return true;
+  deletePlacement: async (id) => {
+    await connectToDatabase();
+    const res = await Placement.findOneAndDelete(buildIdQuery(id));
+    return !!res;
   },
 
   // Cooperative News
-  getCoopNews: () => {
-    const data = readDb();
-    return (data.coop_news || []).slice().reverse();
+  getCoopNews: async () => {
+    await connectToDatabase();
+    const docs = await CoopNews.find().sort({ created_at: -1, id: -1 }).lean();
+    return formatDocs(docs);
   },
 
-  createCoopNews: (item) => {
-    const data = readDb();
-    if (!data.coop_news) data.coop_news = [];
-    const newId = (data.coop_news.length > 0 ? Math.max(...data.coop_news.map(n => n.id || 0)) : 0) + 1;
-    const record = {
-      id: newId,
+  createCoopNews: async (item) => {
+    await connectToDatabase();
+    const id = item.id || (await getNextId(CoopNews));
+    const dateStr = item.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+    const created = await CoopNews.create({
+      id,
       title: item.title || '',
-      date: item.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),
+      date: dateStr,
       link: item.link || '#',
       created_at: new Date().toISOString()
-    };
-    data.coop_news.push(record);
-    writeDb(data);
-    return record;
+    });
+    return formatDoc(created);
   },
 
-  deleteCoopNews: (id) => {
-    const data = readDb();
-    if (!data.coop_news) return false;
-    data.coop_news = data.coop_news.filter(n => n.id !== Number(id));
-    writeDb(data);
-    return true;
+  deleteCoopNews: async (id) => {
+    await connectToDatabase();
+    const res = await CoopNews.findOneAndDelete(buildIdQuery(id));
+    return !!res;
   },
 
   // Dashboard Stats
-  getDashboardStats: () => {
-    const data = readDb();
+  getDashboardStats: async () => {
+    await connectToDatabase();
+    const [
+      enquiries_total,
+      applications_total,
+      active_notices,
+      grievances_total,
+      faculty_members,
+      banners_total,
+      trainings_total,
+      announcements_total,
+      placements_total,
+      coop_news_total
+    ] = await Promise.all([
+      Enquiry.countDocuments(),
+      Application.countDocuments(),
+      Notice.countDocuments({ is_active: { $ne: 0 } }),
+      Grievance.countDocuments(),
+      Faculty.countDocuments(),
+      Banner.countDocuments(),
+      Training.countDocuments(),
+      Announcement.countDocuments(),
+      Placement.countDocuments(),
+      CoopNews.countDocuments()
+    ]);
+
     return {
-      enquiries_total: (data.enquiries || []).length,
-      applications_total: (data.applications || []).length,
-      active_notices: (data.notices || []).filter(n => n.is_active !== 0).length,
-      grievances_total: (data.grievances || []).length,
-      faculty_members: (data.faculty || []).length,
-      banners_total: (data.banners || []).length,
-      trainings_total: (data.trainings || []).length,
-      announcements_total: (data.announcements || []).length,
-      placements_total: (data.placements || []).length,
-      coop_news_total: (data.coop_news || []).length,
-      server_status: "Online (Next.js 14 Full-Stack)",
+      enquiries_total,
+      applications_total,
+      active_notices,
+      grievances_total,
+      faculty_members,
+      banners_total,
+      trainings_total,
+      announcements_total,
+      placements_total,
+      coop_news_total,
+      server_status: "Online (MongoDB Atlas & Next.js)",
       last_backup: new Date().toLocaleString('en-GB')
     };
   }
 };
+
+export default db;

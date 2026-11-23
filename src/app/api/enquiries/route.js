@@ -7,14 +7,14 @@ export async function GET(request) {
     return NextResponse.json({ detail: "Unauthorized" }, { status: 401 });
   }
 
-  const enquiries = db.getEnquiries();
+  const enquiries = await db.getEnquiries();
   return NextResponse.json(enquiries);
 }
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const enq = db.createEnquiry(body);
+    const enq = await db.createEnquiry(body);
 
     return NextResponse.json({
       id: enq.id,

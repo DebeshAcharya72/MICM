@@ -5,7 +5,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('active_only') !== 'false';
-    const banners = db.getBanners(activeOnly);
+    const banners = await db.getBanners(activeOnly);
     return NextResponse.json(banners);
   } catch (error) {
     console.error('Error fetching banners:', error);
@@ -25,7 +25,7 @@ export async function POST(request) {
       return NextResponse.json({ detail: 'Banner title is required' }, { status: 400 });
     }
 
-    const created = db.createBanner(body);
+    const created = await db.createBanner(body);
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     console.error('Error creating banner:', error);

@@ -8,7 +8,7 @@ export async function DELETE(request, { params }) {
   }
 
   const { id } = params;
-  const deleted = db.deleteCoopNews(id);
+  const deleted = await db.deleteCoopNews(id);
   if (!deleted) {
     return NextResponse.json({ detail: "News record not found" }, { status: 404 });
   }

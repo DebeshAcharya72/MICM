@@ -8,7 +8,7 @@ export async function DELETE(request, { params }) {
   }
 
   const { id } = params;
-  const deleted = db.deletePlacement(id);
+  const deleted = await db.deletePlacement(id);
   if (!deleted) {
     return NextResponse.json({ detail: "Placement record not found" }, { status: 404 });
   }

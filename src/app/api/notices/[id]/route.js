@@ -8,6 +8,6 @@ export async function DELETE(request, { params }) {
   }
 
   const { id } = params;
-  db.deleteNotice(id);
+  await db.deleteNotice(id);
   return NextResponse.json({ message: "Notice removed" });
 }

@@ -8,7 +8,7 @@ export async function DELETE(request, { params }) {
   }
 
   const { id } = params;
-  const deleted = db.deleteAnnouncement(id);
+  const deleted = await db.deleteAnnouncement(id);
   if (!deleted) {
     return NextResponse.json({ detail: "Announcement not found" }, { status: 404 });
   }

@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 
 export async function GET(request, { params }) {
   const { trackingId } = params;
-  const grv = db.trackGrievance(trackingId);
+  const grv = await db.trackGrievance(trackingId);
 
   if (!grv) {
     return NextResponse.json({ detail: "Grievance Tracking ID not found" }, { status: 404 });

@@ -11,7 +11,7 @@ export async function PUT(request, { params }) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') || 'Contacted';
 
-  const updated = db.updateEnquiryStatus(id, status);
+  const updated = await db.updateEnquiryStatus(id, status);
   if (!updated) {
     return NextResponse.json({ detail: "Enquiry not found" }, { status: 404 });
   }

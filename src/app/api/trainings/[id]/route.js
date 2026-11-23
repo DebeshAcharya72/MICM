@@ -8,7 +8,7 @@ export async function DELETE(request, { params }) {
   }
 
   const { id } = params;
-  const deleted = db.deleteTraining(id);
+  const deleted = await db.deleteTraining(id);
   if (!deleted) {
     return NextResponse.json({ detail: "Training record not found" }, { status: 404 });
   }

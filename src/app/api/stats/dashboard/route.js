@@ -7,6 +7,6 @@ export async function GET(request) {
     return NextResponse.json({ detail: "Unauthorized" }, { status: 401 });
   }
 
-  const stats = db.getDashboardStats();
+  const stats = await db.getDashboardStats();
   return NextResponse.json(stats);
 }

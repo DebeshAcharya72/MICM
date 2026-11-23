@@ -10,7 +10,7 @@ export async function PUT(request, { params }) {
 
     const { id } = params;
     const body = await request.json();
-    const updated = db.updateBanner(id, body);
+    const updated = await db.updateBanner(id, body);
 
     if (!updated) {
       return NextResponse.json({ detail: 'Banner not found' }, { status: 404 });
@@ -31,7 +31,7 @@ export async function DELETE(request, { params }) {
     }
 
     const { id } = params;
-    const success = db.deleteBanner(id);
+    const success = await db.deleteBanner(id);
 
     if (!success) {
       return NextResponse.json({ detail: 'Banner not found' }, { status: 404 });
