@@ -105,7 +105,7 @@ export default function PortalNavbar() {
             </div>
 
             {/* Collaboration Dropdown (MoU's) */}
-            <div
+            {/* <div
               className="relative"
               onMouseEnter={() => setCollabDropdownOpen(true)}
               onMouseLeave={() => setCollabDropdownOpen(false)}
@@ -131,7 +131,7 @@ export default function PortalNavbar() {
                   >
                     MoU's (National & International)
                   </Link>
-                  {/* <Link
+                  <Link
                     href="/collaboration/mous#national"
                     onClick={() => setCollabDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
@@ -144,10 +144,10 @@ export default function PortalNavbar() {
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
                   >
                     International Partnerships
-                  </Link> */}
+                  </Link>
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Academics & Admissions Dropdown */}
             <div

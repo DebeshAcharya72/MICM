@@ -10,14 +10,14 @@ export default function PortalFooter() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5">
           {/* Quick Compliance Links */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1 text-[11px] sm:text-xs">
-            <Link href="/downloads" className="hover:underline">
+            {/* <Link href="/downloads" className="hover:underline">
               Tender Documents
-            </Link>
-            <span className="text-white/60">|</span>
-            <Link href="/rti-careers" className="hover:underline">
+            </Link> */}
+            {/* <span className="text-white/60">|</span> */}
+            {/* <Link href="/rti-careers" className="hover:underline">
               Right To Information (RTI)
-            </Link>
-            <span className="text-white/60">|</span>
+            </Link> */}
+            {/* <span className="text-white/60">|</span> */}
             <Link href="/compliance" className="hover:underline">
               Mandatory Disclosures
             </Link>
@@ -30,10 +30,10 @@ export default function PortalFooter() {
               Grievance Redressal
             </Link>
             <span className="text-white/60">|</span>
-            <Link href="/rti-careers" className="hover:underline">
+            {/* <Link href="/rti-careers" className="hover:underline">
               Recruitment & Careers
-            </Link>
-            <span className="text-white/60">|</span>
+            </Link> */}
+            {/* <span className="text-white/60">|</span> */}
             <Link href="/admission-faqs" className="hover:underline">
               Admission FAQs
             </Link>
