@@ -32,6 +32,7 @@ import {
   Newspaper,
   ExternalLink,
   Link as LinkIcon,
+  Menu,
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -69,6 +70,7 @@ export default function Admin() {
 
   // Active Admin Tab
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Dashboard Data State
   const [stats, setStats] = useState(null);
@@ -915,11 +917,26 @@ export default function Admin() {
   // VIEW: LOGGED-IN ADMIN DASHBOARD
   // ==========================================================
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col pb-16">
+    <div className="min-h-screen h-screen bg-slate-100 flex flex-col overflow-hidden">
       {/* Top Admin Bar */}
-      <header className="bg-[#0B1B3D] text-white border-b-2 border-[#0288D1] sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <header className="bg-[#0B1B3D] text-white border-b-2 border-[#0288D1] shrink-0 z-40">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            {/* Mobile Hamburger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded transition-colors"
+              title="Toggle Navigation Menu"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileSidebarOpen ? (
+                <X className="w-5 h-5 text-[#FFC107]" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+
             <div className="w-10 h-10 bg-white rounded-full p-1 flex items-center justify-center shadow-xs shrink-0 border border-white/20">
               <img
                 src="/micm-logo.png"
@@ -965,89 +982,121 @@ export default function Admin() {
         </div>
       </header>
 
-      {/* Admin Navigation Tabs */}
-      <div className="bg-white border-b border-slate-300 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto">
-          {[
-            { id: "dashboard", label: "Overview Stats", icon: TrendingUp },
-            {
-              id: "applications",
-              label: `Online Applications (${applications.length})`,
-              icon: FileText,
-            },
-            {
-              id: "enquiries",
-              label: `Admissions Enquiries (${enquiries.length})`,
-              icon: User,
-            },
-            {
-              id: "notices",
-              label: `Notice Board CMS (${notices.length})`,
-              icon: Bell,
-            },
-            {
-              id: "trainings",
-              label: `Trainings CMS (${trainings.length})`,
-              icon: Calendar,
-            },
-            {
-              id: "announcements",
-              label: `Announcements CMS (${announcements.length})`,
-              icon: FileText,
-            },
-            {
-              id: "placements",
-              label: `Placements CMS (${placements.length})`,
-              icon: Briefcase,
-            },
-            {
-              id: "coop_news",
-              label: `Co-op News CMS (${coopNews.length})`,
-              icon: Newspaper,
-            },
-            {
-              id: "quick_links",
-              label: `Quick Links CMS (${quickLinks.length})`,
-              icon: LinkIcon,
-            },
-            {
-              id: "grievances",
-              label: `Grievance Redressal (${grievances.length})`,
-              icon: Scale,
-            },
-            {
-              id: "faculty",
-              label: `Faculty Directory (${faculty.length})`,
-              icon: Users,
-            },
-            {
-              id: "banners",
-              label: `Banner Slider CMS (${banners.length})`,
-              icon: Sliders,
-            },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-colors ${
-                  isActive
-                    ? "border-[#0288D1] text-[#0288D1] bg-sky-50/50"
-                    : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* Main Layout: Left Sidebar + Main Content Area */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Mobile Backdrop Overlay */}
+        {mobileSidebarOpen && (
+          <div
+            className="fixed inset-0 top-16 bg-black/50 z-20 lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+        )}
 
-      {/* Main Admin Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-1 w-full">
+        {/* Left Vertical Sidebar */}
+        <aside
+          className={`fixed lg:static inset-y-0 left-0 top-16 lg:top-0 z-30 w-64 bg-white border-r border-slate-300 flex flex-col overflow-y-auto shrink-0 transition-transform duration-200 ease-in-out shadow-xl lg:shadow-none ${
+            mobileSidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }`}
+        >
+          <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+              CMS Navigation
+            </span>
+            <span className="text-[10px] font-bold bg-sky-100 text-[#0288D1] px-1.5 py-0.5 rounded">
+              12 Modules
+            </span>
+          </div>
+
+          <nav className="flex-1 py-2 space-y-0.5">
+            {[
+              { id: "dashboard", label: "Overview Stats", icon: TrendingUp },
+              {
+                id: "applications",
+                label: `Online Applications (${applications.length})`,
+                icon: FileText,
+              },
+              {
+                id: "enquiries",
+                label: `Admissions Enquiries (${enquiries.length})`,
+                icon: User,
+              },
+              {
+                id: "notices",
+                label: `Notice Board CMS (${notices.length})`,
+                icon: Bell,
+              },
+              {
+                id: "trainings",
+                label: `Trainings CMS (${trainings.length})`,
+                icon: Calendar,
+              },
+              {
+                id: "announcements",
+                label: `Announcements CMS (${announcements.length})`,
+                icon: FileText,
+              },
+              {
+                id: "placements",
+                label: `Placements CMS (${placements.length})`,
+                icon: Briefcase,
+              },
+              {
+                id: "coop_news",
+                label: `Co-op News CMS (${coopNews.length})`,
+                icon: Newspaper,
+              },
+              {
+                id: "quick_links",
+                label: `Quick Links CMS (${quickLinks.length})`,
+                icon: LinkIcon,
+              },
+              {
+                id: "grievances",
+                label: `Grievance Redressal (${grievances.length})`,
+                icon: Scale,
+              },
+              {
+                id: "faculty",
+                label: `Faculty Directory (${faculty.length})`,
+                icon: Users,
+              },
+              {
+                id: "banners",
+                label: `Banner Slider CMS (${banners.length})`,
+                icon: Sliders,
+              },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setMobileSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold border-l-4 transition-colors text-left ${
+                    isActive
+                      ? "border-[#0288D1] text-[#0288D1] bg-sky-50"
+                      : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="p-3 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-400 text-center">
+            MICM Portal CMS &bull; v1.4
+          </div>
+        </aside>
+
+        {/* Main Admin Content Area */}
+        <main className="flex-1 overflow-y-auto p-6 min-w-0 bg-slate-100">
         {/* TAB 1: OVERVIEW STATS */}
         {activeTab === "dashboard" && (
           <div className="space-y-6">
@@ -2295,6 +2344,7 @@ export default function Admin() {
           </div>
         )}
       </main>
+    </div>
 
       {/* MODAL: APPLICATION FULL PROFILE VIEWER */}
       {selectedApp && (
