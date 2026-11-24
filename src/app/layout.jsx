@@ -5,6 +5,8 @@ export const metadata = {
   description: 'A premier Management Institute established in 1955-56, promoted by National Council for Cooperative Training (NCCT), Ministry of Cooperation, Govt. of India. AICTE Approved & BPUT Affiliated.',
   icons: {
     icon: '/micm-logo.png',
+    shortcut: '/micm-logo.png',
+    apple: '/micm-logo.png',
   },
 };
 

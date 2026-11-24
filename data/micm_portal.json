@@ -498,5 +498,49 @@
       "link": "https://cooperation.gov.in",
       "created_at": "2026-11-23T11:49:35.768Z"
     }
+  ],
+  "quick_links": [
+    {
+      "id": 1,
+      "title": "National Council for Cooperative Training (NCCT)",
+      "url": "https://ncct.ac.in",
+      "order": 1,
+      "created_at": "2026-11-24T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "Ministry of Cooperation, Govt. of India",
+      "url": "https://cooperation.gov.in",
+      "order": 2,
+      "created_at": "2026-11-24T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "title": "Vaikunth Mehta National Institute of Cooperative Management",
+      "url": "https://vamnicom.gov.in",
+      "order": 3,
+      "created_at": "2026-11-24T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "title": "Biju Patnaik University of Technology (BPUT)",
+      "url": "https://bput.ac.in",
+      "order": 4,
+      "created_at": "2026-11-24T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "title": "All India Council for Technical Education (AICTE)",
+      "url": "https://aicte-india.org",
+      "order": 5,
+      "created_at": "2026-11-24T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "title": "Odisha Joint Entrance Examination (OJEE)",
+      "url": "https://ojee.nic.in",
+      "order": 6,
+      "created_at": "2026-11-24T00:00:00.000Z"
+    }
   ]
 }

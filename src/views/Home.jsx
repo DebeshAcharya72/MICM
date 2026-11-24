@@ -1,56 +1,58 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Award, 
-  FileText, 
-  Calendar, 
-  ExternalLink, 
-  CheckCircle2, 
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Award,
+  FileText,
+  Calendar,
+  ExternalLink,
+  CheckCircle2,
   ShieldCheck,
   Building2,
   Users,
   GraduationCap,
   Briefcase,
-  Newspaper
-} from 'lucide-react';
-import { api } from '../services/api';
-import HomeFacultyShowcase from '../components/HomeFacultyShowcase';
+  Newspaper,
+  Bell,
+} from "lucide-react";
+import { api } from "../services/api";
 
 const DEFAULT_BANNER_SLIDES = [
   {
     id: 1,
     title: "CONGRATULATIONS",
-    subtitle: "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
+    subtitle:
+      "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
     location: "AT NATIONAL COOPERATIVE SUMMIT",
     students: [
       { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
       { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" }
+      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" },
     ],
     bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
-    image_url: null
+    image_url: null,
   },
   {
     id: 2,
     title: "PIONEERING LEGACY",
-    subtitle: "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
+    subtitle:
+      "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
     location: "MINISTRY OF CO-OPERATION, GOVT. OF INDIA",
     students: [
       { name: "AICTE APPROVED", batch: "2-Year MBA", rank: "BPUT Affiliated" },
       { name: "NCCT UNIT", batch: "New Delhi", rank: "Apex Body" },
-      { name: "3.4 ACRES", batch: "Nayapalli, BBSR", rank: "Green Campus" }
+      { name: "3.4 ACRES", batch: "Nayapalli, BBSR", rank: "Green Campus" },
     ],
     bg: "from-[#093a47] via-[#0288D1] to-[#093a47]",
-    image_url: null
-  }
+    image_url: null,
+  },
 ];
 
 export default function Home() {
-  const [activeNewsTab, setActiveNewsTab] = useState('coop');
+  const [activeNewsTab, setActiveNewsTab] = useState("coop");
   const [bannerSlides, setBannerSlides] = useState(DEFAULT_BANNER_SLIDES);
   const [bannerSlide, setBannerSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -58,38 +60,58 @@ export default function Home() {
   // Dynamic CMS Data States
   const [trainings, setTrainings] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [notices, setNotices] = useState([]);
   const [placements, setPlacements] = useState([]);
   const [coopNews, setCoopNews] = useState([]);
+  const [faculty, setFaculty] = useState([]);
+  const [quickLinks, setQuickLinks] = useState([]);
 
   // Fetch dynamic homepage datasets from API
   useEffect(() => {
     const fetchHomepageData = async () => {
       try {
-        const [bannersRes, trRes, anRes, plRes, cnRes] = await Promise.allSettled([
-          api.getBanners(true),
-          api.getTrainings(),
-          api.getAnnouncements(),
-          api.getPlacements(),
-          api.getCoopNews(),
-        ]);
+        const [bannersRes, trRes, anRes, plRes, cnRes, facRes, qlRes, notRes] =
+          await Promise.allSettled([
+            api.getBanners(true),
+            api.getTrainings(),
+            api.getAnnouncements(),
+            api.getPlacements(),
+            api.getCoopNews(),
+            api.getFaculty(),
+            api.getQuickLinks(),
+            api.getNotices(false),
+          ]);
 
-        if (bannersRes.status === 'fulfilled' && Array.isArray(bannersRes.value) && bannersRes.value.length > 0) {
+        if (
+          bannersRes.status === "fulfilled" &&
+          Array.isArray(bannersRes.value) &&
+          bannersRes.value.length > 0
+        ) {
           setBannerSlides(bannersRes.value);
         }
-        if (trRes.status === 'fulfilled' && Array.isArray(trRes.value)) {
+        if (trRes.status === "fulfilled" && Array.isArray(trRes.value)) {
           setTrainings(trRes.value);
         }
-        if (anRes.status === 'fulfilled' && Array.isArray(anRes.value)) {
+        if (anRes.status === "fulfilled" && Array.isArray(anRes.value)) {
           setAnnouncements(anRes.value);
         }
-        if (plRes.status === 'fulfilled' && Array.isArray(plRes.value)) {
+        if (plRes.status === "fulfilled" && Array.isArray(plRes.value)) {
           setPlacements(plRes.value);
         }
-        if (cnRes.status === 'fulfilled' && Array.isArray(cnRes.value)) {
+        if (cnRes.status === "fulfilled" && Array.isArray(cnRes.value)) {
           setCoopNews(cnRes.value);
         }
+        if (facRes.status === "fulfilled" && Array.isArray(facRes.value)) {
+          setFaculty(facRes.value);
+        }
+        if (qlRes.status === "fulfilled" && Array.isArray(qlRes.value)) {
+          setQuickLinks(qlRes.value);
+        }
+        if (notRes.status === "fulfilled" && Array.isArray(notRes.value)) {
+          setNotices(notRes.value);
+        }
       } catch (err) {
-        console.warn('Could not load dynamic homepage data:', err);
+        console.warn("Could not load dynamic homepage data:", err);
       }
     };
 
@@ -117,45 +139,49 @@ export default function Home() {
 
   return (
     <div className="bg-[#f4f6f9] pb-12">
-      
       {/* ========================================================
           HERO BANNER SLIDER (Exact VAMNICOM Blue Banner from Image 1)
           Now fully auto-scrollable & CMS customizable by Admin
       ======================================================== */}
-      <section 
+      <section
         className="relative overflow-hidden shadow-md border-b-2 border-amber-400 select-none group"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div 
+        <div
           className={`py-8 sm:py-12 px-4 sm:px-8 relative transition-all duration-700 ${
-            currentBanner.image_url ? 'bg-[#0B1B3D]' : `bg-gradient-to-r ${currentBanner.bg || 'from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]'}`
+            currentBanner.image_url
+              ? "bg-[#0B1B3D]"
+              : `bg-gradient-to-r ${currentBanner.bg || "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]"}`
           }`}
-          style={currentBanner.image_url ? {
-            backgroundImage: `url('${currentBanner.image_url}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          } : {}}
+          style={
+            currentBanner.image_url
+              ? {
+                  backgroundImage: `url('${currentBanner.image_url}')`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : {}
+          }
         >
           {/* Custom Image Dark Gradient Overlay for contrast and readability */}
           {currentBanner.image_url && (
             <div className="absolute inset-0 bg-gradient-to-r from-[#0c2a5c]/95 via-[#0c2a5c]/85 to-[#0c2a5c]/90 backdrop-blur-[1px]"></div>
           )}
-          
+
           {/* Subtle Watermark Crest */}
           <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
             <div className="w-96 h-96 rounded-full border-8 border-white/20"></div>
           </div>
 
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
-            
             {/* Left: Gold Foil Crest / Medallion + Institutional Text */}
             <div className="flex-1 text-center lg:text-left space-y-3">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-amber-300/40 text-amber-300 text-xs font-bold tracking-wide">
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                 <span>NATIONAL INSTITUTE OF NCCT, GOVT. OF INDIA</span>
               </div>
-              
+
               <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-amber-400 tracking-tight drop-shadow-sm uppercase">
                 {currentBanner.title}
               </h2>
@@ -174,7 +200,10 @@ export default function Home() {
             {/* Right: Round Scholar Badges (Exact VAMNICOM Style) */}
             <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
               {(currentBanner.students || []).map((student, idx) => (
-                <div key={idx} className="flex flex-col items-center text-center">
+                <div
+                  key={idx}
+                  className="flex flex-col items-center text-center"
+                >
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-amber-400 bg-white shadow-lg overflow-hidden flex items-center justify-center p-1">
                     <div className="w-full h-full rounded-full bg-slate-800 text-amber-300 flex flex-col items-center justify-center p-1">
                       <GraduationCap className="w-5 h-5 text-amber-400 mb-0.5" />
@@ -192,7 +221,6 @@ export default function Home() {
                 </div>
               ))}
             </div>
-
           </div>
 
           {/* Banner Slider Controls */}
@@ -223,7 +251,9 @@ export default function Home() {
                     type="button"
                     onClick={() => setBannerSlide(idx)}
                     className={`h-2 rounded-full transition-all duration-300 ${
-                      bannerSlide === idx ? 'w-6 bg-amber-400' : 'w-2 bg-white/50 hover:bg-white/80'
+                      bannerSlide === idx
+                        ? "w-6 bg-amber-400"
+                        : "w-2 bg-white/50 hover:bg-white/80"
                     }`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
@@ -231,30 +261,103 @@ export default function Home() {
               </div>
             </>
           )}
-
         </div>
       </section>
 
-
       {/* ========================================================
-          DYNAMIC FACULTY SHOWCASE (Replaces Static Dignitaries)
+          MAIN HOMEPAGE SECTION (12-Column Dashboard Layout)
       ======================================================== */}
-      <HomeFacultyShowcase />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+        {/* ======================================================
+            ROW 1 (Top Section): 2 | 3 | 4 | 3 Grid Layout
+        ====================================================== */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          {/* Col 1 (Left) col-span-12 lg:col-span-2: Faculty (First 3) */}
+          <div className="col-span-12 lg:col-span-2 space-y-3">
+            {faculty.slice(0, 3).map((f, idx) => (
+              <div
+                key={f.id || idx}
+                className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between min-h-[160px]"
+              >
+                <div className="w-16 h-20 rounded border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                  {f.image_url ? (
+                    <img
+                      src={f.image_url}
+                      alt={f.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-500 text-sm bg-slate-100">
+                      {f.name
+                        ? f.name
+                            .replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, "")
+                            .charAt(0)
+                        : "F"}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight">
+                    {f.name}
+                  </h4>
+                  <p className="text-[10px] text-red-700 font-semibold mt-1 leading-snug">
+                    {f.designation}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {faculty.length === 0 && (
+              <div className="p-4 bg-white border border-slate-200 rounded-md text-center text-xs text-slate-400">
+                Loading faculty...
+              </div>
+            )}
+          </div>
 
-
-      {/* ========================================================
-          MAIN HOMEPAGE SECTION (Grid Layout)
-      ======================================================== */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
-        
-        {/* ROW 1: Announcements | Placements Highlights */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-          
-          {/* Column 1: Announcements Box (Dynamic from API, opens PDF in new tab) - lg:col-span-6 */}
-          <div className="lg:col-span-6 bg-white border border-slate-300 rounded shadow-2xs flex flex-col">
+          {/* Col 2 (Middle-Left) col-span-12 lg:col-span-3: Quick Links */}
+          <div className="col-span-12 lg:col-span-3 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col">
             <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
               <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-[#0288D1]" />
+                <ExternalLink className="w-4 h-4 text-red-700" />
+                <span>Quick Links</span>
+              </h3>
+              <span className="text-[11px] font-bold text-slate-400 uppercase">
+                Portals
+              </span>
+            </div>
+
+            <div className="p-3 divide-y divide-slate-100 max-h-[400px] overflow-y-auto text-xs flex-1">
+              {quickLinks.map((ql, idx) => (
+                <div key={ql.id || idx} className="py-2.5 px-1.5">
+                  <a
+                    href={ql.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between gap-2 text-slate-800 hover:text-[#0288D1] transition-colors group"
+                  >
+                    <span className="flex items-center gap-2 font-medium leading-snug group-hover:underline">
+                      <span className="text-slate-400 font-bold group-hover:text-[#0288D1] shrink-0">
+                        {">"}
+                      </span>
+                      <span>{ql.title}</span>
+                    </span>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0288D1] shrink-0" />
+                  </a>
+                </div>
+              ))}
+              {quickLinks.length === 0 && (
+                <div className="p-6 text-center text-slate-400 text-xs">
+                  No quick links configured.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Col 3 (Middle-Right) col-span-12 lg:col-span-4: Announcements */}
+          <div className="col-span-12 lg:col-span-4 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col">
+            <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
+              <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-red-700" />
                 <span>Announcements</span>
               </h3>
               <span className="text-[11px] font-bold text-slate-400 uppercase">
@@ -262,31 +365,37 @@ export default function Home() {
               </span>
             </div>
 
-            <div className="p-3 divide-y divide-slate-100 max-h-[500px] overflow-y-auto text-xs flex-1">
-              {announcements.map((item, idx) => (
-                <div key={item.id || idx} className="py-2.5 px-1.5 space-y-1">
-                  <a
-                    href={item.pdf_url || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2 text-slate-800 hover:text-[#0288D1] transition-colors group"
-                  >
-                    <span className="text-slate-400 font-bold group-hover:text-[#0288D1] shrink-0 mt-0.5">{'>'}</span>
-                    <span className="flex-1 font-semibold leading-snug group-hover:underline">{item.title}</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0288D1] shrink-0 mt-0.5" />
-                  </a>
-                  <div className="pl-4 flex items-center gap-2 text-[10px] text-slate-500">
-                    <Calendar className="w-3 h-3 text-slate-400" />
-                    <span>{item.date}</span>
-                    {Boolean(item.is_new) && (
-                      <span className="bg-red-600 text-white font-bold text-[8px] px-1.5 py-0.2 rounded-xs uppercase">
-                        NEW
+            <div className="p-3 divide-y divide-slate-100 max-h-[400px] overflow-y-auto text-xs flex-1">
+              {(announcements.length > 0 ? announcements : notices).map(
+                (item, idx) => (
+                  <div key={item.id || idx} className="py-2.5 px-1.5 space-y-1">
+                    <a
+                      href={item.pdf_url || item.link || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start gap-2 text-slate-800 hover:text-[#0288D1] transition-colors group"
+                    >
+                      <span className="text-slate-400 font-bold group-hover:text-[#0288D1] shrink-0 mt-0.5">
+                        {">"}
                       </span>
-                    )}
+                      <span className="flex-1 font-semibold leading-snug group-hover:underline">
+                        {item.title}
+                      </span>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0288D1] shrink-0 mt-0.5" />
+                    </a>
+                    <div className="pl-4 flex items-center gap-2 text-[10px] text-slate-500">
+                      <Calendar className="w-3 h-3 text-slate-400" />
+                      <span>{item.date}</span>
+                      {Boolean(item.is_new) && (
+                        <span className="bg-red-600 text-white font-bold text-[8px] px-1.5 py-0.2 rounded-xs uppercase">
+                          NEW
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-              {announcements.length === 0 && (
+                ),
+              )}
+              {announcements.length === 0 && notices.length === 0 && (
                 <div className="p-6 text-center text-slate-400 text-xs">
                   No active announcements found.
                 </div>
@@ -294,149 +403,68 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Column 2: Placements Highlights Box (Dynamic from API) - lg:col-span-6 */}
-          <div className="lg:col-span-6 bg-white border border-slate-300 rounded shadow-2xs flex flex-col">
-            <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
-              <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-amber-500" />
-                <span>Placement Highlights</span>
-              </h3>
-              <Link href="/placements" className="text-[11px] font-bold text-[#0288D1] hover:underline uppercase">
-                View All
-              </Link>
-            </div>
-
-            <div className="p-3 divide-y divide-slate-100 max-h-[500px] overflow-y-auto text-xs flex-1">
-              {placements.slice(0, 5).map((plc, idx) => (
-                <div key={plc.id || idx} className="py-2.5 px-1.5 flex items-center justify-between gap-3 hover:bg-slate-50/80 rounded transition-colors">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs uppercase overflow-hidden shrink-0">
-                      {plc.image_url ? (
-                        <img src={plc.image_url} alt={plc.student_name} className="w-full h-full object-cover" />
-                      ) : (
-                        plc.student_name?.charAt(0) || "S"
-                      )}
+          {/* Col 4 (Right) col-span-12 lg:col-span-3: Faculty (Next 3) */}
+          <div className="col-span-12 lg:col-span-3 space-y-3">
+            {faculty.slice(3, 6).map((f, idx) => (
+              <div
+                key={f.id || idx}
+                className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between min-h-[160px]"
+              >
+                <div className="w-16 h-20 rounded border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                  {f.image_url ? (
+                    <img
+                      src={f.image_url}
+                      alt={f.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-500 text-sm bg-slate-100">
+                      {f.name
+                        ? f.name
+                            .replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, "")
+                            .charAt(0)
+                        : "F"}
                     </div>
-                    <div className="min-w-0">
-                      <h4 className="font-bold text-slate-900 truncate text-xs">
-                        {plc.student_name}
-                      </h4>
-                      <p className="text-[11px] text-slate-600 truncate">
-                        Placed at <strong className="text-slate-800">{plc.company}</strong>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded">
-                      {plc.package}
-                    </span>
-                    <span className="block text-[9px] text-slate-400 font-mono mt-0.5">
-                      Batch {plc.year}
-                    </span>
-                  </div>
+                  )}
                 </div>
-              ))}
-              {placements.length === 0 && (
-                <div className="p-6 text-center text-slate-400 text-xs">
-                  No placement records available.
+                <div>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight">
+                    {f.name}
+                  </h4>
+                  <p className="text-[10px] text-red-700 font-semibold mt-1 leading-snug">
+                    {f.designation}
+                  </p>
                 </div>
-              )}
-            </div>
+              </div>
+            ))}
+            {faculty.length < 4 && (
+              <div className="p-4 bg-white border border-slate-200 rounded-md text-center text-xs text-slate-400">
+                MICM Faculty Directory
+              </div>
+            )}
           </div>
-
         </div>
 
-
-        {/* ROW 2: Upcoming Training Programmes at MICM (Left/Center) | Cooperative News / What's New (Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          
-          {/* Upcoming Training Programmes at MICM (lg:col-span-8, Dynamic from API) */}
-          <div className="lg:col-span-8 bg-white border border-slate-300 rounded shadow-2xs overflow-hidden">
-            <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-              <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-[#0288D1]" />
-                <span>Upcoming Training Programmes at MICM</span>
-              </h3>
-              <Link href="/programmes" className="text-xs font-bold text-[#0288D1] hover:underline">
-                View Calendar
-              </Link>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#0288D1] text-white text-[11px] uppercase font-bold">
-                    <th className="py-2.5 px-2.5 text-center border-r border-sky-400 w-10">S.No.</th>
-                    <th className="py-2.5 px-3 border-r border-sky-400">Title</th>
-                    <th className="py-2.5 px-2 border-r border-sky-400 whitespace-nowrap">From Date</th>
-                    <th className="py-2.5 px-2 border-r border-sky-400 whitespace-nowrap">To Date</th>
-                    <th className="py-2.5 px-2 border-r border-sky-400 whitespace-nowrap">Venue</th>
-                    <th className="py-2.5 px-2 text-center whitespace-nowrap">Know More</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 bg-white">
-                  {trainings.map((tr, idx) => (
-                    <tr key={tr.id || idx} className="hover:bg-sky-50/60 transition-colors">
-                      <td className="py-2.5 px-2 text-center font-bold text-slate-600 border-r border-slate-200">
-                        {idx + 1}
-                      </td>
-                      <td className="py-2.5 px-3 text-slate-900 font-semibold leading-tight border-r border-slate-200">
-                        {tr.title}
-                      </td>
-                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
-                        {tr.fromDate}
-                      </td>
-                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
-                        {tr.toDate}
-                      </td>
-                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
-                        {tr.venue}
-                      </td>
-                      <td className="py-2.5 px-2 text-center">
-                        {tr.link && tr.link !== '#' ? (
-                          <a
-                            href={tr.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#0288D1] font-bold hover:underline inline-flex items-center gap-0.5 text-[11px]"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>PDF</span>
-                          </a>
-                        ) : (
-                          <span className="text-slate-400 text-[11px]">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {trainings.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
-                        No upcoming training programmes scheduled at this moment.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Right: Cooperative News / What's New Tabbed Panel (lg:col-span-4, Dynamic from API) */}
-          <div className="lg:col-span-4 bg-white border border-slate-300 rounded shadow-2xs">
+        {/* ======================================================
+            ROW 2 (Bottom Section): 2 | 7 | 3 Grid Layout
+        ====================================================== */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          {/* Col 3 (Right) col-span-12 lg:col-span-3: Cooperative News / What's New */}
+          <div className="col-span-12 lg:col-span-3 bg-white border border-slate-200 rounded-md shadow-xs">
             <div className="flex border-b border-slate-200 text-xs font-bold bg-slate-50">
-              <button
-                type="button"
-                onClick={() => setActiveNewsTab('coop')}
+              <div
+                // type="button"
+                onClick={() => setActiveNewsTab("coop")}
                 className={`flex-1 py-3 px-2 text-center transition-colors border-r border-slate-200 ${
-                  activeNewsTab === 'coop'
-                    ? 'text-red-700 font-serif font-extrabold border-b-2 border-red-700 bg-white'
-                    : 'text-slate-600 hover:text-slate-900'
+                  activeNewsTab === "coop"
+                    ? "text-red-700 font-serif font-extrabold border-b-2 border-red-700 bg-white"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 Cooperative News
-              </button>
-              <button
+              </div>
+              {/* <button
                 type="button"
                 onClick={() => setActiveNewsTab('whatsnew')}
                 className={`flex-1 py-3 px-2 text-center transition-colors ${
@@ -446,7 +474,7 @@ export default function Home() {
                 }`}
               >
                 What's New
-              </button>
+              </button> */}
             </div>
 
             <div className="p-3 divide-y divide-slate-100 text-xs max-h-[380px] overflow-y-auto">
@@ -458,7 +486,7 @@ export default function Home() {
                   <p className="text-slate-800 font-medium leading-snug">
                     {item.title}
                   </p>
-                  {item.link && item.link !== '#' ? (
+                  {item.link && item.link !== "#" ? (
                     <a
                       href={item.link}
                       target="_blank"
@@ -479,10 +507,147 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Col 2 (Middle) col-span-12 lg:col-span-7: Upcoming Training Programmes at MICM */}
+          <div className="col-span-12 lg:col-span-7 bg-white border border-slate-200 rounded-md shadow-xs overflow-hidden">
+            <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+              <div className="w-full text-center">
+                <h3 className="font-serif font-bold text-base text-red-700 tracking-wide inline-flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-red-700" />
+                  <span>Upcoming Training Programmes at MICM</span>
+                </h3>
+              </div>
+              <Link
+                href="/programmes"
+                className="text-xs font-bold text-[#0288D1] hover:underline whitespace-nowrap shrink-0 ml-2"
+              >
+                View Calendar
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#0288D1] text-white text-[11px] uppercase font-bold">
+                    <th className="py-2.5 px-2.5 text-center border-r border-sky-400 w-10">
+                      S.No.
+                    </th>
+                    <th className="py-2.5 px-3 border-r border-sky-400">
+                      Title
+                    </th>
+                    <th className="py-2.5 px-2 border-r border-sky-400 whitespace-nowrap">
+                      From Date
+                    </th>
+                    <th className="py-2.5 px-2 border-r border-sky-400 whitespace-nowrap">
+                      To Date
+                    </th>
+                    <th className="py-2.5 px-2 border-r border-sky-400 whitespace-nowrap">
+                      Venue
+                    </th>
+                    <th className="py-2.5 px-2 text-center whitespace-nowrap">
+                      Know More
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  {trainings.map((tr, idx) => (
+                    <tr
+                      key={tr.id || idx}
+                      className="hover:bg-sky-50/60 transition-colors"
+                    >
+                      <td className="py-2.5 px-2 text-center font-bold text-slate-600 border-r border-slate-200">
+                        {idx + 1}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-900 font-semibold leading-tight border-r border-slate-200">
+                        {tr.title}
+                      </td>
+                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
+                        {tr.fromDate}
+                      </td>
+                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
+                        {tr.toDate}
+                      </td>
+                      <td className="py-2.5 px-2 text-slate-700 border-r border-slate-200 whitespace-nowrap text-[11px]">
+                        {tr.venue}
+                      </td>
+                      <td className="py-2.5 px-2 text-center">
+                        {tr.link && tr.link !== "#" ? (
+                          <a
+                            href={tr.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#0288D1] font-bold hover:underline inline-flex items-center gap-0.5 text-[11px]"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>PDF</span>
+                          </a>
+                        ) : (
+                          <span className="text-slate-400 text-[11px]">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {trainings.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="py-8 text-center text-slate-400 text-xs"
+                      >
+                        No upcoming training programmes scheduled at this
+                        moment.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {/* Col 1 (Left) col-span-12 lg:col-span-2: Notice Board */}
+          <div className="col-span-12 lg:col-span-2 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col">
+            <div className="border-b border-slate-200 px-3 py-3 bg-slate-50 flex items-center justify-between">
+              <h3 className="font-serif font-bold text-xs sm:text-sm text-red-700 tracking-wide flex items-center gap-1.5">
+                <Bell className="w-4 h-4 text-red-700 shrink-0" />
+                <span className="truncate">Notice Board</span>
+              </h3>
+              {/* <span className="text-[10px] font-bold text-slate-400 uppercase shrink-0">
+                Circulars
+              </span> */}
+            </div>
+
+            <div className="p-2.5 divide-y divide-slate-100 max-h-[400px] overflow-y-auto text-xs flex-1">
+              {notices.map((item, idx) => (
+                <div key={item.id || idx} className="py-2.5 px-1 space-y-1">
+                  <a
+                    href={item.link || "#"}
+                    target={
+                      item.link && item.link.startsWith("http")
+                        ? "_blank"
+                        : "_self"
+                    }
+                    rel="noopener noreferrer"
+                    className="block text-slate-800 font-semibold text-[11px] leading-snug hover:text-[#0288D1] transition-colors"
+                  >
+                    {item.title}
+                  </a>
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                    <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                    <span>{item.date}</span>
+                    {Boolean(item.is_new) && (
+                      <span className="bg-red-600 text-white font-bold text-[8px] px-1.5 py-0.2 rounded-xs uppercase ml-auto">
+                        NEW
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {notices.length === 0 && (
+                <div className="p-6 text-center text-slate-400 text-xs">
+                  No active notices found.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-
       </div>
-
     </div>
   );
 }

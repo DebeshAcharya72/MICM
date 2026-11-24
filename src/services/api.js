@@ -392,6 +392,36 @@ export const api = {
     return await res.json();
   },
 
+  // Quick Links
+  getQuickLinks: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/quick-links`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createQuickLink: async (linkData, token) => {
+    const res = await fetch(`${API_BASE_URL}/quick-links`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(linkData),
+    });
+    return await res.json();
+  },
+
+  deleteQuickLink: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/quick-links/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
   // Dashboard Stats
   getDashboardStats: async (token) => {
     const res = await fetch(`${API_BASE_URL}/stats/dashboard`, {

@@ -166,6 +166,14 @@ const CoopNewsSchema = new mongoose.Schema({
   created_at: { type: String, default: () => new Date().toISOString() }
 }, { timestamps: true });
 
+const QuickLinkSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  url: { type: String, required: true },
+  order: { type: Number, default: 0 },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
 // Export Models (prevent overwrite in dev)
 export const AdminUser = mongoose.models.AdminUser || mongoose.model('AdminUser', AdminUserSchema);
 export const Notice = mongoose.models.Notice || mongoose.model('Notice', NoticeSchema);
@@ -180,6 +188,7 @@ export const Training = mongoose.models.Training || mongoose.model('Training', T
 export const Announcement = mongoose.models.Announcement || mongoose.model('Announcement', AnnouncementSchema);
 export const Placement = mongoose.models.Placement || mongoose.model('Placement', PlacementSchema);
 export const CoopNews = mongoose.models.CoopNews || mongoose.model('CoopNews', CoopNewsSchema);
+export const QuickLink = mongoose.models.QuickLink || mongoose.model('QuickLink', QuickLinkSchema);
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -245,6 +254,7 @@ export const db = {
       case 'announcements': return Announcement;
       case 'placements': return Placement;
       case 'coop_news': return CoopNews;
+      case 'quick_links': return QuickLink;
       default: return null;
     }
   },
@@ -694,6 +704,33 @@ export const db = {
     return !!res;
   },
 
+  // Quick Links
+  getQuickLinks: async () => {
+    await connectToDatabase();
+    const docs = await QuickLink.find().sort({ order: 1, id: 1 }).lean();
+    return formatDocs(docs);
+  },
+
+  createQuickLink: async (linkData) => {
+    await connectToDatabase();
+    const id = linkData.id || (await getNextId(QuickLink));
+    const count = await QuickLink.countDocuments();
+    const created = await QuickLink.create({
+      id,
+      title: linkData.title || '',
+      url: linkData.url || '#',
+      order: linkData.order !== undefined ? Number(linkData.order) : count + 1,
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
+  },
+
+  deleteQuickLink: async (id) => {
+    await connectToDatabase();
+    const res = await QuickLink.findOneAndDelete(buildIdQuery(id));
+    return !!res;
+  },
+
   // Dashboard Stats
   getDashboardStats: async () => {
     await connectToDatabase();
@@ -707,7 +744,8 @@ export const db = {
       trainings_total,
       announcements_total,
       placements_total,
-      coop_news_total
+      coop_news_total,
+      quick_links_total
     ] = await Promise.all([
       Enquiry.countDocuments(),
       Application.countDocuments(),
@@ -718,7 +756,8 @@ export const db = {
       Training.countDocuments(),
       Announcement.countDocuments(),
       Placement.countDocuments(),
-      CoopNews.countDocuments()
+      CoopNews.countDocuments(),
+      QuickLink.countDocuments()
     ]);
 
     return {
@@ -732,6 +771,7 @@ export const db = {
       announcements_total,
       placements_total,
       coop_news_total,
+      quick_links_total,
       server_status: "Online (MongoDB Atlas & Next.js)",
       last_backup: new Date().toLocaleString('en-GB')
     };

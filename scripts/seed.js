@@ -15,7 +15,8 @@ import {
   Training,
   Announcement,
   Placement,
-  CoopNews
+  CoopNews,
+  QuickLink
 } from '../src/lib/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -58,6 +59,7 @@ async function seedDatabase() {
       { key: 'announcements', model: Announcement, label: 'Announcements' },
       { key: 'placements', model: Placement, label: 'Placements' },
       { key: 'coop_news', model: CoopNews, label: 'Cooperative News' },
+      { key: 'quick_links', model: QuickLink, label: 'Quick Links' },
     ];
 
     for (const { key, model, label } of modelMap) {

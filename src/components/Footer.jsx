@@ -64,8 +64,12 @@ export default function Footer() {
           {/* Column 1: Institute Information (col-span-3) */}
           <div className="lg:col-span-3 space-y-4">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-11 h-11 rounded-xl bg-brand-yellow text-brand-navy flex items-center justify-center font-bold shadow-md">
-                <GraduationCap className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-full bg-white p-1 flex items-center justify-center shadow-md shrink-0 border border-white/20 group-hover:scale-105 transition-transform">
+                <img
+                  src="/micm-logo.png"
+                  alt="MICM Bhubaneswar Logo"
+                  className="w-full h-full object-contain rounded-full"
+                />
               </div>
               <div>
                 <span className="font-serif font-black text-2xl text-white block tracking-tight">

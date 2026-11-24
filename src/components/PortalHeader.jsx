@@ -89,11 +89,11 @@ export default function PortalHeader({ onSearchClick }) {
             className="flex items-center gap-3.5 sm:gap-5 text-left group"
           >
             {/* Official MICM Logo Image */}
-            <div className="shrink-0 bg-white p-1 rounded-sm border border-slate-100 shadow-2xs group-hover:scale-102 transition-transform">
+            <div className="shrink-0 bg-white p-1 rounded-full border border-slate-200 shadow-xs group-hover:scale-105 transition-transform flex items-center justify-center">
               <img
                 src="/micm-logo.png"
                 alt="Madhusudan Institute of Co-operative Management (MICM) Logo"
-                className="h-14 sm:h-20 w-auto object-contain"
+                className="h-16 w-16 sm:h-20 sm:w-20 object-contain rounded-full"
               />
             </div>
 

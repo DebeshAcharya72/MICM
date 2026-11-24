@@ -31,6 +31,7 @@ import {
   Briefcase,
   Newspaper,
   ExternalLink,
+  Link as LinkIcon,
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -81,6 +82,7 @@ export default function Admin() {
   const [announcements, setAnnouncements] = useState([]);
   const [placements, setPlacements] = useState([]);
   const [coopNews, setCoopNews] = useState([]);
+  const [quickLinks, setQuickLinks] = useState([]);
 
   // Modals & Forms
   const [selectedApp, setSelectedApp] = useState(null);
@@ -150,6 +152,13 @@ export default function Admin() {
     link: "",
   });
 
+  // Quick Links Modal State
+  const [newQuickLinkModal, setNewQuickLinkModal] = useState(false);
+  const [newQuickLinkData, setNewQuickLinkData] = useState({
+    title: "",
+    url: "",
+  });
+
   // Faculty Modal & Image State
   const [newFacultyModal, setNewFacultyModal] = useState(false);
   const [editingFacultyId, setEditingFacultyId] = useState(null);
@@ -199,7 +208,7 @@ export default function Admin() {
 
     setLoading(true);
     try {
-      const [s, a, e, n, g, f, b, tr, an, pl, cn] = await Promise.allSettled([
+      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
         api.getEnquiries(authToken),
@@ -211,6 +220,7 @@ export default function Admin() {
         api.getAnnouncements(),
         api.getPlacements(),
         api.getCoopNews(),
+        api.getQuickLinks(),
       ]);
 
       if (s.status === "fulfilled" && s.value) setStats(s.value);
@@ -234,6 +244,8 @@ export default function Admin() {
         setPlacements(pl.value);
       if (cn.status === "fulfilled" && Array.isArray(cn.value))
         setCoopNews(cn.value);
+      if (ql.status === "fulfilled" && Array.isArray(ql.value))
+        setQuickLinks(ql.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
     } finally {
@@ -527,6 +539,30 @@ export default function Admin() {
     }
   };
 
+  // Quick Links Handlers
+  const handleAddQuickLink = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createQuickLink(newQuickLinkData, token);
+      setNewQuickLinkModal(false);
+      setNewQuickLinkData({ title: "", url: "" });
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to add quick link: " + err.message);
+    }
+  };
+
+  const handleDeleteQuickLink = async (id) => {
+    if (window.confirm("Are you sure you want to remove this quick link?")) {
+      try {
+        await api.deleteQuickLink(id, token);
+        loadAdminData(token);
+      } catch {
+        setQuickLinks(quickLinks.filter((l) => l.id !== id));
+      }
+    }
+  };
+
   // Upload Faculty Image via ImgBB
   const handleFacultyImageChange = async (e) => {
     const file = e.target.files?.[0];
@@ -784,8 +820,12 @@ export default function Admin() {
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
         <div className="bg-white border border-slate-300 rounded-lg shadow-xl max-w-md w-full overflow-hidden">
           <div className="bg-[#0B1B3D] text-white p-6 text-center border-b-4 border-[#FFC107]">
-            <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Lock className="w-7 h-7 text-[#FFC107]" />
+            <div className="w-16 h-16 bg-white rounded-full p-1 flex items-center justify-center mx-auto mb-3 shadow-md border-2 border-[#FFC107]">
+              <img
+                src="/micm-logo.png"
+                alt="MICM Logo"
+                className="w-full h-full object-contain rounded-full"
+              />
             </div>
             <h2 className="text-xl font-extrabold text-white">
               MICM Portal Administration
@@ -880,8 +920,12 @@ export default function Admin() {
       <header className="bg-[#0B1B3D] text-white border-b-2 border-[#0288D1] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white/10 rounded flex items-center justify-center text-[#FFC107] font-bold">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="w-10 h-10 bg-white rounded-full p-1 flex items-center justify-center shadow-xs shrink-0 border border-white/20">
+              <img
+                src="/micm-logo.png"
+                alt="MICM Logo"
+                className="w-full h-full object-contain rounded-full"
+              />
             </div>
             <div>
               <div className="font-extrabold text-sm sm:text-base text-white tracking-tight flex items-center gap-2">
@@ -960,6 +1004,11 @@ export default function Admin() {
               id: "coop_news",
               label: `Co-op News CMS (${coopNews.length})`,
               icon: Newspaper,
+            },
+            {
+              id: "quick_links",
+              label: `Quick Links CMS (${quickLinks.length})`,
+              icon: LinkIcon,
             },
             {
               id: "grievances",
@@ -2177,6 +2226,74 @@ export default function Admin() {
             </div>
           </div>
         )}
+
+        {/* TAB: QUICK LINKS CMS */}
+        {activeTab === "quick_links" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-sm text-[#0B1B3D]">
+                  Homepage Quick Links CMS
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Manage important external and internal portal links displayed in Column 2 of the Homepage
+                </p>
+              </div>
+              <button
+                onClick={() => setNewQuickLinkModal(true)}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Quick Link</span>
+              </button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0288D1] text-white">
+                    <tr>
+                      <th className="p-3 font-bold border-r border-sky-600 w-12 text-center">#</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Link Title / Label</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Target URL</th>
+                      <th className="p-3 font-bold w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {quickLinks.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50">
+                        <td className="p-3 text-center font-bold text-slate-400 border-r">{idx + 1}</td>
+                        <td className="p-3 font-bold text-slate-900 border-r">{item.title}</td>
+                        <td className="p-3 font-mono text-slate-600 border-r truncate max-w-sm">
+                          <a href={item.url} target="_blank" rel="noreferrer" className="text-[#0288D1] font-bold hover:underline inline-flex items-center gap-1">
+                            <span className="truncate">{item.url}</span>
+                            <ExternalLink className="w-3 h-3 shrink-0" />
+                          </a>
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteQuickLink(item.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Quick Link"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {quickLinks.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-slate-400">
+                          No quick links configured. Click "Add Quick Link" to create one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* MODAL: APPLICATION FULL PROFILE VIEWER */}
@@ -3262,6 +3379,71 @@ export default function Admin() {
                 >
                   <Check className="w-4 h-4" />
                   <span>Publish News</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD QUICK LINK */}
+      {newQuickLinkModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-md w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add Homepage Quick Link</span>
+              <button onClick={() => setNewQuickLinkModal(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddQuickLink} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Link Title / Label <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newQuickLinkData.title}
+                  onChange={(e) =>
+                    setNewQuickLinkData({ ...newQuickLinkData, title: e.target.value })
+                  }
+                  placeholder="e.g. National Council for Cooperative Training (NCCT)"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Target Destination URL <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newQuickLinkData.url}
+                  onChange={(e) =>
+                    setNewQuickLinkData({ ...newQuickLinkData, url: e.target.value })
+                  }
+                  placeholder="e.g. https://ncct.ac.in"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setNewQuickLinkModal(false)}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Quick Link</span>
                 </button>
               </div>
             </form>
