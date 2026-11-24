@@ -542,5 +542,179 @@
       "order": 6,
       "created_at": "2026-11-24T00:00:00.000Z"
     }
+  ],
+  "placement_stats": [
+    {
+      "id": 1,
+      "label": "Highest Package Offered",
+      "value": "₹ 9.5 LPA",
+      "subtitle": "Agribusiness & Banking Sector",
+      "icon_name": "TrendingUp",
+      "color_theme": "emerald",
+      "order": 1
+    },
+    {
+      "id": 2,
+      "label": "Average Package",
+      "value": "₹ 5.8 LPA",
+      "subtitle": "Across Core Sectors",
+      "icon_name": "Award",
+      "color_theme": "sky",
+      "order": 2
+    },
+    {
+      "id": 3,
+      "label": "Placement Percentage",
+      "value": "92.4%",
+      "subtitle": "Batch 2023-25 Placed",
+      "icon_name": "Users",
+      "color_theme": "amber",
+      "order": 3
+    },
+    {
+      "id": 4,
+      "label": "Corporate & Co-op Partners",
+      "value": "45+",
+      "subtitle": "Active Recruiting Partners",
+      "icon_name": "Building2",
+      "color_theme": "indigo",
+      "order": 4
+    }
+  ],
+  "recruiters": [
+    {
+      "id": 1,
+      "name": "AMUL (GCMMF)",
+      "category": "Cooperative Agribusiness",
+      "note": "Regular Recruiter"
+    },
+    {
+      "id": 2,
+      "name": "IFFCO",
+      "category": "Fertiliser & Rural Marketing",
+      "note": "Core Partner"
+    },
+    {
+      "id": 3,
+      "name": "KRIBHCO",
+      "category": "Agriculture & Fertiliser",
+      "note": "Regular Recruiter"
+    },
+    {
+      "id": 4,
+      "name": "NAFED",
+      "category": "Agricultural Marketing",
+      "note": "National Partner"
+    },
+    {
+      "id": 5,
+      "name": "Odisha State Co-op Bank (OSCB)",
+      "category": "Banking & Financial",
+      "note": "State Apex Bank"
+    },
+    {
+      "id": 6,
+      "name": "HDFC Bank Ltd.",
+      "category": "Retail & Rural Banking",
+      "note": "Commercial Bank"
+    },
+    {
+      "id": 7,
+      "name": "ICICI Bank",
+      "category": "Agri-Business Group",
+      "note": "Commercial Bank"
+    },
+    {
+      "id": 8,
+      "name": "Mother Dairy Fruit & Vegetable",
+      "category": "FMCG & Dairy",
+      "note": "Dairy Giant"
+    },
+    {
+      "id": 9,
+      "name": "OMFED (Odisha)",
+      "category": "State Dairy Federation",
+      "note": "State Cooperative"
+    },
+    {
+      "id": 10,
+      "name": "VNR Seeds Pvt. Ltd.",
+      "category": "Seed & Agri-Inputs",
+      "note": "Agribusiness"
+    },
+    {
+      "id": 11,
+      "name": "Mahyco Seeds",
+      "category": "Agricultural Biotechnology",
+      "note": "Corporate Partner"
+    },
+    {
+      "id": 12,
+      "name": "Federal Bank",
+      "category": "Banking Services",
+      "note": "BFSI Partner"
+    },
+    {
+      "id": 13,
+      "name": "Axis Bank",
+      "category": "Rural & Inclusive Banking",
+      "note": "BFSI Partner"
+    },
+    {
+      "id": 14,
+      "name": "Samunnati Financial Intermediation",
+      "category": "Agri-Value Chain Finance",
+      "note": "Agri-Fintech"
+    },
+    {
+      "id": 15,
+      "name": "IFFCO Kisan Sanchar Ltd.",
+      "category": "ICT & Agri Services",
+      "note": "Agri-Tech"
+    },
+    {
+      "id": 16,
+      "name": "Reliance Retail (Jio Krishi)",
+      "category": "Rural Supply Chain",
+      "note": "Supply Chain"
+    }
+  ],
+  "internships": [
+    {
+      "id": 1,
+      "org": "National Cooperative Development Corporation (NCDC)",
+      "duration": "8 Weeks",
+      "location": "New Delhi / Bhubaneswar"
+    },
+    {
+      "id": 2,
+      "org": "NABARD (National Bank for Agriculture and Rural Development)",
+      "duration": "8 Weeks",
+      "location": "Regional Offices"
+    },
+    {
+      "id": 3,
+      "org": "Odisha State Agricultural Marketing Board (OSAMB)",
+      "duration": "8 Weeks",
+      "location": "Bhubaneswar"
+    },
+    {
+      "id": 4,
+      "org": "Bhubaneswar District Co-operative Central Bank (BDCCB)",
+      "duration": "8 Weeks",
+      "location": "Odisha"
+    },
+    {
+      "id": 5,
+      "org": "CAMPCO Ltd.",
+      "duration": "8 Weeks",
+      "location": "Mangalore"
+    },
+    {
+      "id": 6,
+      "org": "Markfed Odisha",
+      "duration": "8 Weeks",
+      "location": "Bhubaneswar"
+    }
   ]
 }

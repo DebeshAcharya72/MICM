@@ -33,6 +33,8 @@ import {
   ExternalLink,
   Link as LinkIcon,
   Menu,
+  Building2,
+  Award,
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -85,6 +87,39 @@ export default function Admin() {
   const [placements, setPlacements] = useState([]);
   const [coopNews, setCoopNews] = useState([]);
   const [quickLinks, setQuickLinks] = useState([]);
+  const [placementStats, setPlacementStats] = useState([]);
+  const [recruiters, setRecruiters] = useState([]);
+  const [internships, setInternships] = useState([]);
+
+  // Placement Stats Modal State
+  const [newPlacementStatModal, setNewPlacementStatModal] = useState(false);
+  const [newPlacementStatData, setNewPlacementStatData] = useState({
+    label: "",
+    value: "",
+    subtitle: "",
+    icon_name: "TrendingUp",
+    color_theme: "emerald",
+  });
+
+  // Recruiters Modal State
+  const [newRecruiterModal, setNewRecruiterModal] = useState(false);
+  const [newRecruiterData, setNewRecruiterData] = useState({
+    name: "",
+    category: "",
+    note: "",
+    image_url: "",
+  });
+  const [recruiterImagePreview, setRecruiterImagePreview] = useState("");
+  const [recruiterUploading, setRecruiterUploading] = useState(false);
+  const [recruiterUploadError, setRecruiterUploadError] = useState("");
+
+  // Internships Modal State
+  const [newInternshipModal, setNewInternshipModal] = useState(false);
+  const [newInternshipData, setNewInternshipData] = useState({
+    org: "",
+    duration: "8 Weeks",
+    location: "Bhubaneswar",
+  });
 
   // Modals & Forms
   const [selectedApp, setSelectedApp] = useState(null);
@@ -210,7 +245,7 @@ export default function Admin() {
 
     setLoading(true);
     try {
-      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql] = await Promise.allSettled([
+      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
         api.getEnquiries(authToken),
@@ -223,6 +258,9 @@ export default function Admin() {
         api.getPlacements(),
         api.getCoopNews(),
         api.getQuickLinks(),
+        api.getPlacementStats(),
+        api.getRecruiters(),
+        api.getInternships(),
       ]);
 
       if (s.status === "fulfilled" && s.value) setStats(s.value);
@@ -248,6 +286,12 @@ export default function Admin() {
         setCoopNews(cn.value);
       if (ql.status === "fulfilled" && Array.isArray(ql.value))
         setQuickLinks(ql.value);
+      if (ps.status === "fulfilled" && Array.isArray(ps.value))
+        setPlacementStats(ps.value);
+      if (rec.status === "fulfilled" && Array.isArray(rec.value))
+        setRecruiters(rec.value);
+      if (intern.status === "fulfilled" && Array.isArray(intern.value))
+        setInternships(intern.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
     } finally {
@@ -561,6 +605,110 @@ export default function Admin() {
         loadAdminData(token);
       } catch {
         setQuickLinks(quickLinks.filter((l) => l.id !== id));
+      }
+    }
+  };
+
+  // Placement Stats Handlers
+  const handleAddPlacementStat = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createPlacementStat(newPlacementStatData, token);
+      setNewPlacementStatModal(false);
+      setNewPlacementStatData({
+        label: "",
+        value: "",
+        subtitle: "",
+        icon_name: "TrendingUp",
+        color_theme: "emerald",
+      });
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to save placement stat: " + err.message);
+    }
+  };
+
+  const handleDeletePlacementStat = async (id) => {
+    if (window.confirm("Are you sure you want to remove this placement stat metric?")) {
+      try {
+        await api.deletePlacementStat(id, token);
+        loadAdminData(token);
+      } catch {
+        setPlacementStats(placementStats.filter((s) => s.id !== id));
+      }
+    }
+  };
+
+  // Recruiters Handlers
+  const handleRecruiterImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setRecruiterImagePreview(URL.createObjectURL(file));
+    setRecruiterUploading(true);
+    setRecruiterUploadError("");
+
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setNewRecruiterData((prev) => ({
+          ...prev,
+          image_url: res.url,
+        }));
+      }
+    } catch (err) {
+      console.error("Recruiter logo upload error:", err);
+      setRecruiterUploadError(err.message || "Failed to upload logo to ImgBB");
+    } finally {
+      setRecruiterUploading(false);
+    }
+  };
+
+  const handleAddRecruiter = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createRecruiter(newRecruiterData, token);
+      setNewRecruiterModal(false);
+      setNewRecruiterData({ name: "", category: "", note: "", image_url: "" });
+      setRecruiterImagePreview("");
+      setRecruiterUploadError("");
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to save recruiter: " + err.message);
+    }
+  };
+
+  const handleDeleteRecruiter = async (id) => {
+    if (window.confirm("Are you sure you want to remove this recruiter?")) {
+      try {
+        await api.deleteRecruiter(id, token);
+        loadAdminData(token);
+      } catch {
+        setRecruiters(recruiters.filter((r) => r.id !== id));
+      }
+    }
+  };
+
+  // Internships Handlers
+  const handleAddInternship = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createInternship(newInternshipData, token);
+      setNewInternshipModal(false);
+      setNewInternshipData({ org: "", duration: "8 Weeks", location: "Bhubaneswar" });
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to save internship: " + err.message);
+    }
+  };
+
+  const handleDeleteInternship = async (id) => {
+    if (window.confirm("Are you sure you want to remove this internship organization?")) {
+      try {
+        await api.deleteInternship(id, token);
+        loadAdminData(token);
+      } catch {
+        setInternships(internships.filter((i) => i.id !== id));
       }
     }
   };
@@ -1005,7 +1153,7 @@ export default function Admin() {
               CMS Navigation
             </span>
             <span className="text-[10px] font-bold bg-sky-100 text-[#0288D1] px-1.5 py-0.5 rounded">
-              12 Modules
+              15 Modules
             </span>
           </div>
 
@@ -1039,8 +1187,23 @@ export default function Admin() {
               },
               {
                 id: "placements",
-                label: `Placements CMS (${placements.length})`,
+                label: `Student Placements (${placements.length})`,
                 icon: Briefcase,
+              },
+              {
+                id: "placement_stats",
+                label: `Placement Stats CMS (${placementStats.length})`,
+                icon: TrendingUp,
+              },
+              {
+                id: "recruiters",
+                label: `Recruiters CMS (${recruiters.length})`,
+                icon: Building2,
+              },
+              {
+                id: "internships",
+                label: `Internships CMS (${internships.length})`,
+                icon: Award,
               },
               {
                 id: "coop_news",
@@ -2343,6 +2506,259 @@ export default function Admin() {
             </div>
           </div>
         )}
+
+        {/* TAB: PLACEMENT STATS CMS */}
+        {activeTab === "placement_stats" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-white p-4 border border-slate-300 rounded-md shadow-xs">
+              <div>
+                <h3 className="text-base font-bold text-slate-800">
+                  Placement Highlights & Statistics CMS ({placementStats.length})
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Manage the top 4 highlight metric cards displayed on the public Placements page
+                </p>
+              </div>
+              <button
+                onClick={() => setNewPlacementStatModal(true)}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Stat Metric</span>
+              </button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0288D1] text-white">
+                    <tr>
+                      <th className="p-3 font-bold border-r border-sky-600 w-12 text-center">#</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Metric Label</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Highlight Value</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Subtitle</th>
+                      <th className="p-3 font-bold border-r border-sky-600 text-center">Icon</th>
+                      <th className="p-3 font-bold border-r border-sky-600 text-center">Color Theme</th>
+                      <th className="p-3 font-bold w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {placementStats.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50">
+                        <td className="p-3 text-slate-500 border-r text-center font-bold">
+                          {idx + 1}
+                        </td>
+                        <td className="p-3 font-bold text-slate-900 border-r">
+                          {item.label}
+                        </td>
+                        <td className="p-3 font-black text-emerald-700 border-r">
+                          {item.value}
+                        </td>
+                        <td className="p-3 text-slate-600 border-r">
+                          {item.subtitle || "—"}
+                        </td>
+                        <td className="p-3 text-center border-r font-mono text-[11px] text-slate-700">
+                          {item.icon_name || "TrendingUp"}
+                        </td>
+                        <td className="p-3 text-center border-r">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            item.color_theme === 'emerald' ? 'bg-emerald-100 text-emerald-800' :
+                            item.color_theme === 'sky' ? 'bg-sky-100 text-sky-800' :
+                            item.color_theme === 'amber' ? 'bg-amber-100 text-amber-800' :
+                            item.color_theme === 'indigo' ? 'bg-indigo-100 text-indigo-800' :
+                            'bg-slate-100 text-slate-800'
+                          }`}>
+                            {item.color_theme || "emerald"}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeletePlacementStat(item.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Stat Metric"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {placementStats.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-slate-400">
+                          No placement stats configured. Click "Add Stat Metric" to create one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: RECRUITERS CMS */}
+        {activeTab === "recruiters" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-white p-4 border border-slate-300 rounded-md shadow-xs">
+              <div>
+                <h3 className="text-base font-bold text-slate-800">
+                  Prestigious Recruiters Wall CMS ({recruiters.length})
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Manage corporate and cooperative recruiters displayed on the Placements page
+                </p>
+              </div>
+              <button
+                onClick={() => setNewRecruiterModal(true)}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Recruiter</span>
+              </button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0288D1] text-white">
+                    <tr>
+                      <th className="p-3 font-bold border-r border-sky-600 w-12 text-center">#</th>
+                      <th className="p-3 font-bold border-r border-sky-600 w-16 text-center">Logo</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Recruiter / Organization Name</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Category / Sector</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Badge / Note</th>
+                      <th className="p-3 font-bold w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {recruiters.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50">
+                        <td className="p-3 text-slate-500 border-r text-center font-bold">
+                          {idx + 1}
+                        </td>
+                        <td className="p-2 border-r text-center">
+                          <div className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center mx-auto overflow-hidden shadow-2xs">
+                            {item.image_url ? (
+                              <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="w-full h-full object-contain p-1"
+                              />
+                            ) : (
+                              <span className="font-bold text-slate-700 text-xs">
+                                {(item.name || "R").charAt(0)}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3 font-bold text-slate-900 border-r">
+                          {item.name}
+                        </td>
+                        <td className="p-3 text-slate-700 font-semibold border-r">
+                          {item.category}
+                        </td>
+                        <td className="p-3 text-slate-600 border-r">
+                          <span className="px-2 py-0.5 bg-slate-100 rounded text-[11px] font-medium text-slate-700">
+                            {item.note || "Partner"}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteRecruiter(item.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Recruiter"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {recruiters.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-slate-400">
+                          No recruiters found. Click "Add Recruiter" to add one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: INTERNSHIPS CMS */}
+        {activeTab === "internships" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-white p-4 border border-slate-300 rounded-md shadow-xs">
+              <div>
+                <h3 className="text-base font-bold text-slate-800">
+                  Summer Internships (SIP) CMS ({internships.length})
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Manage hosting organizations and field immersion institutions
+                </p>
+              </div>
+              <button
+                onClick={() => setNewInternshipModal(true)}
+                className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3.5 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Internship</span>
+              </button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-md shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0288D1] text-white">
+                    <tr>
+                      <th className="p-3 font-bold border-r border-sky-600 w-12 text-center">#</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Hosting Organization</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Duration</th>
+                      <th className="p-3 font-bold border-r border-sky-600">Field / Location</th>
+                      <th className="p-3 font-bold w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {internships.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50">
+                        <td className="p-3 text-slate-500 border-r text-center font-bold">
+                          {idx + 1}
+                        </td>
+                        <td className="p-3 font-bold text-slate-900 border-r">
+                          {item.org}
+                        </td>
+                        <td className="p-3 text-slate-700 font-semibold border-r">
+                          {item.duration}
+                        </td>
+                        <td className="p-3 text-slate-600 border-r">
+                          {item.location}
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteInternship(item.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Internship"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {internships.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-slate-400">
+                          No internships configured. Click "Add Internship" to create one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
 
@@ -3494,6 +3910,345 @@ export default function Admin() {
                 >
                   <Check className="w-4 h-4" />
                   <span>Save Quick Link</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD PLACEMENT STAT METRIC */}
+      {newPlacementStatModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-md w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add Placement Stat Metric</span>
+              <button onClick={() => setNewPlacementStatModal(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPlacementStat} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Metric Label <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newPlacementStatData.label}
+                  onChange={(e) =>
+                    setNewPlacementStatData({ ...newPlacementStatData, label: e.target.value })
+                  }
+                  placeholder="e.g. Highest Package Offered"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Highlight Value <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newPlacementStatData.value}
+                  onChange={(e) =>
+                    setNewPlacementStatData({ ...newPlacementStatData, value: e.target.value })
+                  }
+                  placeholder="e.g. ₹ 9.5 LPA or 92.4%"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Subtitle / Sector Context
+                </label>
+                <input
+                  type="text"
+                  value={newPlacementStatData.subtitle}
+                  onChange={(e) =>
+                    setNewPlacementStatData({ ...newPlacementStatData, subtitle: e.target.value })
+                  }
+                  placeholder="e.g. Agribusiness & Banking Sector"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Icon Name
+                  </label>
+                  <select
+                    value={newPlacementStatData.icon_name}
+                    onChange={(e) =>
+                      setNewPlacementStatData({ ...newPlacementStatData, icon_name: e.target.value })
+                    }
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1] bg-white"
+                  >
+                    <option value="TrendingUp">TrendingUp (Growth)</option>
+                    <option value="Award">Award (Package / Honor)</option>
+                    <option value="Users">Users (Percentage / Team)</option>
+                    <option value="Building2">Building2 (Corporates / Partners)</option>
+                    <option value="Briefcase">Briefcase (Careers)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Color Theme
+                  </label>
+                  <select
+                    value={newPlacementStatData.color_theme}
+                    onChange={(e) =>
+                      setNewPlacementStatData({ ...newPlacementStatData, color_theme: e.target.value })
+                    }
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1] bg-white"
+                  >
+                    <option value="emerald">Emerald (Green)</option>
+                    <option value="sky">Sky (Blue)</option>
+                    <option value="amber">Amber (Orange/Yellow)</option>
+                    <option value="indigo">Indigo (Navy/Purple)</option>
+                    <option value="purple">Purple</option>
+                    <option value="rose">Rose (Red)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setNewPlacementStatModal(false)}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Stat Metric</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD RECRUITER */}
+      {newRecruiterModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-md w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add Recruiter Organization</span>
+              <button
+                onClick={() => {
+                  setNewRecruiterModal(false);
+                  setRecruiterImagePreview("");
+                  setRecruiterUploadError("");
+                }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddRecruiter} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Recruiter / Company Name <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newRecruiterData.name}
+                  onChange={(e) =>
+                    setNewRecruiterData({ ...newRecruiterData, name: e.target.value })
+                  }
+                  placeholder="e.g. AMUL (GCMMF) or HDFC Bank"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Company Logo / Image
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded border border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                    {recruiterImagePreview || newRecruiterData.image_url ? (
+                      <img
+                        src={recruiterImagePreview || newRecruiterData.image_url}
+                        alt="Preview"
+                        className="w-full h-full object-contain p-1"
+                      />
+                    ) : (
+                      <ImageIcon className="w-5 h-5 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleRecruiterImageChange}
+                      className="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-bold file:bg-[#0288D1] file:text-white hover:file:bg-[#0277bd] cursor-pointer"
+                    />
+                    {recruiterUploading && (
+                      <div className="text-[11px] text-sky-700 font-semibold flex items-center gap-1">
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                        <span>Uploading logo to ImgBB...</span>
+                      </div>
+                    )}
+                    {newRecruiterData.image_url && !recruiterUploading && (
+                      <div className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="truncate max-w-[200px]">
+                          Hosted: {newRecruiterData.image_url}
+                        </span>
+                      </div>
+                    )}
+                    {recruiterUploadError && (
+                      <div className="text-[11px] text-red-600 font-semibold">
+                        {recruiterUploadError}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Category / Sector <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newRecruiterData.category}
+                  onChange={(e) =>
+                    setNewRecruiterData({ ...newRecruiterData, category: e.target.value })
+                  }
+                  placeholder="e.g. Cooperative Agribusiness or Retail Banking"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Partner Note / Tag
+                </label>
+                <input
+                  type="text"
+                  value={newRecruiterData.note}
+                  onChange={(e) =>
+                    setNewRecruiterData({ ...newRecruiterData, note: e.target.value })
+                  }
+                  placeholder="e.g. Regular Recruiter, Core Partner, BFSI Partner"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewRecruiterModal(false);
+                    setRecruiterImagePreview("");
+                    setRecruiterUploadError("");
+                  }}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={recruiterUploading}
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Recruiter</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD INTERNSHIP */}
+      {newInternshipModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-md w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add Summer Internship Organization</span>
+              <button onClick={() => setNewInternshipModal(false)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddInternship} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Hosting Organization / Institution <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newInternshipData.org}
+                  onChange={(e) =>
+                    setNewInternshipData({ ...newInternshipData, org: e.target.value })
+                  }
+                  placeholder="e.g. NABARD or Odisha State Agricultural Marketing Board"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Duration <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newInternshipData.duration}
+                  onChange={(e) =>
+                    setNewInternshipData({ ...newInternshipData, duration: e.target.value })
+                  }
+                  placeholder="e.g. 8 Weeks"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Field / Location <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newInternshipData.location}
+                  onChange={(e) =>
+                    setNewInternshipData({ ...newInternshipData, location: e.target.value })
+                  }
+                  placeholder="e.g. Bhubaneswar, Odisha or Regional Offices"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setNewInternshipModal(false)}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Internship</span>
                 </button>
               </div>
             </form>

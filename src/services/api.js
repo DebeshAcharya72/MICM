@@ -422,6 +422,96 @@ export const api = {
     return await res.json();
   },
 
+  // Placement Stats
+  getPlacementStats: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/placement-stats`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createPlacementStat: async (statData, token) => {
+    const res = await fetch(`${API_BASE_URL}/placement-stats`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(statData),
+    });
+    return await res.json();
+  },
+
+  deletePlacementStat: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/placement-stats/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
+  // Recruiters
+  getRecruiters: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/recruiters`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createRecruiter: async (recruiterData, token) => {
+    const res = await fetch(`${API_BASE_URL}/recruiters`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(recruiterData),
+    });
+    return await res.json();
+  },
+
+  deleteRecruiter: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/recruiters/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
+  // Internships
+  getInternships: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/internships`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createInternship: async (internshipData, token) => {
+    const res = await fetch(`${API_BASE_URL}/internships`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(internshipData),
+    });
+    return await res.json();
+  },
+
+  deleteInternship: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/internships/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
   // Dashboard Stats
   getDashboardStats: async (token) => {
     const res = await fetch(`${API_BASE_URL}/stats/dashboard`, {

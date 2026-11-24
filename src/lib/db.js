@@ -174,6 +174,34 @@ const QuickLinkSchema = new mongoose.Schema({
   created_at: { type: String, default: () => new Date().toISOString() }
 }, { timestamps: true });
 
+const PlacementStatSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  label: { type: String, required: true },
+  value: { type: String, required: true },
+  subtitle: { type: String, default: '' },
+  icon_name: { type: String, default: 'TrendingUp' },
+  color_theme: { type: String, default: 'emerald' },
+  order: { type: Number, default: 0 },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const RecruiterSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  name: { type: String, required: true },
+  category: { type: String, default: 'Cooperative' },
+  note: { type: String, default: '' },
+  image_url: { type: String, default: null },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
+const InternshipSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  org: { type: String, required: true },
+  duration: { type: String, default: '8 Weeks' },
+  location: { type: String, default: 'Bhubaneswar' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
 // Export Models (prevent overwrite in dev)
 export const AdminUser = mongoose.models.AdminUser || mongoose.model('AdminUser', AdminUserSchema);
 export const Notice = mongoose.models.Notice || mongoose.model('Notice', NoticeSchema);
@@ -189,6 +217,9 @@ export const Announcement = mongoose.models.Announcement || mongoose.model('Anno
 export const Placement = mongoose.models.Placement || mongoose.model('Placement', PlacementSchema);
 export const CoopNews = mongoose.models.CoopNews || mongoose.model('CoopNews', CoopNewsSchema);
 export const QuickLink = mongoose.models.QuickLink || mongoose.model('QuickLink', QuickLinkSchema);
+export const PlacementStat = mongoose.models.PlacementStat || mongoose.model('PlacementStat', PlacementStatSchema);
+export const Recruiter = mongoose.models.Recruiter || mongoose.model('Recruiter', RecruiterSchema);
+export const Internship = mongoose.models.Internship || mongoose.model('Internship', InternshipSchema);
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -255,6 +286,9 @@ export const db = {
       case 'placements': return Placement;
       case 'coop_news': return CoopNews;
       case 'quick_links': return QuickLink;
+      case 'placement_stats': return PlacementStat;
+      case 'recruiters': return Recruiter;
+      case 'internships': return Internship;
       default: return null;
     }
   },
@@ -731,6 +765,145 @@ export const db = {
     return !!res;
   },
 
+  // Placement Stats
+  getPlacementStats: async () => {
+    await connectToDatabase();
+    let docs = await PlacementStat.find().sort({ order: 1, id: 1 }).lean();
+    if (!docs || docs.length === 0) {
+      const defaults = [
+        { id: 1, label: 'Highest Package Offered', value: '₹ 9.5 LPA', subtitle: 'Agribusiness & Banking Sector', icon_name: 'TrendingUp', color_theme: 'emerald', order: 1 },
+        { id: 2, label: 'Average Package', value: '₹ 5.8 LPA', subtitle: 'Across Core Sectors', icon_name: 'Award', color_theme: 'sky', order: 2 },
+        { id: 3, label: 'Placement Percentage', value: '92.4%', subtitle: 'Batch 2023-25 Placed', icon_name: 'Users', color_theme: 'amber', order: 3 },
+        { id: 4, label: 'Corporate & Co-op Partners', value: '45+', subtitle: 'Active Recruiting Partners', icon_name: 'Building2', color_theme: 'indigo', order: 4 },
+      ];
+      try {
+        await PlacementStat.insertMany(defaults);
+        docs = await PlacementStat.find().sort({ order: 1, id: 1 }).lean();
+      } catch (e) {
+        return defaults;
+      }
+    }
+    return formatDocs(docs);
+  },
+
+  createPlacementStat: async (statData) => {
+    await connectToDatabase();
+    const id = statData.id || (await getNextId(PlacementStat));
+    const count = await PlacementStat.countDocuments();
+    const created = await PlacementStat.create({
+      id,
+      label: statData.label || '',
+      value: statData.value || '',
+      subtitle: statData.subtitle || '',
+      icon_name: statData.icon_name || 'TrendingUp',
+      color_theme: statData.color_theme || 'emerald',
+      order: statData.order !== undefined ? Number(statData.order) : count + 1,
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
+  },
+
+  deletePlacementStat: async (id) => {
+    await connectToDatabase();
+    const res = await PlacementStat.findOneAndDelete(buildIdQuery(id));
+    return !!res;
+  },
+
+  // Recruiters
+  getRecruiters: async () => {
+    await connectToDatabase();
+    let docs = await Recruiter.find().sort({ id: 1 }).lean();
+    if (!docs || docs.length === 0) {
+      const defaults = [
+        { id: 1, name: 'AMUL (GCMMF)', category: 'Cooperative Agribusiness', note: 'Regular Recruiter' },
+        { id: 2, name: 'IFFCO', category: 'Fertiliser & Rural Marketing', note: 'Core Partner' },
+        { id: 3, name: 'KRIBHCO', category: 'Agriculture & Fertiliser', note: 'Regular Recruiter' },
+        { id: 4, name: 'NAFED', category: 'Agricultural Marketing', note: 'National Partner' },
+        { id: 5, name: 'Odisha State Co-op Bank (OSCB)', category: 'Banking & Financial', note: 'State Apex Bank' },
+        { id: 6, name: 'HDFC Bank Ltd.', category: 'Retail & Rural Banking', note: 'Commercial Bank' },
+        { id: 7, name: 'ICICI Bank', category: 'Agri-Business Group', note: 'Commercial Bank' },
+        { id: 8, name: 'Mother Dairy Fruit & Vegetable', category: 'FMCG & Dairy', note: 'Dairy Giant' },
+        { id: 9, name: 'OMFED (Odisha)', category: 'State Dairy Federation', note: 'State Cooperative' },
+        { id: 10, name: 'VNR Seeds Pvt. Ltd.', category: 'Seed & Agri-Inputs', note: 'Agribusiness' },
+        { id: 11, name: 'Mahyco Seeds', category: 'Agricultural Biotechnology', note: 'Corporate Partner' },
+        { id: 12, name: 'Federal Bank', category: 'Banking Services', note: 'BFSI Partner' },
+        { id: 13, name: 'Axis Bank', category: 'Rural & Inclusive Banking', note: 'BFSI Partner' },
+        { id: 14, name: 'Samunnati Financial Intermediation', category: 'Agri-Value Chain Finance', note: 'Agri-Fintech' },
+        { id: 15, name: 'IFFCO Kisan Sanchar Ltd.', category: 'ICT & Agri Services', note: 'Agri-Tech' },
+        { id: 16, name: 'Reliance Retail (Jio Krishi)', category: 'Rural Supply Chain', note: 'Supply Chain' },
+      ];
+      try {
+        await Recruiter.insertMany(defaults);
+        docs = await Recruiter.find().sort({ id: 1 }).lean();
+      } catch (e) {
+        return defaults;
+      }
+    }
+    return formatDocs(docs);
+  },
+
+  createRecruiter: async (recruiterData) => {
+    await connectToDatabase();
+    const id = recruiterData.id || (await getNextId(Recruiter));
+    const created = await Recruiter.create({
+      id,
+      name: recruiterData.name || '',
+      category: recruiterData.category || 'Cooperative',
+      note: recruiterData.note || '',
+      image_url: recruiterData.image_url || null,
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
+  },
+
+  deleteRecruiter: async (id) => {
+    await connectToDatabase();
+    const res = await Recruiter.findOneAndDelete(buildIdQuery(id));
+    return !!res;
+  },
+
+  // Internships
+  getInternships: async () => {
+    await connectToDatabase();
+    let docs = await Internship.find().sort({ id: 1 }).lean();
+    if (!docs || docs.length === 0) {
+      const defaults = [
+        { id: 1, org: 'National Cooperative Development Corporation (NCDC)', duration: '8 Weeks', location: 'New Delhi / Bhubaneswar' },
+        { id: 2, org: 'NABARD (National Bank for Agriculture and Rural Development)', duration: '8 Weeks', location: 'Regional Offices' },
+        { id: 3, org: 'Odisha State Agricultural Marketing Board (OSAMB)', duration: '8 Weeks', location: 'Bhubaneswar' },
+        { id: 4, org: 'Bhubaneswar District Co-operative Central Bank (BDCCB)', duration: '8 Weeks', location: 'Odisha' },
+        { id: 5, org: 'CAMPCO Ltd.', duration: '8 Weeks', location: 'Mangalore' },
+        { id: 6, org: 'Markfed Odisha', duration: '8 Weeks', location: 'Bhubaneswar' }
+      ];
+      try {
+        await Internship.insertMany(defaults);
+        docs = await Internship.find().sort({ id: 1 }).lean();
+      } catch (e) {
+        return defaults;
+      }
+    }
+    return formatDocs(docs);
+  },
+
+  createInternship: async (internshipData) => {
+    await connectToDatabase();
+    const id = internshipData.id || (await getNextId(Internship));
+    const created = await Internship.create({
+      id,
+      org: internshipData.org || '',
+      duration: internshipData.duration || '8 Weeks',
+      location: internshipData.location || 'Bhubaneswar',
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
+  },
+
+  deleteInternship: async (id) => {
+    await connectToDatabase();
+    const res = await Internship.findOneAndDelete(buildIdQuery(id));
+    return !!res;
+  },
+
   // Dashboard Stats
   getDashboardStats: async () => {
     await connectToDatabase();
@@ -745,7 +918,10 @@ export const db = {
       announcements_total,
       placements_total,
       coop_news_total,
-      quick_links_total
+      quick_links_total,
+      placement_stats_total,
+      recruiters_total,
+      internships_total
     ] = await Promise.all([
       Enquiry.countDocuments(),
       Application.countDocuments(),
@@ -757,7 +933,10 @@ export const db = {
       Announcement.countDocuments(),
       Placement.countDocuments(),
       CoopNews.countDocuments(),
-      QuickLink.countDocuments()
+      QuickLink.countDocuments(),
+      PlacementStat.countDocuments(),
+      Recruiter.countDocuments(),
+      Internship.countDocuments()
     ]);
 
     return {
@@ -772,6 +951,9 @@ export const db = {
       placements_total,
       coop_news_total,
       quick_links_total,
+      placement_stats_total,
+      recruiters_total,
+      internships_total,
       server_status: "Online (MongoDB Atlas & Next.js)",
       last_backup: new Date().toLocaleString('en-GB')
     };

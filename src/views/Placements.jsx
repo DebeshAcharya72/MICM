@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Briefcase, 
@@ -16,44 +16,84 @@ import {
   Calendar,
   ExternalLink
 } from 'lucide-react';
+import { api } from '../services/api';
+
+const iconMap = {
+  TrendingUp,
+  Award,
+  Users,
+  Building2,
+  Briefcase,
+};
+
+const colorMap = {
+  emerald: "text-emerald-600 bg-emerald-50",
+  sky: "text-sky-600 bg-sky-50",
+  amber: "text-amber-600 bg-amber-50",
+  indigo: "text-indigo-600 bg-indigo-50",
+  purple: "text-purple-600 bg-purple-50",
+  rose: "text-rose-600 bg-rose-50",
+};
 
 export default function Placements() {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const placementStats = [
-    { label: 'Highest Package Offered', val: '₹ 9.5 LPA', sub: 'Agribusiness & Banking Sector', icon: TrendingUp, color: 'text-emerald-600 bg-emerald-50' },
-    { label: 'Average Package', val: '₹ 5.8 LPA', sub: 'Across Core Sectors', icon: Award, color: 'text-sky-600 bg-sky-50' },
-    { label: 'Placement Percentage', val: '92.4%', sub: 'Batch 2023-25 Placed', icon: Users, color: 'text-amber-600 bg-amber-50' },
-    { label: 'Corporate & Co-op Partners', val: '45+', sub: 'Active Recruiting Partners', icon: Building2, color: 'text-indigo-600 bg-indigo-50' },
-  ];
+  const [placementStats, setPlacementStats] = useState([
+    { id: 1, label: 'Highest Package Offered', value: '₹ 9.5 LPA', subtitle: 'Agribusiness & Banking Sector', icon_name: 'TrendingUp', color_theme: 'emerald' },
+    { id: 2, label: 'Average Package', value: '₹ 5.8 LPA', subtitle: 'Across Core Sectors', icon_name: 'Award', color_theme: 'sky' },
+    { id: 3, label: 'Placement Percentage', value: '92.4%', subtitle: 'Batch 2023-25 Placed', icon_name: 'Users', color_theme: 'amber' },
+    { id: 4, label: 'Corporate & Co-op Partners', value: '45+', subtitle: 'Active Recruiting Partners', icon_name: 'Building2', color_theme: 'indigo' },
+  ]);
 
-  const recruiters = [
-    { name: 'AMUL (GCMMF)', category: 'Cooperative Agribusiness', note: 'Regular Recruiter' },
-    { name: 'IFFCO', category: 'Fertiliser & Rural Marketing', note: 'Core Partner' },
-    { name: 'KRIBHCO', category: 'Agriculture & Fertiliser', note: 'Regular Recruiter' },
-    { name: 'NAFED', category: 'Agricultural Marketing', note: 'National Partner' },
-    { name: 'Odisha State Co-op Bank (OSCB)', category: 'Banking & Financial', note: 'State Apex Bank' },
-    { name: 'HDFC Bank Ltd.', category: 'Retail & Rural Banking', note: 'Commercial Bank' },
-    { name: 'ICICI Bank', category: 'Agri-Business Group', note: 'Commercial Bank' },
-    { name: 'Mother Dairy Fruit & Vegetable', category: 'FMCG & Dairy', note: 'Dairy Giant' },
-    { name: 'OMFED (Odisha)', category: 'State Dairy Federation', note: 'State Cooperative' },
-    { name: 'VNR Seeds Pvt. Ltd.', category: 'Seed & Agri-Inputs', note: 'Agribusiness' },
-    { name: 'Mahyco Seeds', category: 'Agricultural Biotechnology', note: 'Corporate Partner' },
-    { name: 'Federal Bank', category: 'Banking Services', note: 'BFSI Partner' },
-    { name: 'Axis Bank', category: 'Rural & Inclusive Banking', note: 'BFSI Partner' },
-    { name: 'Samunnati Financial Intermediation', category: 'Agri-Value Chain Finance', note: 'Agri-Fintech' },
-    { name: 'IFFCO Kisan Sanchar Ltd.', category: 'ICT & Agri Services', note: 'Agri-Tech' },
-    { name: 'Reliance Retail (Jio Krishi)', category: 'Rural Supply Chain', note: 'Supply Chain' },
-  ];
+  const [recruiters, setRecruiters] = useState([
+    { id: 1, name: 'AMUL (GCMMF)', category: 'Cooperative Agribusiness', note: 'Regular Recruiter' },
+    { id: 2, name: 'IFFCO', category: 'Fertiliser & Rural Marketing', note: 'Core Partner' },
+    { id: 3, name: 'KRIBHCO', category: 'Agriculture & Fertiliser', note: 'Regular Recruiter' },
+    { id: 4, name: 'NAFED', category: 'Agricultural Marketing', note: 'National Partner' },
+    { id: 5, name: 'Odisha State Co-op Bank (OSCB)', category: 'Banking & Financial', note: 'State Apex Bank' },
+    { id: 6, name: 'HDFC Bank Ltd.', category: 'Retail & Rural Banking', note: 'Commercial Bank' },
+    { id: 7, name: 'ICICI Bank', category: 'Agri-Business Group', note: 'Commercial Bank' },
+    { id: 8, name: 'Mother Dairy Fruit & Vegetable', category: 'FMCG & Dairy', note: 'Dairy Giant' },
+    { id: 9, name: 'OMFED (Odisha)', category: 'State Dairy Federation', note: 'State Cooperative' },
+    { id: 10, name: 'VNR Seeds Pvt. Ltd.', category: 'Seed & Agri-Inputs', note: 'Agribusiness' },
+    { id: 11, name: 'Mahyco Seeds', category: 'Agricultural Biotechnology', note: 'Corporate Partner' },
+    { id: 12, name: 'Federal Bank', category: 'Banking Services', note: 'BFSI Partner' },
+    { id: 13, name: 'Axis Bank', category: 'Rural & Inclusive Banking', note: 'BFSI Partner' },
+    { id: 14, name: 'Samunnati Financial Intermediation', category: 'Agri-Value Chain Finance', note: 'Agri-Fintech' },
+    { id: 15, name: 'IFFCO Kisan Sanchar Ltd.', category: 'ICT & Agri Services', note: 'Agri-Tech' },
+    { id: 16, name: 'Reliance Retail (Jio Krishi)', category: 'Rural Supply Chain', note: 'Supply Chain' },
+  ]);
 
-  const internshipPartners = [
-    { org: 'National Cooperative Development Corporation (NCDC)', duration: '8 Weeks', location: 'New Delhi / Bhubaneswar' },
-    { org: 'NABARD (National Bank for Agriculture and Rural Development)', duration: '8 Weeks', location: 'Regional Offices' },
-    { org: 'Odisha State Agricultural Marketing Board (OSAMB)', duration: '8 Weeks', location: 'Bhubaneswar' },
-    { org: 'Bhubaneswar District Co-operative Central Bank (BDCCB)', duration: '8 Weeks', location: 'Odisha' },
-    { org: 'CAMPCO Ltd.', duration: '8 Weeks', location: 'Mangalore' },
-    { org: 'Markfed Odisha', duration: '8 Weeks', location: 'Bhubaneswar' }
-  ];
+  const [internships, setInternships] = useState([
+    { id: 1, org: 'National Cooperative Development Corporation (NCDC)', duration: '8 Weeks', location: 'New Delhi / Bhubaneswar' },
+    { id: 2, org: 'NABARD (National Bank for Agriculture and Rural Development)', duration: '8 Weeks', location: 'Regional Offices' },
+    { id: 3, org: 'Odisha State Agricultural Marketing Board (OSAMB)', duration: '8 Weeks', location: 'Bhubaneswar' },
+    { id: 4, org: 'Bhubaneswar District Co-operative Central Bank (BDCCB)', duration: '8 Weeks', location: 'Odisha' },
+    { id: 5, org: 'CAMPCO Ltd.', duration: '8 Weeks', location: 'Mangalore' },
+    { id: 6, org: 'Markfed Odisha', duration: '8 Weeks', location: 'Bhubaneswar' }
+  ]);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchPlacementsData = async () => {
+      try {
+        const [statsData, recruitersData, internshipsData] = await Promise.all([
+          api.getPlacementStats(),
+          api.getRecruiters(),
+          api.getInternships()
+        ]);
+        if (mounted) {
+          if (Array.isArray(statsData) && statsData.length > 0) setPlacementStats(statsData);
+          if (Array.isArray(recruitersData) && recruitersData.length > 0) setRecruiters(recruitersData);
+          if (Array.isArray(internshipsData) && internshipsData.length > 0) setInternships(internshipsData);
+        }
+      } catch (err) {
+        console.warn("Could not load dynamic placements data:", err);
+      }
+    };
+    fetchPlacementsData();
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <div className="bg-slate-50 min-h-screen pb-16">
@@ -83,16 +123,17 @@ export default function Placements() {
         {/* Placement Highlight Statistics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           {placementStats.map((item, idx) => {
-            const Icon = item.icon;
+            const Icon = (item.icon_name && iconMap[item.icon_name]) || item.icon || TrendingUp;
+            const colorClass = (item.color_theme && colorMap[item.color_theme]) || item.color || "text-emerald-600 bg-emerald-50";
             return (
-              <div key={idx} className="bg-white border border-slate-300 rounded-md p-5 shadow-xs flex items-start gap-4">
-                <div className={`p-3 rounded-lg ${item.color} shrink-0`}>
+              <div key={item.id || idx} className="bg-white border border-slate-300 rounded-md p-5 shadow-xs flex items-start gap-4">
+                <div className={`p-3 rounded-lg ${colorClass} shrink-0`}>
                   <Icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black text-slate-900 tracking-tight">{item.val}</div>
+                  <div className="text-2xl font-black text-slate-900 tracking-tight">{item.value || item.val}</div>
                   <div className="text-xs font-bold text-slate-700 mt-0.5">{item.label}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">{item.sub}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">{item.subtitle || item.sub}</div>
                 </div>
               </div>
             );
@@ -285,10 +326,18 @@ export default function Placements() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {recruiters.map((rec, i) => (
-                <div key={i} className="border border-slate-200 rounded p-4 text-center hover:border-[#0288D1] hover:shadow-md transition-all bg-slate-50">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-2 border border-slate-300 text-slate-800 font-bold text-sm shadow-xs">
-                    {rec.name.charAt(0)}
-                  </div>
+                <div key={rec.id || i} className="border border-slate-200 rounded p-4 text-center hover:border-[#0288D1] hover:shadow-md transition-all bg-slate-50">
+                  {rec.image_url ? (
+                    <img
+                      src={rec.image_url}
+                      alt={rec.name}
+                      className="w-12 h-12 object-contain mx-auto mb-2"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-2 border border-slate-300 text-slate-800 font-bold text-sm shadow-xs">
+                      {(rec.name || 'R').charAt(0)}
+                    </div>
+                  )}
                   <div className="font-extrabold text-xs sm:text-sm text-slate-900 line-clamp-1">{rec.name}</div>
                   <div className="text-[11px] text-[#0288D1] font-semibold mt-1">{rec.category}</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">{rec.note}</div>
@@ -321,8 +370,8 @@ export default function Placements() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {internshipPartners.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
+                  {internships.map((item, idx) => (
+                    <tr key={item.id || idx} className="hover:bg-slate-50">
                       <td className="p-3 font-semibold text-slate-600 border-r">{idx + 1}</td>
                       <td className="p-3 font-bold text-slate-800 border-r">{item.org}</td>
                       <td className="p-3 text-slate-600 border-r">{item.duration}</td>
