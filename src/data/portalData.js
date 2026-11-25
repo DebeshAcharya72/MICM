@@ -9,6 +9,13 @@ export const portalData = {
   gstin: "21AAATN3477B1ZO",
   pan: "AAATN3477B",
 
+  socialLinks: {
+    facebook: "https://facebook.com/micmbbsr",
+    twitter: "https://twitter.com/MicmBbsrmedia",
+    instagram: "https://instagram.com/micmbbsr",
+    youtube: "https://www.youtube.com/channel/UCrtTGiFV08KdmYUZXh5ftwg",
+  },
+
   dignitaries: {
     left: [
       {

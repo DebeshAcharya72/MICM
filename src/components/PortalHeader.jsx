@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Facebook, Twitter, Linkedin, Youtube } from "lucide-react";
+import { Search, Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 import { portalData } from "../data/portalData";
 
 export default function PortalHeader({ onSearchClick }) {
@@ -33,10 +33,10 @@ export default function PortalHeader({ onSearchClick }) {
 
   return (
     <header className="w-full bg-white border-b border-slate-200 relative z-40">
-      {/* Top Floating / Right Social Strip (Exactly like VAMNICOM screenshot) */}
+      {/* Top Floating / Right Social Strip (Official MICM Channels) */}
       <div className="fixed right-0 top-1/3 z-50 hidden lg:flex flex-col shadow-lg rounded-l-md overflow-hidden text-white text-xs font-bold">
         <a
-          href="https://facebook.com"
+          href="https://facebook.com/micmbbsr"
           target="_blank"
           rel="noreferrer"
           aria-label="Facebook"
@@ -45,25 +45,25 @@ export default function PortalHeader({ onSearchClick }) {
           <Facebook className="w-4 h-4" />
         </a>
         <a
-          href="https://twitter.com"
+          href="https://twitter.com/MicmBbsrmedia"
           target="_blank"
           rel="noreferrer"
-          aria-label="Twitter"
+          aria-label="Twitter (X)"
           className="w-9 h-9 bg-[#00acee] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
           <Twitter className="w-4 h-4" />
         </a>
         <a
-          href="https://linkedin.com"
+          href="https://instagram.com/micmbbsr"
           target="_blank"
           rel="noreferrer"
-          aria-label="LinkedIn"
-          className="w-9 h-9 bg-[#0077b5] hover:opacity-90 flex items-center justify-center transition-opacity"
+          aria-label="Instagram"
+          className="w-9 h-9 bg-[#e1306c] hover:opacity-90 flex items-center justify-center transition-opacity"
         >
-          <Linkedin className="w-4 h-4" />
+          <Instagram className="w-4 h-4" />
         </a>
         <a
-          href="https://youtube.com"
+          href="https://www.youtube.com/channel/UCrtTGiFV08KdmYUZXh5ftwg"
           target="_blank"
           rel="noreferrer"
           aria-label="YouTube"

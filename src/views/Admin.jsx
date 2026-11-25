@@ -35,6 +35,7 @@ import {
   Menu,
   Building2,
   Award,
+  UserCheck,
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -92,6 +93,7 @@ export default function Admin() {
   const [internships, setInternships] = useState([]);
   const [campusEvents, setCampusEvents] = useState([]);
   const [alumni, setAlumni] = useState([]);
+  const [alumniRequests, setAlumniRequests] = useState([]);
 
   // Alumni Modal State
   const [newAlumniModal, setNewAlumniModal] = useState(false);
@@ -273,7 +275,7 @@ export default function Admin() {
 
     setLoading(true);
     try {
-      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern, ev, alm] = await Promise.allSettled([
+      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern, ev, alm, alReq] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
         api.getEnquiries(authToken),
@@ -291,6 +293,7 @@ export default function Admin() {
         api.getInternships(),
         api.getCampusEvents(),
         api.getAlumni(),
+        api.getAlumniRequests(authToken),
       ]);
 
       if (s.status === "fulfilled" && s.value) setStats(s.value);
@@ -326,6 +329,8 @@ export default function Admin() {
         setCampusEvents(ev.value);
       if (alm.status === "fulfilled" && Array.isArray(alm.value))
         setAlumni(alm.value);
+      if (alReq.status === "fulfilled" && Array.isArray(alReq.value))
+        setAlumniRequests(alReq.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
     } finally {
@@ -854,6 +859,41 @@ export default function Admin() {
     }
   };
 
+  // Alumni Requests Handlers
+  const handleApproveAlumniRequest = async (requestItem) => {
+    try {
+      const batchString = requestItem.programme && requestItem.batch_year
+        ? `${requestItem.programme} ${requestItem.batch_year}`
+        : requestItem.batch_year || requestItem.programme || "";
+
+      await api.createAlumni({
+        name: requestItem.full_name,
+        batch: batchString,
+        current_role: requestItem.designation || "",
+        company: requestItem.current_company || "",
+        image_url: requestItem.image_url || null,
+        linkedin_url: requestItem.linkedin_url || "",
+      }, token);
+
+      await api.deleteAlumniRequest(requestItem.id, token);
+      alert(`Approved and added ${requestItem.full_name} to the public Alumni Directory.`);
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to approve alumni request: " + err.message);
+    }
+  };
+
+  const handleRejectAlumniRequest = async (id) => {
+    if (window.confirm("Are you sure you want to reject and remove this alumni request?")) {
+      try {
+        await api.deleteAlumniRequest(id, token);
+        loadAdminData(token);
+      } catch {
+        setAlumniRequests(alumniRequests.filter((r) => r.id !== id));
+      }
+    }
+  };
+
   // Upload Faculty Image via ImgBB
   const handleFacultyImageChange = async (e) => {
     const file = e.target.files?.[0];
@@ -1355,6 +1395,11 @@ export default function Admin() {
                 id: "alumni",
                 label: `Alumni CMS (${alumni.length})`,
                 icon: GraduationCap,
+              },
+              {
+                id: "alumni_requests",
+                label: `Alumni Requests (${alumniRequests.length})`,
+                icon: UserCheck,
               },
               {
                 id: "coop_news",
@@ -3095,6 +3140,122 @@ export default function Admin() {
                       <tr>
                         <td colSpan={8} className="p-8 text-center text-slate-400">
                           No alumni profiles found. Click "Add Alumni" to create one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: ALUMNI REQUESTS CMS */}
+        {activeTab === "alumni_requests" && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-md border border-slate-300 shadow-sm p-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <div>
+                  <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <UserCheck className="w-5 h-5 text-[#0288D1]" />
+                    <span>Incoming Alumni Requests ({alumniRequests.length})</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Review public registration requests submitted through the website. Click "Approve &amp; Add" to publish them to the official Alumni Directory.
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto border rounded border-slate-200">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-[#0B1B3D] text-white">
+                    <tr>
+                      <th className="p-3 w-12 text-center border-r border-[#1a3365]">#</th>
+                      <th className="p-3 w-16 text-center border-r border-[#1a3365]">Photo</th>
+                      <th className="p-3 border-r border-[#1a3365]">Alumnus Details</th>
+                      <th className="p-3 border-r border-[#1a3365]">Batch &amp; Programme</th>
+                      <th className="p-3 border-r border-[#1a3365]">Current Position</th>
+                      <th className="p-3 border-r border-[#1a3365]">LinkedIn</th>
+                      <th className="p-3 border-r border-[#1a3365]">Message / Mentorship</th>
+                      <th className="p-3 w-36 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {alumniRequests.map((req, idx) => (
+                      <tr key={req.id || idx} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3 text-center text-slate-500 font-mono border-r">
+                          {idx + 1}
+                        </td>
+                        <td className="p-3 text-center border-r">
+                          {req.image_url ? (
+                            <img
+                              src={req.image_url}
+                              alt={req.full_name}
+                              className="w-10 h-10 object-cover rounded-full border border-slate-200 mx-auto"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center mx-auto text-xs">
+                              {req.full_name ? req.full_name.charAt(0) : "A"}
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3 border-r">
+                          <div className="font-bold text-slate-900">{req.full_name}</div>
+                          <div className="text-[11px] text-slate-500">{req.email}</div>
+                          <div className="text-[11px] text-slate-500">{req.phone} {req.city ? `• ${req.city}` : ''}</div>
+                        </td>
+                        <td className="p-3 border-r whitespace-nowrap">
+                          <div className="font-bold text-[#0288D1]">{req.programme}</div>
+                          <div className="text-slate-600">Batch {req.batch_year}</div>
+                        </td>
+                        <td className="p-3 border-r">
+                          <div className="font-bold text-slate-800">{req.designation || "-"}</div>
+                          <div className="text-emerald-800 font-semibold">{req.current_company || "-"}</div>
+                        </td>
+                        <td className="p-3 border-r max-w-xs truncate">
+                          {req.linkedin_url ? (
+                            <a
+                              href={req.linkedin_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[#0288D1] hover:underline flex items-center gap-1 font-semibold"
+                            >
+                              <span>LinkedIn</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </td>
+                        <td className="p-3 border-r max-w-xs text-slate-600 text-[11px]" title={req.message}>
+                          {req.message ? req.message : <span className="text-slate-400 italic">No notes provided</span>}
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => handleApproveAlumniRequest(req)}
+                              className="w-full sm:w-auto px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-[11px] flex items-center justify-center gap-1 shadow-2xs transition-colors"
+                              title="Approve and Publish to Directory"
+                            >
+                              <Check className="w-3 h-3" />
+                              <span>Approve</span>
+                            </button>
+                            <button
+                              onClick={() => handleRejectAlumniRequest(req.id)}
+                              className="w-full sm:w-auto px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded font-semibold text-[11px] flex items-center justify-center gap-1 border border-rose-200 transition-colors"
+                              title="Reject &amp; Delete Request"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span>Reject</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {alumniRequests.length === 0 && (
+                      <tr>
+                        <td colSpan={8} className="p-8 text-center text-slate-400">
+                          No pending alumni requests. New registrations from the public Alumni page will appear here.
                         </td>
                       </tr>
                     )}

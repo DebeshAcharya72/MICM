@@ -572,6 +572,41 @@ export const api = {
     return await res.json();
   },
 
+  // Alumni Registration Requests
+  submitAlumniRequest: async (requestData) => {
+    const res = await fetch(`${API_BASE_URL}/alumni-requests`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to submit alumni registration');
+    }
+    return await res.json();
+  },
+
+  getAlumniRequests: async (token) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/alumni-requests`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  deleteAlumniRequest: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/alumni-requests/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
   // Dashboard Stats
   getDashboardStats: async (token) => {
     const res = await fetch(`${API_BASE_URL}/stats/dashboard`, {

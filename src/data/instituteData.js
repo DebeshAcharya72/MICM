@@ -12,11 +12,11 @@ export const instituteData = {
   googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3742.417387229562!2d85.8122393149202!3d20.282998986407067!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a19099435b0e8c1%3A0xe54e24ef54778be1!2sMadhusudan%20Institute%20of%20Co-operative%20Management%20(MICM)!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin",
   
   socialLinks: {
-    facebook: "https://facebook.com",
-    instagram: "https://instagram.com",
-    youtube: "https://youtube.com",
+    facebook: "https://facebook.com/micmbbsr",
+    instagram: "https://instagram.com/micmbbsr",
+    youtube: "https://www.youtube.com/channel/UCrtTGiFV08KdmYUZXh5ftwg",
     linkedin: "https://linkedin.com",
-    twitter: "https://twitter.com",
+    twitter: "https://twitter.com/MicmBbsrmedia",
   },
 
   stats: [

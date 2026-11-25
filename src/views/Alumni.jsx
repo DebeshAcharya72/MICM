@@ -14,7 +14,9 @@ import {
   Briefcase,
   HeartHandshake,
   Linkedin,
-  ExternalLink
+  ExternalLink,
+  Camera,
+  Loader2
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -22,6 +24,11 @@ export default function Alumni() {
   const [alumniList, setAlumniList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [registered, setRegistered] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState('');
+
   const [formData, setFormData] = useState({
     full_name: '',
     batch_year: '2020',
@@ -31,7 +38,9 @@ export default function Alumni() {
     email: '',
     phone: '',
     city: '',
-    message: ''
+    message: '',
+    image_url: '',
+    linkedin_url: ''
   });
 
   useEffect(() => {
@@ -54,9 +63,40 @@ export default function Alumni() {
     };
   }, []);
 
-  const handleSubmit = (e) => {
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPhotoPreview(URL.createObjectURL(file));
+    setUploadingPhoto(true);
+    setSubmitError('');
+
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setFormData((prev) => ({ ...prev, image_url: res.url }));
+      }
+    } catch (err) {
+      console.error("Photo upload error:", err);
+      setSubmitError(err.message || "Failed to upload photo. Please try again.");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setRegistered(true);
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      await api.submitAlumniRequest(formData);
+      setRegistered(true);
+    } catch (err) {
+      console.error("Alumni request submission failed:", err);
+      setSubmitError(err.message || 'Failed to submit registration. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -219,10 +259,26 @@ export default function Alumni() {
                   </div>
                   <h3 className="text-lg font-bold text-slate-900">Alumni Registration Recorded!</h3>
                   <p className="text-xs text-slate-600 max-w-md mx-auto">
-                    Thank you <strong>{formData.full_name}</strong> for reconnecting with your alma mater. You have been added to the MICM Alumni Directory and will receive quarterly alumni newsletters and reunion invitations.
+                    Thank you <strong>{formData.full_name}</strong> for reconnecting with your alma mater. Your profile has been sent to the Institute Administrator for review and directory listing.
                   </p>
                   <button
-                    onClick={() => setRegistered(false)}
+                    onClick={() => {
+                      setRegistered(false);
+                      setPhotoPreview('');
+                      setFormData({
+                        full_name: '',
+                        batch_year: '2020',
+                        programme: 'MBA',
+                        current_company: '',
+                        designation: '',
+                        email: '',
+                        phone: '',
+                        city: '',
+                        message: '',
+                        image_url: '',
+                        linkedin_url: ''
+                      });
+                    }}
                     className="mt-4 bg-[#0288D1] text-white font-bold text-xs px-6 py-2 rounded"
                   >
                     Register Another Alumnus
@@ -230,7 +286,42 @@ export default function Alumni() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
-                  
+                  {/* Photo Upload */}
+                  <div className="bg-slate-50 p-3 rounded border border-slate-200">
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Alumni Profile Photo (Optional)
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden shrink-0">
+                        {photoPreview || formData.image_url ? (
+                          <img
+                            src={photoPreview || formData.image_url}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Camera className="w-5 h-5 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded cursor-pointer border border-slate-300 text-xs transition-colors">
+                          <Camera className="w-3.5 h-3.5 text-[#0288D1]" />
+                          <span>{uploadingPhoto ? "Uploading to ImgBB..." : "Upload Photo"}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handlePhotoUpload}
+                            disabled={uploadingPhoto}
+                          />
+                        </label>
+                        <p className="text-[11px] text-slate-400 mt-1">
+                          Square photo, max 5MB. Will be displayed on your verified alumni card.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block font-semibold text-slate-700 mb-1">
@@ -293,7 +384,7 @@ export default function Alumni() {
 
                     <div>
                       <label className="block font-semibold text-slate-700 mb-1">
-                        Current Designation <span className="text-red-600">*</span>
+                        Current Role / Designation <span className="text-red-600">*</span>
                       </label>
                       <input
                         type="text"
@@ -346,6 +437,19 @@ export default function Alumni() {
                         className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
                       />
                     </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        LinkedIn Profile URL (Optional)
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.linkedin_url}
+                        onChange={(e) => setFormData({...formData, linkedin_url: e.target.value})}
+                        placeholder="https://linkedin.com/in/yourprofile"
+                        className="w-full px-3 py-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -361,13 +465,29 @@ export default function Alumni() {
                     ></textarea>
                   </div>
 
+                  {submitError && (
+                    <div className="p-3 bg-red-50 text-red-700 rounded border border-red-200 text-xs font-semibold">
+                      {submitError}
+                    </div>
+                  )}
+
                   <div className="flex justify-end pt-2">
                     <button
                       type="submit"
-                      className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-6 py-2.5 rounded font-bold text-xs flex items-center gap-2 shadow-xs transition-colors"
+                      disabled={submitting || uploadingPhoto}
+                      className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-6 py-2.5 rounded font-bold text-xs flex items-center gap-2 shadow-xs transition-colors disabled:opacity-50"
                     >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Submit Alumni Profile</span>
+                      {submitting ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Submitting Request...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Submit Alumni Profile</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>

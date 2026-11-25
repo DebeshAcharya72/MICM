@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Facebook, Twitter, Linkedin, Youtube, Lock } from "lucide-react";
+import { Facebook, Twitter, Instagram, Youtube, Lock } from "lucide-react";
 
 export default function PortalFooter() {
   return (
@@ -49,7 +49,7 @@ export default function PortalFooter() {
               Connect:
             </span>
             <a
-              href="https://facebook.com"
+              href="https://facebook.com/micmbbsr"
               target="_blank"
               rel="noreferrer"
               aria-label="Facebook"
@@ -58,25 +58,25 @@ export default function PortalFooter() {
               <Facebook className="w-3.5 h-3.5" />
             </a>
             <a
-              href="https://twitter.com"
+              href="https://twitter.com/MicmBbsrmedia"
               target="_blank"
               rel="noreferrer"
-              aria-label="Twitter"
+              aria-label="Twitter (X)"
               className="hover:text-amber-200"
             >
               <Twitter className="w-3.5 h-3.5" />
             </a>
             <a
-              href="https://linkedin.com"
+              href="https://instagram.com/micmbbsr"
               target="_blank"
               rel="noreferrer"
-              aria-label="LinkedIn"
+              aria-label="Instagram"
               className="hover:text-amber-200"
             >
-              <Linkedin className="w-3.5 h-3.5" />
+              <Instagram className="w-3.5 h-3.5" />
             </a>
             <a
-              href="https://youtube.com"
+              href="https://www.youtube.com/channel/UCrtTGiFV08KdmYUZXh5ftwg"
               target="_blank"
               rel="noreferrer"
               aria-label="YouTube"

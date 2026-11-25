@@ -222,6 +222,23 @@ const AlumniSchema = new mongoose.Schema({
   created_at: { type: String, default: () => new Date().toISOString() }
 }, { timestamps: true });
 
+const AlumniRequestSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  full_name: { type: String, required: true },
+  batch_year: { type: String, default: '' },
+  programme: { type: String, default: 'MBA' },
+  current_company: { type: String, default: '' },
+  designation: { type: String, default: '' },
+  email: { type: String, default: '' },
+  phone: { type: String, default: '' },
+  city: { type: String, default: '' },
+  message: { type: String, default: '' },
+  image_url: { type: String, default: null },
+  linkedin_url: { type: String, default: '' },
+  status: { type: String, default: 'Pending' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
 // Export Models (prevent overwrite in dev)
 export const AdminUser = mongoose.models.AdminUser || mongoose.model('AdminUser', AdminUserSchema);
 export const Notice = mongoose.models.Notice || mongoose.model('Notice', NoticeSchema);
@@ -242,6 +259,7 @@ export const Recruiter = mongoose.models.Recruiter || mongoose.model('Recruiter'
 export const Internship = mongoose.models.Internship || mongoose.model('Internship', InternshipSchema);
 export const CampusEvent = mongoose.models.CampusEvent || mongoose.model('CampusEvent', CampusEventSchema);
 export const Alumni = mongoose.models.Alumni || mongoose.model('Alumni', AlumniSchema);
+export const AlumniRequest = mongoose.models.AlumniRequest || mongoose.model('AlumniRequest', AlumniRequestSchema);
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -313,6 +331,7 @@ export const db = {
       case 'internships': return Internship;
       case 'campus_events': return CampusEvent;
       case 'alumni': return Alumni;
+      case 'alumni_requests': return AlumniRequest;
       default: return null;
     }
   },
@@ -1068,6 +1087,41 @@ export const db = {
     return !!res;
   },
 
+  // Alumni Requests (Public Submissions)
+  getAlumniRequests: async () => {
+    await connectToDatabase();
+    const docs = await AlumniRequest.find().sort({ id: -1 }).lean();
+    return formatDocs(docs);
+  },
+
+  createAlumniRequest: async (reqData) => {
+    await connectToDatabase();
+    const id = reqData.id || (await getNextId(AlumniRequest));
+    const created = await AlumniRequest.create({
+      id,
+      full_name: reqData.full_name || '',
+      batch_year: reqData.batch_year || '',
+      programme: reqData.programme || 'MBA',
+      current_company: reqData.current_company || '',
+      designation: reqData.designation || '',
+      email: reqData.email || '',
+      phone: reqData.phone || '',
+      city: reqData.city || '',
+      message: reqData.message || '',
+      image_url: reqData.image_url || null,
+      linkedin_url: reqData.linkedin_url || '',
+      status: reqData.status || 'Pending',
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
+  },
+
+  deleteAlumniRequest: async (id) => {
+    await connectToDatabase();
+    const res = await AlumniRequest.findOneAndDelete(buildIdQuery(id));
+    return !!res;
+  },
+
   // Dashboard Stats
   getDashboardStats: async () => {
     await connectToDatabase();
@@ -1087,7 +1141,8 @@ export const db = {
       recruiters_total,
       internships_total,
       campus_events_total,
-      alumni_total
+      alumni_total,
+      alumni_requests_total
     ] = await Promise.all([
       Enquiry.countDocuments(),
       Application.countDocuments(),
@@ -1104,7 +1159,8 @@ export const db = {
       Recruiter.countDocuments(),
       Internship.countDocuments(),
       CampusEvent.countDocuments(),
-      Alumni.countDocuments()
+      Alumni.countDocuments(),
+      AlumniRequest.countDocuments()
     ]);
 
     return {
@@ -1124,6 +1180,7 @@ export const db = {
       internships_total,
       campus_events_total,
       alumni_total,
+      alumni_requests_total,
       server_status: "Online (MongoDB Atlas & Next.js)",
       last_backup: new Date().toLocaleString('en-GB')
     };
