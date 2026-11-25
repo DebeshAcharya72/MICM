@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronRight, Menu, X, FileText, Lock } from "lucide-react";
+import { ChevronDown, Menu, X, FileText, Lock } from "lucide-react";
 
 export default function PortalNavbar() {
   const pathname = usePathname() || "/";
@@ -11,16 +11,14 @@ export default function PortalNavbar() {
   // Desktop Dropdown States
   const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
   const [admissionsDropdownOpen, setAdmissionsDropdownOpen] = useState(false);
-  const [academicsDropdownOpen, setAcademicsDropdownOpen] = useState(false);
-  const [trainingDropdownOpen, setTrainingDropdownOpen] = useState(false);
+  const [academicsTrainingDropdownOpen, setAcademicsTrainingDropdownOpen] = useState(false);
   const [studentLifeDropdownOpen, setStudentLifeDropdownOpen] = useState(false);
 
   // Mobile Drawer & Collapsible States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileAdmissionsOpen, setMobileAdmissionsOpen] = useState(false);
-  const [mobileAcademicsOpen, setMobileAcademicsOpen] = useState(false);
-  const [mobileTrainingOpen, setMobileTrainingOpen] = useState(false);
+  const [mobileAcademicsTrainingOpen, setMobileAcademicsTrainingOpen] = useState(false);
   const [mobileStudentLifeOpen, setMobileStudentLifeOpen] = useState(false);
 
   // Active Route Checks
@@ -34,12 +32,11 @@ export default function PortalNavbar() {
     pathname.startsWith("/apply") ||
     pathname.startsWith("/admission-faqs");
 
-  const isAcademicsActive =
+  const isAcademicsTrainingActive =
     pathname.startsWith("/programmes") ||
+    pathname.startsWith("/training") ||
+    pathname.startsWith("/training-calendar") ||
     pathname.startsWith("/downloads");
-
-  const isTrainingActive =
-    pathname.startsWith("/training");
 
   const isStudentLifeActive =
     pathname.startsWith("/placements") ||
@@ -70,7 +67,7 @@ export default function PortalNavbar() {
         <div className="flex items-center justify-between">
           
           {/* ========================================================
-              DESKTOP NAVIGATION (10 Menu Items)
+              DESKTOP NAVIGATION (Merged Academics & Training)
           ======================================================== */}
           <div className="hidden lg:flex items-center flex-wrap">
             {/* 1. Home */}
@@ -177,39 +174,53 @@ export default function PortalNavbar() {
               )}
             </div>
 
-            {/* 4. Academics Dropdown */}
+            {/* 4. Academics & Training Dropdown (Merged) */}
             <div
               className="relative"
-              onMouseEnter={() => setAcademicsDropdownOpen(true)}
-              onMouseLeave={() => setAcademicsDropdownOpen(false)}
+              onMouseEnter={() => setAcademicsTrainingDropdownOpen(true)}
+              onMouseLeave={() => setAcademicsTrainingDropdownOpen(false)}
             >
               <button
                 type="button"
-                className={dropdownTriggerClass(isAcademicsActive)}
+                className={dropdownTriggerClass(isAcademicsTrainingActive)}
               >
-                <span>Academics</span>
+                <span>Academics & Training</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-80" />
               </button>
 
-              {academicsDropdownOpen && (
-                <div className="absolute left-0 top-full w-56 bg-white border border-slate-300 shadow-xl py-1 z-50 text-xs rounded-b-md">
+              {academicsTrainingDropdownOpen && (
+                <div className="absolute left-0 top-full w-60 bg-white border border-slate-300 shadow-xl py-1 z-50 text-xs rounded-b-md">
                   <Link
                     href="/programmes#mba-section"
-                    onClick={() => setAcademicsDropdownOpen(false)}
+                    onClick={() => setAcademicsTrainingDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
                     MBA Programme
                   </Link>
                   <Link
                     href="/programmes#hdcm-section"
-                    onClick={() => setAcademicsDropdownOpen(false)}
+                    onClick={() => setAcademicsTrainingDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
                     HDCM Programme
                   </Link>
                   <Link
+                    href="/training-calendar"
+                    onClick={() => setAcademicsTrainingDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors font-semibold"
+                  >
+                    Training Calendar
+                  </Link>
+                  <Link
+                    href="/training-calendar#past"
+                    onClick={() => setAcademicsTrainingDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
+                  >
+                    Past Programmes
+                  </Link>
+                  <Link
                     href="/downloads"
-                    onClick={() => setAcademicsDropdownOpen(false)}
+                    onClick={() => setAcademicsTrainingDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
                   >
                     Download Syllabi
@@ -218,48 +229,7 @@ export default function PortalNavbar() {
               )}
             </div>
 
-            {/* 5. Training Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => setTrainingDropdownOpen(true)}
-              onMouseLeave={() => setTrainingDropdownOpen(false)}
-            >
-              <button
-                type="button"
-                className={dropdownTriggerClass(isTrainingActive)}
-              >
-                <span>Training</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
-              </button>
-
-              {trainingDropdownOpen && (
-                <div className="absolute left-0 top-full w-56 bg-white border border-slate-300 shadow-xl py-1 z-50 text-xs rounded-b-md">
-                  <Link
-                    href="/training"
-                    onClick={() => setTrainingDropdownOpen(false)}
-                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors font-semibold"
-                  >
-                    About Training Wing
-                  </Link>
-                  <Link
-                    href="/training-calendar"
-                    onClick={() => setTrainingDropdownOpen(false)}
-                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
-                  >
-                    Training Calendar
-                  </Link>
-                  <Link
-                    href="/training-calendar#past"
-                    onClick={() => setTrainingDropdownOpen(false)}
-                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
-                  >
-                    Past Programmes
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* 6. Student Life Dropdown */}
+            {/* 5. Student Life Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => setStudentLifeDropdownOpen(true)}
@@ -293,22 +263,22 @@ export default function PortalNavbar() {
               )}
             </div>
 
-            {/* 7. Faculty */}
+            {/* 6. Faculty */}
             <Link href="/faculty" className={navItemClass(isFacultyActive)}>
               Faculty
             </Link>
 
-            {/* 8. Facilities */}
+            {/* 7. Facilities */}
             <Link href="/facilities" className={navItemClass(isFacilitiesActive)}>
               Facilities
             </Link>
 
-            {/* 9. Alumni (Active and Visible) */}
+            {/* 8. Alumni (Direct Link to /alumni) */}
             <Link href="/alumni" className={navItemClass(isAlumniActive)}>
               Alumni
             </Link>
 
-            {/* 10. Contact */}
+            {/* 9. Contact */}
             <Link href="/contact" className={navItemClass(isContactActive)}>
               Contact
             </Link>
@@ -363,7 +333,7 @@ export default function PortalNavbar() {
       </div>
 
       {/* ========================================================
-          MOBILE COLLAPSIBLE MENU (Exact 10-Item Structure)
+          MOBILE COLLAPSIBLE MENU
       ======================================================== */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b border-slate-300 px-4 pt-2 pb-6 space-y-1 text-sm shadow-xl max-h-[80vh] overflow-y-auto">
@@ -472,21 +442,21 @@ export default function PortalNavbar() {
             )}
           </div>
 
-          {/* 4. Academics Collapsible */}
+          {/* 4. Academics & Training Collapsible (Merged) */}
           <div className="border-b border-slate-100 pb-1">
             <button
               type="button"
-              onClick={() => setMobileAcademicsOpen(!mobileAcademicsOpen)}
+              onClick={() => setMobileAcademicsTrainingOpen(!mobileAcademicsTrainingOpen)}
               className="w-full flex items-center justify-between py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded text-left"
             >
-              <span>Academics</span>
+              <span>Academics & Training</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform duration-200 ${
-                  mobileAcademicsOpen ? "rotate-180" : ""
+                  mobileAcademicsTrainingOpen ? "rotate-180" : ""
                 }`}
               />
             </button>
-            {mobileAcademicsOpen && (
+            {mobileAcademicsTrainingOpen && (
               <div className="pl-5 pr-2 py-1 space-y-1 bg-slate-50 rounded mb-1 text-xs">
                 <Link
                   href="/programmes#mba-section"
@@ -503,43 +473,9 @@ export default function PortalNavbar() {
                   HDCM Programme
                 </Link>
                 <Link
-                  href="/downloads"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
-                >
-                  Download Syllabi
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* 5. Training Collapsible */}
-          <div className="border-b border-slate-100 pb-1">
-            <button
-              type="button"
-              onClick={() => setMobileTrainingOpen(!mobileTrainingOpen)}
-              className="w-full flex items-center justify-between py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded text-left"
-            >
-              <span>Training</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ${
-                  mobileTrainingOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-            {mobileTrainingOpen && (
-              <div className="pl-5 pr-2 py-1 space-y-1 bg-slate-50 rounded mb-1 text-xs">
-                <Link
-                  href="/training"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1] font-semibold"
-                >
-                  About Training Wing
-                </Link>
-                <Link
                   href="/training-calendar"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1] font-semibold"
                 >
                   Training Calendar
                 </Link>
@@ -550,11 +486,18 @@ export default function PortalNavbar() {
                 >
                   Past Programmes
                 </Link>
+                <Link
+                  href="/downloads"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Download Syllabi
+                </Link>
               </div>
             )}
           </div>
 
-          {/* 6. Student Life Collapsible */}
+          {/* 5. Student Life Collapsible */}
           <div className="border-b border-slate-100 pb-1">
             <button
               type="button"
@@ -588,7 +531,7 @@ export default function PortalNavbar() {
             )}
           </div>
 
-          {/* 7. Faculty */}
+          {/* 6. Faculty */}
           <Link
             href="/faculty"
             onClick={() => setMobileMenuOpen(false)}
@@ -597,7 +540,7 @@ export default function PortalNavbar() {
             Faculty
           </Link>
 
-          {/* 8. Facilities */}
+          {/* 7. Facilities */}
           <Link
             href="/facilities"
             onClick={() => setMobileMenuOpen(false)}
@@ -606,7 +549,7 @@ export default function PortalNavbar() {
             Facilities
           </Link>
 
-          {/* 9. Alumni (Active and Visible) */}
+          {/* 8. Alumni (Direct Link to /alumni) */}
           <Link
             href="/alumni"
             onClick={() => setMobileMenuOpen(false)}
@@ -615,7 +558,7 @@ export default function PortalNavbar() {
             Alumni
           </Link>
 
-          {/* 10. Contact */}
+          {/* 9. Contact */}
           <Link
             href="/contact"
             onClick={() => setMobileMenuOpen(false)}

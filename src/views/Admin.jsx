@@ -91,6 +91,21 @@ export default function Admin() {
   const [recruiters, setRecruiters] = useState([]);
   const [internships, setInternships] = useState([]);
   const [campusEvents, setCampusEvents] = useState([]);
+  const [alumni, setAlumni] = useState([]);
+
+  // Alumni Modal State
+  const [newAlumniModal, setNewAlumniModal] = useState(false);
+  const [newAlumniData, setNewAlumniData] = useState({
+    name: "",
+    batch: "",
+    current_role: "",
+    company: "",
+    linkedin_url: "",
+    image_url: "",
+  });
+  const [alumniImagePreview, setAlumniImagePreview] = useState("");
+  const [alumniUploading, setAlumniUploading] = useState(false);
+  const [alumniUploadError, setAlumniUploadError] = useState("");
 
   // Campus Events Modal State
   const [newCampusEventModal, setNewCampusEventModal] = useState(false);
@@ -258,7 +273,7 @@ export default function Admin() {
 
     setLoading(true);
     try {
-      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern, ev] = await Promise.allSettled([
+      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern, ev, alm] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
         api.getEnquiries(authToken),
@@ -275,6 +290,7 @@ export default function Admin() {
         api.getRecruiters(),
         api.getInternships(),
         api.getCampusEvents(),
+        api.getAlumni(),
       ]);
 
       if (s.status === "fulfilled" && s.value) setStats(s.value);
@@ -308,6 +324,8 @@ export default function Admin() {
         setInternships(intern.value);
       if (ev.status === "fulfilled" && Array.isArray(ev.value))
         setCampusEvents(ev.value);
+      if (alm.status === "fulfilled" && Array.isArray(alm.value))
+        setAlumni(alm.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
     } finally {
@@ -775,6 +793,63 @@ export default function Admin() {
         loadAdminData(token);
       } catch {
         setCampusEvents(campusEvents.filter((ev) => ev.id !== id));
+      }
+    }
+  };
+
+  // Alumni Handlers
+  const handleAlumniImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAlumniImagePreview(URL.createObjectURL(file));
+    setAlumniUploading(true);
+    setAlumniUploadError("");
+
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setNewAlumniData((prev) => ({
+          ...prev,
+          image_url: res.url,
+        }));
+      }
+    } catch (err) {
+      console.error("Alumni photo upload error:", err);
+      setAlumniUploadError(err.message || "Failed to upload photo to ImgBB");
+    } finally {
+      setAlumniUploading(false);
+    }
+  };
+
+  const handleAddAlumni = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createAlumni(newAlumniData, token);
+      setNewAlumniModal(false);
+      setNewAlumniData({
+        name: "",
+        batch: "",
+        current_role: "",
+        company: "",
+        linkedin_url: "",
+        image_url: "",
+      });
+      setAlumniImagePreview("");
+      setAlumniUploadError("");
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to save alumni: " + err.message);
+    }
+  };
+
+  const handleDeleteAlumni = async (id) => {
+    if (window.confirm("Are you sure you want to delete this alumni record?")) {
+      try {
+        await api.deleteAlumni(id, token);
+        loadAdminData(token);
+      } catch {
+        setAlumni(alumni.filter((a) => a.id !== id));
       }
     }
   };
@@ -1275,6 +1350,11 @@ export default function Admin() {
                 id: "campus_events",
                 label: `Campus Events CMS (${campusEvents.length})`,
                 icon: Sparkles,
+              },
+              {
+                id: "alumni",
+                label: `Alumni CMS (${alumni.length})`,
+                icon: GraduationCap,
               },
               {
                 id: "coop_news",
@@ -2917,6 +2997,113 @@ export default function Admin() {
             </div>
           </div>
         )}
+
+        {/* TAB: ALUMNI CMS */}
+        {activeTab === "alumni" && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-md border border-slate-300 shadow-sm p-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <div>
+                  <h3 className="text-base font-bold text-slate-800">
+                    Alumni Relations & Directory CMS ({alumni.length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Manage distinguished alumni profiles and cards displayed on the public Alumni page.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setNewAlumniModal(true)}
+                  className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 shadow-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Alumni</span>
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border rounded border-slate-200">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-[#0B1B3D] text-white">
+                    <tr>
+                      <th className="p-3 w-16 text-center border-r border-[#1a3365]">#</th>
+                      <th className="p-3 w-16 text-center border-r border-[#1a3365]">Photo</th>
+                      <th className="p-3 border-r border-[#1a3365]">Name</th>
+                      <th className="p-3 border-r border-[#1a3365]">Batch</th>
+                      <th className="p-3 border-r border-[#1a3365]">Current Role</th>
+                      <th className="p-3 border-r border-[#1a3365]">Company / Org</th>
+                      <th className="p-3 border-r border-[#1a3365]">LinkedIn</th>
+                      <th className="p-3 w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {alumni.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3 text-center text-slate-500 font-mono border-r">
+                          {idx + 1}
+                        </td>
+                        <td className="p-3 text-center border-r">
+                          {item.image_url ? (
+                            <img
+                              src={item.image_url}
+                              alt={item.name}
+                              className="w-10 h-10 object-cover rounded-full border border-slate-200 mx-auto"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center mx-auto text-xs">
+                              {item.name ? item.name.charAt(0) : "A"}
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3 font-bold text-slate-900 border-r">
+                          {item.name}
+                        </td>
+                        <td className="p-3 text-slate-600 font-semibold border-r whitespace-nowrap">
+                          {item.batch || "-"}
+                        </td>
+                        <td className="p-3 text-slate-800 border-r">
+                          {item.current_role || "-"}
+                        </td>
+                        <td className="p-3 font-semibold text-emerald-800 border-r">
+                          {item.company || "-"}
+                        </td>
+                        <td className="p-3 text-slate-500 border-r max-w-xs truncate">
+                          {item.linkedin_url ? (
+                            <a
+                              href={item.linkedin_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[#0288D1] hover:underline flex items-center gap-1"
+                            >
+                              <span>View Profile</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteAlumni(item.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Alumni"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {alumni.length === 0 && (
+                      <tr>
+                        <td colSpan={8} className="p-8 text-center text-slate-400">
+                          No alumni profiles found. Click "Add Alumni" to create one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
 
@@ -4539,6 +4726,168 @@ export default function Admin() {
                 >
                   <Check className="w-4 h-4" />
                   <span>Save Event</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD ALUMNI */}
+      {newAlumniModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden my-8">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add Alumni Profile</span>
+              <button
+                onClick={() => {
+                  setNewAlumniModal(false);
+                  setAlumniImagePreview("");
+                  setAlumniUploadError("");
+                }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAlumni} className="p-6 space-y-4 text-xs">
+              {/* Photo Upload */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Alumni Photo
+                </label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                    {alumniImagePreview || newAlumniData.image_url ? (
+                      <img
+                        src={alumniImagePreview || newAlumniData.image_url}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <GraduationCap className="w-6 h-6 text-slate-300" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded cursor-pointer border border-slate-300 text-xs transition-colors">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{alumniUploading ? "Uploading to ImgBB..." : "Upload Photo"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAlumniImageChange}
+                        disabled={alumniUploading}
+                      />
+                    </label>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Recommended: Square portrait, max 5MB. Uploads automatically to ImgBB.
+                    </p>
+                    {alumniUploadError && (
+                      <p className="text-[11px] text-red-600 font-semibold mt-1">
+                        {alumniUploadError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Full Name <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newAlumniData.name}
+                  onChange={(e) =>
+                    setNewAlumniData({ ...newAlumniData, name: e.target.value })
+                  }
+                  placeholder="e.g. Sri Soumyaranjan Jena"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Batch / Programme
+                  </label>
+                  <input
+                    type="text"
+                    value={newAlumniData.batch}
+                    onChange={(e) =>
+                      setNewAlumniData({ ...newAlumniData, batch: e.target.value })
+                    }
+                    placeholder="e.g. MBA 2020-22"
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Current Role / Designation
+                  </label>
+                  <input
+                    type="text"
+                    value={newAlumniData.current_role}
+                    onChange={(e) =>
+                      setNewAlumniData({ ...newAlumniData, current_role: e.target.value })
+                    }
+                    placeholder="e.g. Regional Marketing Manager"
+                    className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Current Company / Institution
+                </label>
+                <input
+                  type="text"
+                  value={newAlumniData.company}
+                  onChange={(e) =>
+                    setNewAlumniData({ ...newAlumniData, company: e.target.value })
+                  }
+                  placeholder="e.g. AMUL (GCMMF) or HDFC Bank"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  LinkedIn Profile URL
+                </label>
+                <input
+                  type="url"
+                  value={newAlumniData.linkedin_url}
+                  onChange={(e) =>
+                    setNewAlumniData({ ...newAlumniData, linkedin_url: e.target.value })
+                  }
+                  placeholder="https://linkedin.com/in/..."
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewAlumniModal(false);
+                    setAlumniImagePreview("");
+                    setAlumniUploadError("");
+                  }}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={alumniUploading}
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Alumni</span>
                 </button>
               </div>
             </form>

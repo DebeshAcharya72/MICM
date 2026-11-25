@@ -542,6 +542,36 @@ export const api = {
     return await res.json();
   },
 
+  // Alumni
+  getAlumni: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/alumni`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createAlumni: async (alumniData, token) => {
+    const res = await fetch(`${API_BASE_URL}/alumni`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(alumniData),
+    });
+    return await res.json();
+  },
+
+  deleteAlumni: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/alumni/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
   // Dashboard Stats
   getDashboardStats: async (token) => {
     const res = await fetch(`${API_BASE_URL}/stats/dashboard`, {

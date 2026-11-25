@@ -211,6 +211,17 @@ const CampusEventSchema = new mongoose.Schema({
   created_at: { type: String, default: () => new Date().toISOString() }
 }, { timestamps: true });
 
+const AlumniSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  name: { type: String, required: true },
+  batch: { type: String, default: '' },
+  current_role: { type: String, default: '' },
+  company: { type: String, default: '' },
+  image_url: { type: String, default: null },
+  linkedin_url: { type: String, default: '' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
 // Export Models (prevent overwrite in dev)
 export const AdminUser = mongoose.models.AdminUser || mongoose.model('AdminUser', AdminUserSchema);
 export const Notice = mongoose.models.Notice || mongoose.model('Notice', NoticeSchema);
@@ -230,6 +241,7 @@ export const PlacementStat = mongoose.models.PlacementStat || mongoose.model('Pl
 export const Recruiter = mongoose.models.Recruiter || mongoose.model('Recruiter', RecruiterSchema);
 export const Internship = mongoose.models.Internship || mongoose.model('Internship', InternshipSchema);
 export const CampusEvent = mongoose.models.CampusEvent || mongoose.model('CampusEvent', CampusEventSchema);
+export const Alumni = mongoose.models.Alumni || mongoose.model('Alumni', AlumniSchema);
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -300,6 +312,7 @@ export const db = {
       case 'recruiters': return Recruiter;
       case 'internships': return Internship;
       case 'campus_events': return CampusEvent;
+      case 'alumni': return Alumni;
       default: return null;
     }
   },
@@ -976,6 +989,85 @@ export const db = {
     return !!res;
   },
 
+  // Alumni
+  getAlumni: async () => {
+    await connectToDatabase();
+    let docs = await Alumni.find().sort({ id: 1 }).lean();
+    if (!docs || docs.length === 0) {
+      const defaults = [
+        {
+          id: 1,
+          name: "Sri Debasis Mohapatra",
+          batch: "MBA 1996-98",
+          current_role: "General Manager",
+          company: "Odisha State Cooperative Bank (OSCB)",
+          image_url: null,
+          linkedin_url: "https://linkedin.com",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          name: "Ms. Priyanka Samal",
+          batch: "MBA 2010-12",
+          current_role: "Deputy Zonal Manager (Agri-Business)",
+          company: "HDFC Bank Ltd.",
+          image_url: null,
+          linkedin_url: "https://linkedin.com",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 3,
+          name: "Sri Soumyaranjan Jena",
+          batch: "MBA 2014-16",
+          current_role: "Regional Marketing Manager",
+          company: "AMUL (GCMMF)",
+          image_url: null,
+          linkedin_url: "https://linkedin.com",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 4,
+          name: "Sri Prasanna Kumar Nayak",
+          batch: "HDCM 2003-04",
+          current_role: "Managing Director",
+          company: "District Central Cooperative Bank (DCCB)",
+          image_url: null,
+          linkedin_url: "https://linkedin.com",
+          created_at: new Date().toISOString()
+        }
+      ];
+      try {
+        await Alumni.insertMany(defaults);
+        docs = await Alumni.find().sort({ id: 1 }).lean();
+      } catch (e) {
+        return defaults;
+      }
+    }
+    return formatDocs(docs);
+  },
+
+  createAlumni: async (alumniData) => {
+    await connectToDatabase();
+    const id = alumniData.id || (await getNextId(Alumni));
+    const created = await Alumni.create({
+      id,
+      name: alumniData.name || '',
+      batch: alumniData.batch || '',
+      current_role: alumniData.current_role || '',
+      company: alumniData.company || '',
+      image_url: alumniData.image_url || null,
+      linkedin_url: alumniData.linkedin_url || '',
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
+  },
+
+  deleteAlumni: async (id) => {
+    await connectToDatabase();
+    const res = await Alumni.findOneAndDelete(buildIdQuery(id));
+    return !!res;
+  },
+
   // Dashboard Stats
   getDashboardStats: async () => {
     await connectToDatabase();
@@ -994,7 +1086,8 @@ export const db = {
       placement_stats_total,
       recruiters_total,
       internships_total,
-      campus_events_total
+      campus_events_total,
+      alumni_total
     ] = await Promise.all([
       Enquiry.countDocuments(),
       Application.countDocuments(),
@@ -1010,7 +1103,8 @@ export const db = {
       PlacementStat.countDocuments(),
       Recruiter.countDocuments(),
       Internship.countDocuments(),
-      CampusEvent.countDocuments()
+      CampusEvent.countDocuments(),
+      Alumni.countDocuments()
     ]);
 
     return {
@@ -1029,6 +1123,7 @@ export const db = {
       recruiters_total,
       internships_total,
       campus_events_total,
+      alumni_total,
       server_status: "Online (MongoDB Atlas & Next.js)",
       last_backup: new Date().toLocaleString('en-GB')
     };

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   GraduationCap, 
@@ -12,10 +12,15 @@ import {
   CheckCircle, 
   Calendar, 
   Briefcase,
-  HeartHandshake
+  HeartHandshake,
+  Linkedin,
+  ExternalLink
 } from 'lucide-react';
+import { api } from '../services/api';
 
 export default function Alumni() {
+  const [alumniList, setAlumniList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [registered, setRegistered] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -29,40 +34,25 @@ export default function Alumni() {
     message: ''
   });
 
-  const notableAlumni = [
-    {
-      name: "Sri Debasis Mohapatra",
-      batch: "Batch 1998 (MBA)",
-      role: "General Manager",
-      org: "Odisha State Cooperative Bank (OSCB)",
-      location: "Bhubaneswar",
-      quote: "The cooperative ethos and rigorous analytical grounding at MICM prepared me for three decades of leadership across scheduled banking networks."
-    },
-    {
-      name: "Ms. Priyanka Samal",
-      batch: "Batch 2012 (MBA)",
-      role: "Deputy Zonal Manager (Agri-Business)",
-      org: "HDFC Bank Ltd.",
-      location: "Kolkata / Eastern Zone",
-      quote: "MICM gave me both the commercial acumen and practical rural field insight that set me apart in agricultural finance."
-    },
-    {
-      name: "Sri Soumyaranjan Jena",
-      batch: "Batch 2016 (MBA)",
-      role: "Regional Marketing Manager",
-      org: "AMUL (GCMMF)",
-      location: "Guwahati / North-East",
-      quote: "Understanding the grassroots cooperative framework at MICM remains the greatest asset of my professional career at Amul."
-    },
-    {
-      name: "Sri Prasanna Kumar Nayak",
-      batch: "Batch 2004 (HDCM)",
-      role: "Managing Director",
-      org: "District Central Cooperative Bank (DCCB)",
-      location: "Balasore",
-      quote: "HDCM from MICM was the catalyst that accelerated my promotion and mastery over cooperative audit and credit delivery."
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchAlumni() {
+      try {
+        const data = await api.getAlumni();
+        if (isMounted && Array.isArray(data)) {
+          setAlumniList(data);
+        }
+      } catch (err) {
+        console.error("Failed to load alumni:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     }
-  ];
+    fetchAlumni();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -92,35 +82,123 @@ export default function Alumni() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         
-        {/* Notable Alumni Showcase */}
+        {/* Dynamic Alumni Showcase */}
         <div className="mb-12">
-          <div className="border-b pb-3 mb-6">
-            <h2 className="text-xl font-bold text-[#0B1B3D]">Distinguished Alumni in Leadership Roles</h2>
-            <p className="text-xs text-slate-500 mt-1">Celebrating our graduates who lead cooperative federations and corporate institutions across India.</p>
+          <div className="border-b pb-3 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
+            <div>
+              <h2 className="text-xl font-bold text-[#0B1B3D]">Distinguished Alumni in Leadership Roles</h2>
+              <p className="text-xs text-slate-500 mt-1">Celebrating our graduates who lead cooperative federations, banking institutions, and enterprises across India.</p>
+            </div>
+            <span className="text-xs font-semibold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
+              {alumniList.length} Profile{alumniList.length === 1 ? '' : 's'} Showcased
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {notableAlumni.map((alum, i) => (
-              <div key={i} className="bg-white border border-slate-300 rounded-md p-5 shadow-xs flex flex-col justify-between hover:border-[#0288D1] transition-all">
-                <div>
-                  <div className="w-14 h-14 bg-sky-100 text-[#0288D1] rounded-full flex items-center justify-center font-bold text-lg mb-3">
-                    {alum.name.split(' ')[1] ? alum.name.split(' ')[1].charAt(0) : alum.name.charAt(0)}
-                  </div>
-                  <h3 className="text-sm font-extrabold text-slate-900">{alum.name}</h3>
-                  <div className="text-[11px] text-[#0288D1] font-semibold">{alum.batch}</div>
-                  <div className="mt-2 text-xs font-bold text-slate-800">{alum.role}</div>
-                  <div className="text-xs text-slate-600">{alum.org}</div>
-                  <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-1">
-                    <MapPin className="w-3 h-3 text-slate-400" />
-                    <span>{alum.location}</span>
-                  </div>
-                  <p className="mt-3 text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded border border-slate-100">
-                    "{alum.quote}"
-                  </p>
+          {/* Loading Skeleton */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="bg-white border border-slate-200 rounded-md p-5 shadow-xs animate-pulse space-y-3">
+                  <div className="w-16 h-16 bg-slate-200 rounded-full" />
+                  <div className="h-4 bg-slate-200 rounded w-3/4" />
+                  <div className="h-3 bg-slate-200 rounded w-1/2" />
+                  <div className="h-3 bg-slate-200 rounded w-2/3" />
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {/* Loaded Alumni Cards */}
+          {!loading && alumniList.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {alumniList.map((alum, i) => {
+                const initials = alum.name
+                  ? alum.name
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((p) => p[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()
+                  : 'AL';
+
+                return (
+                  <div 
+                    key={alum.id || i} 
+                    className="bg-white border border-slate-300 rounded-md p-5 shadow-xs flex flex-col justify-between hover:border-[#0288D1] hover:shadow-md transition-all group"
+                  >
+                    <div>
+                      {/* Photo / Fallback Monogram */}
+                      <div className="mb-4">
+                        {alum.image_url ? (
+                          <img
+                            src={alum.image_url}
+                            alt={alum.name}
+                            className="w-16 h-16 rounded-full object-cover border-2 border-[#0288D1] shadow-xs group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-sky-100 text-[#0288D1] rounded-full flex items-center justify-center font-bold text-lg border-2 border-sky-200 shadow-xs">
+                            {initials}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Name & Batch */}
+                      <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#0288D1] transition-colors">
+                        {alum.name}
+                      </h3>
+                      {alum.batch && (
+                        <div className="text-[11px] text-[#0288D1] font-semibold mt-0.5">
+                          {alum.batch}
+                        </div>
+                      )}
+
+                      {/* Current Role & Company */}
+                      {alum.current_role && (
+                        <div className="mt-2.5 text-xs font-bold text-slate-800 flex items-start gap-1.5">
+                          <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                          <span>{alum.current_role}</span>
+                        </div>
+                      )}
+
+                      {alum.company && (
+                        <div className="text-xs text-slate-600 font-medium flex items-start gap-1.5 mt-1">
+                          <Building className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                          <span>{alum.company}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LinkedIn Button */}
+                    {alum.linkedin_url && (
+                      <div className="mt-4 pt-3 border-t border-slate-100">
+                        <a
+                          href={alum.linkedin_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0077b5] hover:bg-[#005f93] text-white rounded text-[11px] font-bold shadow-2xs transition-colors w-full justify-center"
+                        >
+                          <Linkedin className="w-3.5 h-3.5" />
+                          <span>Connect on LinkedIn</span>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && alumniList.length === 0 && (
+            <div className="bg-white border border-dashed border-slate-300 rounded-md p-10 text-center text-slate-500">
+              <GraduationCap className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+              <p className="text-sm font-bold text-slate-700">No Alumni Profiles Listed Yet</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Alumni profiles can be added directly via the Admin Panel CMS.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Two Column Layout: Alumni Registration & Alumni Chapter Info */}
