@@ -170,7 +170,7 @@ export default function PortalHeader({ onSearchClick }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search Portal..."
-                    className="w-36 sm:w-44 px-2.5 py-1 text-xs border border-r-0 border-slate-300 rounded-l focus:outline-none focus:border-[#0288D1] bg-slate-50"
+                    className="w-36 sm:w-44 px-2.5 py-0.5 text-xs border border-r-0 border-slate-300 rounded-l focus:outline-none focus:border-[#0288D1] bg-slate-50"
                   />
                 </div>
                 <button
@@ -187,7 +187,7 @@ export default function PortalHeader({ onSearchClick }) {
                 <select
                   value={currentLang}
                   onChange={handleLanguageChange}
-                  className="appearance-none bg-transparent outline-none cursor-pointer py-1 pl-2 pr-6 w-full text-slate-700"
+                  className="appearance-none bg-transparent outline-none cursor-pointer py-0.5 pl-2 pr-6 w-full text-slate-700"
                 >
                   <option value="en">English</option>
                   <option value="hi">हिंदी (Hindi)</option>
