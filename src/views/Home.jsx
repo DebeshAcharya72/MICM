@@ -335,7 +335,7 @@ export default function Home() {
           </div>
 
           {/* Col 3 (Middle-Right) col-span-12 lg:col-span-4: Announcements */}
-          <div className="col-span-12 lg:col-span-4 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col">
+          <div className="col-span-12 lg:col-span-5 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col">
             <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
               <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-red-700" />
@@ -385,7 +385,7 @@ export default function Home() {
           </div>
 
           {/* Col 4 (Right) col-span-12 lg:col-span-3: Dignitaries (Right) */}
-          <div className="col-span-12 lg:col-span-3 space-y-3">
+          <div className="col-span-12 lg:col-span-2 space-y-3">
             {portalData.dignitaries.right.map((d, idx) => (
               <div
                 key={idx}
