@@ -273,9 +273,9 @@ export default function Home() {
             {portalData.dignitaries.left.map((d, idx) => (
               <div
                 key={idx}
-                className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between"
+                className="bg-white border border-slate-200 rounded-md p-1 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between"
               >
-                <div className="w-16 h-20 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                <div className="w-20 h-24 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
                   <img
                     src={d.image}
                     alt={d.name}
@@ -389,9 +389,9 @@ export default function Home() {
             {portalData.dignitaries.right.map((d, idx) => (
               <div
                 key={idx}
-                className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between"
+                className="bg-white border border-slate-200 rounded-md p-1 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between"
               >
-                <div className="w-16 h-20 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                <div className="w-20 h-24 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
                   <img
                     src={d.image}
                     alt={d.name}

@@ -3,14 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Youtube,
-  GraduationCap,
-} from "lucide-react";
+import { Search, Facebook, Twitter, Linkedin, Youtube } from "lucide-react";
 import { portalData } from "../data/portalData";
 
 export default function PortalHeader({ onSearchClick }) {
@@ -88,13 +81,17 @@ export default function PortalHeader({ onSearchClick }) {
             href="/"
             className="flex items-center gap-3.5 sm:gap-5 text-left group"
           >
-            {/* Official MICM Logo Image */}
-            <div className="shrink-0 bg-white p-1 rounded-full border border-slate-200 shadow-xs group-hover:scale-105 transition-transform flex items-center justify-center">
+            {/* Update the left logo area to include MICM, NCCT, and MoC */}
+            <div className="shrink-0 flex items-center gap-3 bg-white p-1.5 rounded-sm border border-slate-100 shadow-2xs group-hover:scale-102 transition-transform">
+              {/* MICM Old Logo */}
               <img
-                src="/micm-logo.png"
-                alt="Madhusudan Institute of Co-operative Management (MICM) Logo"
-                className="h-16 w-16 sm:h-20 sm:w-20 object-contain rounded-full"
+                src="/micm-logo-old.png"
+                alt="MICM Logo"
+                className="h-12 sm:h-16 w-auto object-contain"
               />
+
+              {/* Divider */}
+              {/* <div className="h-10 w-px bg-slate-300"></div> */}
             </div>
 
             {/* Typography Stack (Exact VAMNICOM Style) */}
@@ -181,22 +178,25 @@ export default function PortalHeader({ onSearchClick }) {
               </div>
             </div>
 
-            {/* Azadi Ka Amrit Mahotsav 75 Logo & National Emblem */}
+            {/* Aether Logo (Replaces the Azadi Ka Amrit Mahotsav block) */}
             <div className="flex items-center gap-4 mt-1">
               <div className="flex items-center gap-2">
-                <div className="text-right">
-                  <span className="block text-amber-700 font-black text-sm tracking-wider font-serif">
-                    75
-                  </span>
-                  <span className="block text-[8px] font-bold text-slate-800 uppercase tracking-tighter -mt-1">
-                    Azadi Ka Amrit Mahotsav
-                  </span>
-                </div>
-                <div className="h-8 w-12 bg-gradient-to-b from-orange-500 via-white to-green-600 rounded flex items-center justify-center shadow-xs border border-slate-200">
-                  <div className="w-3.5 h-3.5 rounded-full border border-blue-900 flex items-center justify-center text-[5px] text-blue-900 font-bold">
-                    ☸
-                  </div>
-                </div>
+                <img
+                  src="/moc-logo.png"
+                  alt="Ministry of Cooperation Logo"
+                  className="mt-2 h-12 sm:h-16 w-auto object-contain"
+                />
+                <img
+                  src="/ncct-logo.png"
+                  alt="NCCT Logo"
+                  className="h-10 sm:h-14 w-auto object-contain"
+                />
+
+                <img
+                  src="/azadi -logo.png"
+                  alt="Aether Logo"
+                  className="h-8 sm:h-10 w-auto object-contain"
+                />
               </div>
             </div>
           </div>
