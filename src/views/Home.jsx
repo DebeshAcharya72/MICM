@@ -267,7 +267,7 @@ export default function Home() {
         {/* ======================================================
             ROW 1 (Top Section): 2 | 3 | 4 | 3 Grid Layout
         ====================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           {/* Col 1 (Left) col-span-12 lg:col-span-2: Dignitaries (Left) */}
           <div className="col-span-12 lg:col-span-2 space-y-3">
             {portalData.dignitaries.left.map((d, idx) => (
@@ -275,7 +275,7 @@ export default function Home() {
                 key={idx}
                 className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between"
               >
-                <div className="w-20 h-24 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                <div className="w-16 h-20 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
                   <img
                     src={d.image}
                     alt={d.name}
@@ -391,7 +391,7 @@ export default function Home() {
                 key={idx}
                 className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between"
               >
-                <div className="w-20 h-24 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                <div className="w-16 h-20 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
                   <img
                     src={d.image}
                     alt={d.name}
@@ -415,7 +415,7 @@ export default function Home() {
         {/* ======================================================
             ROW 2 (Bottom Section): 2 | 7 | 3 Grid Layout
         ====================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           {/* Col 3 (Right) col-span-12 lg:col-span-3: Cooperative News / What's New */}
           <div className="col-span-12 lg:col-span-3 bg-white border border-slate-200 rounded-md shadow-xs">
             <div className="flex border-b border-slate-200 text-xs font-bold bg-slate-50">
