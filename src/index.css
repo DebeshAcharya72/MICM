@@ -61,3 +61,26 @@
   z-index: -1;
   pointer-events: none;
 }
+
+/* ==========================================================================
+   Google Translate Layout Stability
+   ========================================================================== */
+
+/* Hide Google Translate Top Banner, Frame, and Tooltip */
+iframe.goog-te-banner-frame,
+.goog-te-banner-frame,
+#goog-gt-tt,
+.skiptranslate iframe {
+  display: none !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+/* Hide the highlight background when Google hovers over translated text */
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}

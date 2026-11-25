@@ -195,14 +195,14 @@ export default function PortalNavbar() {
                     onClick={() => setAcademicsTrainingDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
-                    MBA Programme
+                    <span className="notranslate">MBA</span> Programme
                   </Link>
                   <Link
                     href="/programmes#hdcm-section"
                     onClick={() => setAcademicsTrainingDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
-                    HDCM Programme
+                    <span className="notranslate">HDCM</span> Programme
                   </Link>
                   <Link
                     href="/training-calendar"
@@ -463,14 +463,14 @@ export default function PortalNavbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
                 >
-                  MBA Programme
+                  <span className="notranslate">MBA</span> Programme
                 </Link>
                 <Link
                   href="/programmes#hdcm-section"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
                 >
-                  HDCM Programme
+                  <span className="notranslate">HDCM</span> Programme
                 </Link>
                 <Link
                   href="/training-calendar"
