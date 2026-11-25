@@ -13,36 +13,35 @@ export const portalData = {
     left: [
       {
         name: "Shri Amit Shah",
-        designation: "Hon'ble Union Minister for Home Affairs and Minister for Cooperation",
-        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-        fallbackAvatar: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Amit_Shah_official_portrait_2019.jpg/330px-Amit_Shah_official_portrait_2019.jpg"
+        designation: "Union Home Minister and Minister for Cooperation",
+        image: "/dignitaries/amit-shah.jpg"
       },
       {
         name: "Shri Krishan Pal Gurjar",
-        designation: "Hon'ble Minister of State for Cooperation",
-        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80"
+        designation: "Minister of State - Cooperation",
+        image: "/dignitaries/krishan-pal-gurjar.jpg"
       },
       {
         name: "Shri Murlidhar Mohol",
-        designation: "Hon'ble Minister of State for Cooperation & Civil Aviation",
-        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80"
+        designation: "Minister Of State Cooperation & Civil Aviation",
+        image: "/dignitaries/murlidhar-mohol.jpg"
       }
     ],
     right: [
       {
         name: "Dr. Ashish Kumar Bhutani, IAS",
         designation: "Secretary, Ministry of Cooperation",
-        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80"
+        image: "/dignitaries/ashish-bhutani.jpg"
       },
       {
         name: "Shri Siddharth Jain, IAS",
         designation: "Addl. Secretary, Ministry of Cooperation",
-        image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80"
+        image: "/dignitaries/siddharth-jain.jpg"
       },
       {
         name: "Dr. P. Kannaiah",
         designation: "Director, MICM Bhubaneswar",
-        image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=80"
+        image: "/dignitaries/p-kannaiah.jpg"
       }
     ]
   },

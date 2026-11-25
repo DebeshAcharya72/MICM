@@ -512,6 +512,36 @@ export const api = {
     return await res.json();
   },
 
+  // Campus Events
+  getCampusEvents: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/campus-events`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createCampusEvent: async (eventData, token) => {
+    const res = await fetch(`${API_BASE_URL}/campus-events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(eventData),
+    });
+    return await res.json();
+  },
+
+  deleteCampusEvent: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/campus-events/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
   // Dashboard Stats
   getDashboardStats: async (token) => {
     const res = await fetch(`${API_BASE_URL}/stats/dashboard`, {

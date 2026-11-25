@@ -3,32 +3,62 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, X, FileText, Lock } from "lucide-react";
+import { ChevronDown, ChevronRight, Menu, X, FileText, Lock } from "lucide-react";
 
 export default function PortalNavbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
-  const [collabDropdownOpen, setCollabDropdownOpen] = useState(false);
-  const [academicsDropdownOpen, setAcademicsDropdownOpen] = useState(false);
-  const [committeesDropdownOpen, setCommitteesDropdownOpen] = useState(false);
   const pathname = usePathname() || "/";
 
-  const isAboutActive = pathname.startsWith("/about");
-  const isCollabActive =
-    pathname.startsWith("/collaboration") || pathname.startsWith("/mous");
+  // Desktop Dropdown States
+  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
+  const [admissionsDropdownOpen, setAdmissionsDropdownOpen] = useState(false);
+  const [academicsDropdownOpen, setAcademicsDropdownOpen] = useState(false);
+  const [trainingDropdownOpen, setTrainingDropdownOpen] = useState(false);
+  const [studentLifeDropdownOpen, setStudentLifeDropdownOpen] = useState(false);
+
+  // Mobile Drawer & Collapsible States
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
+  const [mobileAdmissionsOpen, setMobileAdmissionsOpen] = useState(false);
+  const [mobileAcademicsOpen, setMobileAcademicsOpen] = useState(false);
+  const [mobileTrainingOpen, setMobileTrainingOpen] = useState(false);
+  const [mobileStudentLifeOpen, setMobileStudentLifeOpen] = useState(false);
+
+  // Active Route Checks
+  const isAboutActive =
+    pathname.startsWith("/about") ||
+    pathname.startsWith("/collaboration") ||
+    pathname.startsWith("/mous") ||
+    pathname.startsWith("/directors-desk");
+
+  const isAdmissionsActive =
+    pathname.startsWith("/apply") ||
+    pathname.startsWith("/admission-faqs");
+
   const isAcademicsActive =
     pathname.startsWith("/programmes") ||
-    pathname.startsWith("/apply") ||
-    pathname.startsWith("/training-calendar") ||
-    pathname.startsWith("/downloads") ||
-    pathname.startsWith("/admission-faqs");
-  const isCommitteesActive =
-    pathname.startsWith("/committees") ||
-    pathname.startsWith("/grievance") ||
-    pathname.startsWith("/compliance");
+    pathname.startsWith("/downloads");
+
+  const isTrainingActive =
+    pathname.startsWith("/training");
+
+  const isStudentLifeActive =
+    pathname.startsWith("/placements") ||
+    pathname.startsWith("/campus-events");
+
+  const isFacultyActive = pathname.startsWith("/faculty");
+  const isFacilitiesActive = pathname.startsWith("/facilities");
+  const isAlumniActive = pathname.startsWith("/alumni");
+  const isContactActive = pathname.startsWith("/contact");
 
   const navItemClass = (active) =>
-    `px-3 py-2.5 text-xs font-bold tracking-tight transition-colors ${
+    `px-2.5 xl:px-3 py-2.5 text-xs font-bold tracking-tight transition-colors whitespace-nowrap block ${
+      active
+        ? "bg-[#0288D1] text-white shadow-xs"
+        : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
+    }`;
+
+  const dropdownTriggerClass = (active) =>
+    `px-2.5 xl:px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors whitespace-nowrap ${
       active
         ? "bg-[#0288D1] text-white shadow-xs"
         : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
@@ -38,14 +68,17 @@ export default function PortalNavbar() {
     <nav className="w-full bg-[#f8fafc] border-y border-slate-300 shadow-xs sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Desktop Navigation Links */}
+          
+          {/* ========================================================
+              DESKTOP NAVIGATION (10 Menu Items)
+          ======================================================== */}
           <div className="hidden lg:flex items-center flex-wrap">
-            {/* Home Tab */}
+            {/* 1. Home */}
             <Link href="/" className={navItemClass(pathname === "/")}>
               Home
             </Link>
 
-            {/* About Us Dropdown */}
+            {/* 2. About Us Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => setAboutDropdownOpen(true)}
@@ -53,103 +86,98 @@ export default function PortalNavbar() {
             >
               <button
                 type="button"
-                className={`px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors ${
-                  isAboutActive
-                    ? "bg-[#0288D1] text-white"
-                    : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
-                }`}
+                className={dropdownTriggerClass(isAboutActive)}
               >
                 <span>About Us</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-80" />
               </button>
 
               {aboutDropdownOpen && (
-                <div className="absolute left-0 top-full w-56 bg-white border border-slate-300 shadow-lg py-1 z-50 text-xs">
+                <div className="absolute left-0 top-full w-56 bg-white border border-slate-300 shadow-xl py-1 z-50 text-xs rounded-b-md">
                   <Link
-                    href="/about"
+                    href="/about#history"
                     onClick={() => setAboutDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
-                    History & Heritage (1955-56)
-                  </Link>
-                  <Link
-                    href="/about#mandate"
-                    onClick={() => setAboutDropdownOpen(false)}
-                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
-                  >
-                    Mandate of MICM
-                  </Link>
-                  <Link
-                    href="/about#centres"
-                    onClick={() => setAboutDropdownOpen(false)}
-                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
-                  >
-                    Centres at MICM
+                    History
                   </Link>
                   <Link
                     href="/about#vision"
                     onClick={() => setAboutDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
-                    Vision, Mission and Focus
+                    Vision
                   </Link>
                   <Link
-                    href="/faculty"
+                    href="/about#director"
+                    onClick={() => setAboutDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
+                  >
+                    Director's Desk
+                  </Link>
+                  <Link
+                    href="/about#management"
+                    onClick={() => setAboutDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
+                  >
+                    Management
+                  </Link>
+                  <Link
+                    href="/collaboration/mous"
                     onClick={() => setAboutDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
                   >
-                    Leadership & Administration
+                    MoUs
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* Collaboration Dropdown (MoU's) */}
-            {/* <div
+            {/* 3. Admissions Dropdown */}
+            <div
               className="relative"
-              onMouseEnter={() => setCollabDropdownOpen(true)}
-              onMouseLeave={() => setCollabDropdownOpen(false)}
+              onMouseEnter={() => setAdmissionsDropdownOpen(true)}
+              onMouseLeave={() => setAdmissionsDropdownOpen(false)}
             >
               <button
                 type="button"
-                className={`px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors ${
-                  isCollabActive
-                    ? "bg-[#0288D1] text-white"
-                    : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
-                }`}
+                className={dropdownTriggerClass(isAdmissionsActive)}
               >
-                <span>Collaboration</span>
+                <span>Admissions</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-80" />
               </button>
 
-              {collabDropdownOpen && (
-                <div className="absolute left-0 top-full w-56 bg-white border border-slate-300 shadow-lg py-1 z-50 text-xs">
+              {admissionsDropdownOpen && (
+                <div className="absolute left-0 top-full w-56 bg-white border border-slate-300 shadow-xl py-1 z-50 text-xs rounded-b-md">
                   <Link
-                    href="/collaboration/mous"
-                    onClick={() => setCollabDropdownOpen(false)}
-                    className="block px-4 py-2 font-bold text-[#0288D1] bg-sky-50 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
+                    href="/apply-online"
+                    onClick={() => setAdmissionsDropdownOpen(false)}
+                    className="block px-4 py-2 font-bold text-[#0B1B3D] bg-amber-50 hover:bg-[#FFC107] border-b border-slate-100 transition-colors flex items-center justify-between"
                   >
-                    MoU's (National & International)
+                    <span>Apply Online</span>
+                    <span className="text-[10px] bg-red-600 text-white px-1.5 py-0.2 rounded font-black">
+                      2026-27
+                    </span>
                   </Link>
                   <Link
-                    href="/collaboration/mous#national"
-                    onClick={() => setCollabDropdownOpen(false)}
+                    href="/admission-faqs#fees"
+                    onClick={() => setAdmissionsDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
-                    National Collaborations
+                    Fees & Eligibility
                   </Link>
                   <Link
-                    href="/collaboration/mous#international"
-                    onClick={() => setCollabDropdownOpen(false)}
+                    href="/admission-faqs"
+                    onClick={() => setAdmissionsDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
                   >
-                    International Partnerships
+                    Admission FAQs
                   </Link>
                 </div>
               )}
-            </div> */}
+            </div>
 
-            {/* Academics & Admissions Dropdown */}
+            {/* 4. Academics Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => setAcademicsDropdownOpen(true)}
@@ -157,173 +185,131 @@ export default function PortalNavbar() {
             >
               <button
                 type="button"
-                className={`px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors ${
-                  isAcademicsActive
-                    ? "bg-[#0288D1] text-white"
-                    : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
-                }`}
+                className={dropdownTriggerClass(isAcademicsActive)}
               >
-                <span>Academics & Admissions</span>
+                <span>Academics</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-80" />
               </button>
 
               {academicsDropdownOpen && (
-                <div className="absolute left-0 top-full w-64 bg-white border border-slate-300 shadow-lg py-1 z-50 text-xs">
-                  <Link
-                    href="/apply"
-                    onClick={() => setAcademicsDropdownOpen(false)}
-                    className="block px-4 py-2 font-bold text-[#0B1B3D] bg-amber-50 hover:bg-[#FFC107] border-b border-slate-100 transition-colors flex items-center justify-between"
-                  >
-                    <span>📝 Online Application Form</span>
-                    <span className="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black">
-                      2026-27
-                    </span>
-                  </Link>
+                <div className="absolute left-0 top-full w-56 bg-white border border-slate-300 shadow-xl py-1 z-50 text-xs rounded-b-md">
                   <Link
                     href="/programmes#mba-section"
                     onClick={() => setAcademicsDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
-                    MBA (2-Year Full-Time)
+                    MBA Programme
                   </Link>
                   <Link
                     href="/programmes#hdcm-section"
                     onClick={() => setAcademicsDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
-                    HDCM (36-Week Diploma)
-                  </Link>
-                  {/* <Link
-                    href="/training-calendar"
-                    onClick={() => setAcademicsDropdownOpen(false)}
-                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
-                  >
-                    Training Calendar & Nominations
+                    HDCM Programme
                   </Link>
                   <Link
                     href="/downloads"
                     onClick={() => setAcademicsDropdownOpen(false)}
-                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
-                  >
-                    Downloads Centre (Syllabi & Circulars)
-                  </Link> */}
-                  <Link
-                    href="/admission-faqs"
-                    onClick={() => setAcademicsDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
                   >
-                    Admission FAQs (Eligibility & Fees)
+                    Download Syllabi
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* Placements Tab */}
-            <Link
-              href="/placements"
-              className={navItemClass(pathname.startsWith("/placements"))}
-            >
-              Placements
-            </Link>
-
-            {/* Committees & Compliance Dropdown */}
+            {/* 5. Training Dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setCommitteesDropdownOpen(true)}
-              onMouseLeave={() => setCommitteesDropdownOpen(false)}
+              onMouseEnter={() => setTrainingDropdownOpen(true)}
+              onMouseLeave={() => setTrainingDropdownOpen(false)}
             >
               <button
                 type="button"
-                className={`px-3 py-2.5 text-xs font-bold tracking-tight flex items-center gap-1 transition-colors ${
-                  isCommitteesActive
-                    ? "bg-[#0288D1] text-white"
-                    : "text-slate-800 hover:bg-[#e2e8f0] hover:text-[#0288D1]"
-                }`}
+                className={dropdownTriggerClass(isTrainingActive)}
               >
-                <span>Committees</span>
+                <span>Training</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-80" />
               </button>
 
-              {committeesDropdownOpen && (
-                <div className="absolute left-0 top-full w-60 bg-white border border-slate-300 shadow-lg py-1 z-50 text-xs">
+              {trainingDropdownOpen && (
+                <div className="absolute left-0 top-full w-56 bg-white border border-slate-300 shadow-xl py-1 z-50 text-xs rounded-b-md">
                   <Link
-                    href="/committees"
-                    onClick={() => setCommitteesDropdownOpen(false)}
-                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
+                    href="/training"
+                    onClick={() => setTrainingDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors font-semibold"
                   >
-                    Statutory Committees (ICC, Ragging)
+                    About Training Wing
                   </Link>
-                  {/* <Link
-                    href="/compliance"
-                    onClick={() => setCommitteesDropdownOpen(false)}
+                  <Link
+                    href="/training-calendar"
+                    onClick={() => setTrainingDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
-                    AICTE Approvals & Disclosures
-                  </Link> */}
+                    Training Calendar
+                  </Link>
                   <Link
-                    href="/grievance"
-                    onClick={() => setCommitteesDropdownOpen(false)}
-                    className="block px-4 py-2 font-bold text-[#0288D1] hover:bg-[#0288D1] hover:text-white transition-colors"
+                    href="/training-calendar#past"
+                    onClick={() => setTrainingDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
                   >
-                    Online Grievance Redressal
+                    Past Programmes
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* Faculty Tab */}
-            <Link
-              href="/faculty"
-              className={navItemClass(pathname.startsWith("/faculty"))}
+            {/* 6. Student Life Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setStudentLifeDropdownOpen(true)}
+              onMouseLeave={() => setStudentLifeDropdownOpen(false)}
             >
+              <button
+                type="button"
+                className={dropdownTriggerClass(isStudentLifeActive)}
+              >
+                <span>Student Life</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+              </button>
+
+              {studentLifeDropdownOpen && (
+                <div className="absolute left-0 top-full w-52 bg-white border border-slate-300 shadow-xl py-1 z-50 text-xs rounded-b-md">
+                  <Link
+                    href="/placements"
+                    onClick={() => setStudentLifeDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
+                  >
+                    Placements
+                  </Link>
+                  <Link
+                    href="/campus-events"
+                    onClick={() => setStudentLifeDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
+                  >
+                    Campus Events
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* 7. Faculty */}
+            <Link href="/faculty" className={navItemClass(isFacultyActive)}>
               Faculty
             </Link>
 
-            {/* Facilities Tab */}
-            <Link
-              href="/facilities"
-              className={navItemClass(pathname.startsWith("/facilities"))}
-            >
+            {/* 8. Facilities */}
+            <Link href="/facilities" className={navItemClass(isFacilitiesActive)}>
               Facilities
             </Link>
 
-            {/* Library Tab */}
-            <Link
-              href="/library"
-              className={navItemClass(pathname.startsWith("/library"))}
-            >
-              Library
+            {/* 9. Alumni (Active and Visible) */}
+            <Link href="/alumni" className={navItemClass(isAlumniActive)}>
+              Alumni
             </Link>
 
-            {/* Newsletter Tab */}
-            {/* <Link
-              href="/newsletter"
-              className={navItemClass(pathname.startsWith("/newsletter"))}
-            >
-              Newsletter
-            </Link> */}
-
-            {/* Alumni Tab */}
-            {/* <Link
-              href="/alumni"
-              className={navItemClass(pathname.startsWith("/alumni"))}
-            >
-              Alumni
-            </Link> */}
-
-            {/* RTI & Careers Tab */}
-            {/* <Link
-              href="/rti-careers"
-              className={navItemClass(pathname.startsWith('/rti-careers'))}
-            >
-              Careers/RTI
-            </Link> */}
-
-            {/* Contact Tab */}
-            <Link
-              href="/contact"
-              className={navItemClass(pathname.startsWith("/contact"))}
-            >
+            {/* 10. Contact */}
+            <Link href="/contact" className={navItemClass(isContactActive)}>
               Contact
             </Link>
           </div>
@@ -331,7 +317,7 @@ export default function PortalNavbar() {
           {/* Right Action: Apply Now & Admin CMS Link */}
           <div className="hidden lg:flex items-center gap-2 py-1.5">
             <Link
-              href="/apply"
+              href="/apply-online"
               className="bg-[#FFC107] hover:bg-amber-400 text-[#0B1B3D] text-xs font-extrabold px-3.5 py-1.5 rounded shadow-xs flex items-center gap-1.5 transition-transform hover:scale-102"
             >
               <FileText className="w-3.5 h-3.5" />
@@ -347,14 +333,14 @@ export default function PortalNavbar() {
             </Link>
           </div>
 
-          {/* Mobile Menu Toggle Button */}
+          {/* Mobile Menu Header Toggle */}
           <div className="lg:hidden flex items-center justify-between w-full py-2.5">
             <span className="font-extrabold text-xs text-[#0B1B3D] tracking-wider uppercase">
               MICM Menu
             </span>
             <div className="flex items-center gap-2">
               <Link
-                href="/apply"
+                href="/apply-online"
                 className="bg-[#FFC107] text-[#0B1B3D] text-[11px] font-bold px-2.5 py-1 rounded"
               >
                 Apply
@@ -376,9 +362,12 @@ export default function PortalNavbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* ========================================================
+          MOBILE COLLAPSIBLE MENU (Exact 10-Item Structure)
+      ======================================================== */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-slate-300 px-4 pt-2 pb-6 space-y-1 text-sm shadow-xl">
+        <div className="lg:hidden bg-white border-b border-slate-300 px-4 pt-2 pb-6 space-y-1 text-sm shadow-xl max-h-[80vh] overflow-y-auto">
+          {/* 1. Home */}
           <Link
             href="/"
             onClick={() => setMobileMenuOpen(false)}
@@ -386,132 +375,256 @@ export default function PortalNavbar() {
           >
             Home
           </Link>
-          <Link
-            href="/about"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            About Us (History & Centres)
-          </Link>
-          <Link
-            href="/collaboration/mous"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-[#0288D1] font-bold hover:bg-sky-50 rounded"
-          >
-            Collaboration & MoU's
-          </Link>
-          <Link
-            href="/apply"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-amber-900 font-black bg-amber-50 rounded"
-          >
-            📝 Apply Online (MBA / HDCM)
-          </Link>
-          <Link
-            href="/programmes"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Academic Programmes
-          </Link>
-          <Link
-            href="/placements"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Placements & Recruiters
-          </Link>
-          <Link
-            href="/training-calendar"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Training Calendar & Nominations
-          </Link>
-          <Link
-            href="/downloads"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Downloads Centre
-          </Link>
-          <Link
-            href="/compliance"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            AICTE Approvals & Compliance
-          </Link>
-          <Link
-            href="/committees"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Committees (ICC, Anti-Ragging)
-          </Link>
-          <Link
-            href="/grievance"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-rose-700 font-bold hover:bg-rose-50 rounded"
-          >
-            Online Grievance Redressal
-          </Link>
+
+          {/* 2. About Us Collapsible */}
+          <div className="border-b border-slate-100 pb-1">
+            <button
+              type="button"
+              onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
+              className="w-full flex items-center justify-between py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded text-left"
+            >
+              <span>About Us</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  mobileAboutOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {mobileAboutOpen && (
+              <div className="pl-5 pr-2 py-1 space-y-1 bg-slate-50 rounded mb-1 text-xs">
+                <Link
+                  href="/about#history"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  History
+                </Link>
+                <Link
+                  href="/about#vision"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Vision
+                </Link>
+                <Link
+                  href="/about#director"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Director's Desk
+                </Link>
+                <Link
+                  href="/about#management"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Management
+                </Link>
+                <Link
+                  href="/collaboration/mous"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  MoUs
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* 3. Admissions Collapsible */}
+          <div className="border-b border-slate-100 pb-1">
+            <button
+              type="button"
+              onClick={() => setMobileAdmissionsOpen(!mobileAdmissionsOpen)}
+              className="w-full flex items-center justify-between py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded text-left"
+            >
+              <span>Admissions</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  mobileAdmissionsOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {mobileAdmissionsOpen && (
+              <div className="pl-5 pr-2 py-1 space-y-1 bg-slate-50 rounded mb-1 text-xs">
+                <Link
+                  href="/apply-online"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 font-bold text-[#0B1B3D] text-[#0288D1]"
+                >
+                  Apply Online (2026-27)
+                </Link>
+                <Link
+                  href="/admission-faqs#fees"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Fees & Eligibility
+                </Link>
+                <Link
+                  href="/admission-faqs"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Admission FAQs
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* 4. Academics Collapsible */}
+          <div className="border-b border-slate-100 pb-1">
+            <button
+              type="button"
+              onClick={() => setMobileAcademicsOpen(!mobileAcademicsOpen)}
+              className="w-full flex items-center justify-between py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded text-left"
+            >
+              <span>Academics</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  mobileAcademicsOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {mobileAcademicsOpen && (
+              <div className="pl-5 pr-2 py-1 space-y-1 bg-slate-50 rounded mb-1 text-xs">
+                <Link
+                  href="/programmes#mba-section"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  MBA Programme
+                </Link>
+                <Link
+                  href="/programmes#hdcm-section"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  HDCM Programme
+                </Link>
+                <Link
+                  href="/downloads"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Download Syllabi
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* 5. Training Collapsible */}
+          <div className="border-b border-slate-100 pb-1">
+            <button
+              type="button"
+              onClick={() => setMobileTrainingOpen(!mobileTrainingOpen)}
+              className="w-full flex items-center justify-between py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded text-left"
+            >
+              <span>Training</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  mobileTrainingOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {mobileTrainingOpen && (
+              <div className="pl-5 pr-2 py-1 space-y-1 bg-slate-50 rounded mb-1 text-xs">
+                <Link
+                  href="/training"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1] font-semibold"
+                >
+                  About Training Wing
+                </Link>
+                <Link
+                  href="/training-calendar"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Training Calendar
+                </Link>
+                <Link
+                  href="/training-calendar#past"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Past Programmes
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* 6. Student Life Collapsible */}
+          <div className="border-b border-slate-100 pb-1">
+            <button
+              type="button"
+              onClick={() => setMobileStudentLifeOpen(!mobileStudentLifeOpen)}
+              className="w-full flex items-center justify-between py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded text-left"
+            >
+              <span>Student Life</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  mobileStudentLifeOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {mobileStudentLifeOpen && (
+              <div className="pl-5 pr-2 py-1 space-y-1 bg-slate-50 rounded mb-1 text-xs">
+                <Link
+                  href="/placements"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Placements
+                </Link>
+                <Link
+                  href="/campus-events"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
+                >
+                  Campus Events
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* 7. Faculty */}
           <Link
             href="/faculty"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
           >
-            Faculty Directory
+            Faculty
           </Link>
+
+          {/* 8. Facilities */}
           <Link
             href="/facilities"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
           >
-            Campus & Facilities
+            Facilities
           </Link>
-          <Link
-            href="/library"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Library & E-Resources
-          </Link>
-          <Link
-            href="/newsletter"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Newsletter
-          </Link>
+
+          {/* 9. Alumni (Active and Visible) */}
           <Link
             href="/alumni"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
           >
-            Alumni Association
+            Alumni
           </Link>
-          <Link
-            href="/rti-careers"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Careers & RTI
-          </Link>
-          <Link
-            href="/admission-faqs"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
-          >
-            Admission FAQs
-          </Link>
+
+          {/* 10. Contact */}
           <Link
             href="/contact"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
           >
-            Contact Us
+            Contact
           </Link>
+
+          {/* Admin CMS Portal Link */}
           <div className="pt-2 border-t border-slate-200">
             <Link
               href="/admin"

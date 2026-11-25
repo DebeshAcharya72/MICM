@@ -202,6 +202,15 @@ const InternshipSchema = new mongoose.Schema({
   created_at: { type: String, default: () => new Date().toISOString() }
 }, { timestamps: true });
 
+const CampusEventSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  date: { type: String, required: true },
+  description: { type: String, default: '' },
+  image_url: { type: String, default: null },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
 // Export Models (prevent overwrite in dev)
 export const AdminUser = mongoose.models.AdminUser || mongoose.model('AdminUser', AdminUserSchema);
 export const Notice = mongoose.models.Notice || mongoose.model('Notice', NoticeSchema);
@@ -220,6 +229,7 @@ export const QuickLink = mongoose.models.QuickLink || mongoose.model('QuickLink'
 export const PlacementStat = mongoose.models.PlacementStat || mongoose.model('PlacementStat', PlacementStatSchema);
 export const Recruiter = mongoose.models.Recruiter || mongoose.model('Recruiter', RecruiterSchema);
 export const Internship = mongoose.models.Internship || mongoose.model('Internship', InternshipSchema);
+export const CampusEvent = mongoose.models.CampusEvent || mongoose.model('CampusEvent', CampusEventSchema);
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -289,6 +299,7 @@ export const db = {
       case 'placement_stats': return PlacementStat;
       case 'recruiters': return Recruiter;
       case 'internships': return Internship;
+      case 'campus_events': return CampusEvent;
       default: return null;
     }
   },
@@ -904,6 +915,67 @@ export const db = {
     return !!res;
   },
 
+  // Campus Events
+  getCampusEvents: async () => {
+    await connectToDatabase();
+    let docs = await CampusEvent.find().sort({ id: -1 }).lean();
+    if (!docs || docs.length === 0) {
+      const defaults = [
+        {
+          id: 1,
+          title: "71st All India Cooperative Week Celebrations",
+          date: "14 - 20 November 2024",
+          description: "Annual celebrations featuring technical sessions on Cooperative Governance, youth participation, and exhibitions displaying cooperative success stories across Odisha.",
+          image_url: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          title: "National Seminar on PACS Computerization & Cybersecurity",
+          date: "28 October 2024",
+          description: "Eminent cooperative leaders, NABARD representatives, and IT experts convened at MICM to discuss modern ERP implementation and cyber resilience for primary cooperatives.",
+          image_url: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=800&q=80",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 3,
+          title: "Annual Sports & Cultural Meet 'SAMANWAYA'",
+          date: "15 January 2025",
+          description: "Two-day annual inter-departmental sports tournament and cultural festival celebrating camaraderie, talent, and teamwork among MBA and HDCM students.",
+          image_url: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80",
+          created_at: new Date().toISOString()
+        }
+      ];
+      try {
+        await CampusEvent.insertMany(defaults);
+        docs = await CampusEvent.find().sort({ id: -1 }).lean();
+      } catch (e) {
+        return defaults;
+      }
+    }
+    return formatDocs(docs);
+  },
+
+  createCampusEvent: async (eventData) => {
+    await connectToDatabase();
+    const id = eventData.id || (await getNextId(CampusEvent));
+    const created = await CampusEvent.create({
+      id,
+      title: eventData.title || '',
+      date: eventData.date || new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      description: eventData.description || '',
+      image_url: eventData.image_url || null,
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
+  },
+
+  deleteCampusEvent: async (id) => {
+    await connectToDatabase();
+    const res = await CampusEvent.findOneAndDelete(buildIdQuery(id));
+    return !!res;
+  },
+
   // Dashboard Stats
   getDashboardStats: async () => {
     await connectToDatabase();
@@ -921,7 +993,8 @@ export const db = {
       quick_links_total,
       placement_stats_total,
       recruiters_total,
-      internships_total
+      internships_total,
+      campus_events_total
     ] = await Promise.all([
       Enquiry.countDocuments(),
       Application.countDocuments(),
@@ -936,7 +1009,8 @@ export const db = {
       QuickLink.countDocuments(),
       PlacementStat.countDocuments(),
       Recruiter.countDocuments(),
-      Internship.countDocuments()
+      Internship.countDocuments(),
+      CampusEvent.countDocuments()
     ]);
 
     return {
@@ -954,6 +1028,7 @@ export const db = {
       placement_stats_total,
       recruiters_total,
       internships_total,
+      campus_events_total,
       server_status: "Online (MongoDB Atlas & Next.js)",
       last_backup: new Date().toLocaleString('en-GB')
     };

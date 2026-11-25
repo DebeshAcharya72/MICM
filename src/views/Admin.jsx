@@ -90,6 +90,19 @@ export default function Admin() {
   const [placementStats, setPlacementStats] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
   const [internships, setInternships] = useState([]);
+  const [campusEvents, setCampusEvents] = useState([]);
+
+  // Campus Events Modal State
+  const [newCampusEventModal, setNewCampusEventModal] = useState(false);
+  const [newCampusEventData, setNewCampusEventData] = useState({
+    title: "",
+    date: "",
+    description: "",
+    image_url: "",
+  });
+  const [eventImagePreview, setEventImagePreview] = useState("");
+  const [eventUploading, setEventUploading] = useState(false);
+  const [eventUploadError, setEventUploadError] = useState("");
 
   // Placement Stats Modal State
   const [newPlacementStatModal, setNewPlacementStatModal] = useState(false);
@@ -245,7 +258,7 @@ export default function Admin() {
 
     setLoading(true);
     try {
-      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern] = await Promise.allSettled([
+      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern, ev] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
         api.getEnquiries(authToken),
@@ -261,6 +274,7 @@ export default function Admin() {
         api.getPlacementStats(),
         api.getRecruiters(),
         api.getInternships(),
+        api.getCampusEvents(),
       ]);
 
       if (s.status === "fulfilled" && s.value) setStats(s.value);
@@ -292,6 +306,8 @@ export default function Admin() {
         setRecruiters(rec.value);
       if (intern.status === "fulfilled" && Array.isArray(intern.value))
         setInternships(intern.value);
+      if (ev.status === "fulfilled" && Array.isArray(ev.value))
+        setCampusEvents(ev.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
     } finally {
@@ -709,6 +725,56 @@ export default function Admin() {
         loadAdminData(token);
       } catch {
         setInternships(internships.filter((i) => i.id !== id));
+      }
+    }
+  };
+
+  // Campus Events Handlers
+  const handleEventImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setEventImagePreview(URL.createObjectURL(file));
+    setEventUploading(true);
+    setEventUploadError("");
+
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setNewCampusEventData((prev) => ({
+          ...prev,
+          image_url: res.url,
+        }));
+      }
+    } catch (err) {
+      console.error("Event image upload error:", err);
+      setEventUploadError(err.message || "Failed to upload image to ImgBB");
+    } finally {
+      setEventUploading(false);
+    }
+  };
+
+  const handleAddCampusEvent = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createCampusEvent(newCampusEventData, token);
+      setNewCampusEventModal(false);
+      setNewCampusEventData({ title: "", date: "", description: "", image_url: "" });
+      setEventImagePreview("");
+      setEventUploadError("");
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to save event: " + err.message);
+    }
+  };
+
+  const handleDeleteCampusEvent = async (id) => {
+    if (window.confirm("Are you sure you want to delete this campus event?")) {
+      try {
+        await api.deleteCampusEvent(id, token);
+        loadAdminData(token);
+      } catch {
+        setCampusEvents(campusEvents.filter((ev) => ev.id !== id));
       }
     }
   };
@@ -1204,6 +1270,11 @@ export default function Admin() {
                 id: "internships",
                 label: `Internships CMS (${internships.length})`,
                 icon: Award,
+              },
+              {
+                id: "campus_events",
+                label: `Campus Events CMS (${campusEvents.length})`,
+                icon: Sparkles,
               },
               {
                 id: "coop_news",
@@ -2759,6 +2830,93 @@ export default function Admin() {
             </div>
           </div>
         )}
+
+        {/* TAB: CAMPUS EVENTS CMS */}
+        {activeTab === "campus_events" && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-md border border-slate-300 shadow-sm p-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <div>
+                  <h3 className="text-base font-bold text-slate-800">
+                    Campus Events CMS ({campusEvents.length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Manage dynamic events, seminars, celebrations, and workshops displayed on the public Campus Events page.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setNewCampusEventModal(true)}
+                  className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 shadow-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Campus Event</span>
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border rounded border-slate-200">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-[#0B1B3D] text-white">
+                    <tr>
+                      <th className="p-3 w-16 text-center border-r border-[#1a3365]">#</th>
+                      <th className="p-3 w-20 text-center border-r border-[#1a3365]">Image</th>
+                      <th className="p-3 border-r border-[#1a3365]">Event Title</th>
+                      <th className="p-3 border-r border-[#1a3365]">Date</th>
+                      <th className="p-3 border-r border-[#1a3365]">Description</th>
+                      <th className="p-3 w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {campusEvents.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3 text-center text-slate-500 font-mono border-r">
+                          {idx + 1}
+                        </td>
+                        <td className="p-3 text-center border-r">
+                          {item.image_url ? (
+                            <img
+                              src={item.image_url}
+                              alt={item.title}
+                              className="w-12 h-10 object-cover rounded border border-slate-200 mx-auto"
+                            />
+                          ) : (
+                            <div className="w-12 h-10 bg-slate-100 rounded border border-slate-200 flex items-center justify-center text-slate-400 mx-auto">
+                              <Sparkles className="w-4 h-4 text-slate-300" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3 font-bold text-slate-900 border-r">
+                          {item.title}
+                        </td>
+                        <td className="p-3 text-emerald-700 font-semibold border-r whitespace-nowrap">
+                          {item.date}
+                        </td>
+                        <td className="p-3 text-slate-600 border-r max-w-xs truncate" title={item.description}>
+                          {item.description || "-"}
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteCampusEvent(item.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                            title="Delete Event"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {campusEvents.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-slate-400">
+                          No campus events found. Click "Add Campus Event" to create one.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
 
@@ -4249,6 +4407,138 @@ export default function Admin() {
                 >
                   <Check className="w-4 h-4" />
                   <span>Save Internship</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD CAMPUS EVENT */}
+      {newCampusEventModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden my-8">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add New Campus Event</span>
+              <button
+                onClick={() => {
+                  setNewCampusEventModal(false);
+                  setEventImagePreview("");
+                  setEventUploadError("");
+                }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCampusEvent} className="p-6 space-y-4 text-xs">
+              {/* Event Image Upload */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Event Banner / Image
+                </label>
+                <div className="flex items-center gap-4">
+                  <div className="w-24 h-16 rounded border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                    {eventImagePreview || newCampusEventData.image_url ? (
+                      <img
+                        src={eventImagePreview || newCampusEventData.image_url}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Sparkles className="w-6 h-6 text-slate-300" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded cursor-pointer border border-slate-300 text-xs transition-colors">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{eventUploading ? "Uploading to ImgBB..." : "Upload Photo"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleEventImageChange}
+                        disabled={eventUploading}
+                      />
+                    </label>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Recommended: 16:9 ratio, max 5MB (PNG/JPG). Uploads automatically to ImgBB.
+                    </p>
+                    {eventUploadError && (
+                      <p className="text-[11px] text-red-600 font-semibold mt-1">
+                        {eventUploadError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Event Title <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newCampusEventData.title}
+                  onChange={(e) =>
+                    setNewCampusEventData({ ...newCampusEventData, title: e.target.value })
+                  }
+                  placeholder="e.g. Annual Sports & Cultural Meet 'SAMANWAYA'"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Date / Schedule <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newCampusEventData.date}
+                  onChange={(e) =>
+                    setNewCampusEventData({ ...newCampusEventData, date: e.target.value })
+                  }
+                  placeholder="e.g. 15 January 2025 or 14 - 20 November 2024"
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Event Description
+                </label>
+                <textarea
+                  rows={4}
+                  value={newCampusEventData.description}
+                  onChange={(e) =>
+                    setNewCampusEventData({ ...newCampusEventData, description: e.target.value })
+                  }
+                  placeholder="Provide a brief summary of the event highlights, participants, and objectives..."
+                  className="w-full p-2 border border-slate-300 rounded outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewCampusEventModal(false);
+                    setEventImagePreview("");
+                    setEventUploadError("");
+                  }}
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={eventUploading}
+                  className="px-4 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white font-bold rounded flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Event</span>
                 </button>
               </div>
             </form>

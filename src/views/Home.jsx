@@ -19,6 +19,7 @@ import {
   Bell,
 } from "lucide-react";
 import { api } from "../services/api";
+import { portalData } from "../data/portalData";
 
 const DEFAULT_BANNER_SLIDES = [
   {
@@ -63,21 +64,19 @@ export default function Home() {
   const [notices, setNotices] = useState([]);
   const [placements, setPlacements] = useState([]);
   const [coopNews, setCoopNews] = useState([]);
-  const [faculty, setFaculty] = useState([]);
   const [quickLinks, setQuickLinks] = useState([]);
 
   // Fetch dynamic homepage datasets from API
   useEffect(() => {
     const fetchHomepageData = async () => {
       try {
-        const [bannersRes, trRes, anRes, plRes, cnRes, facRes, qlRes, notRes] =
+        const [bannersRes, trRes, anRes, plRes, cnRes, qlRes, notRes] =
           await Promise.allSettled([
             api.getBanners(true),
             api.getTrainings(),
             api.getAnnouncements(),
             api.getPlacements(),
             api.getCoopNews(),
-            api.getFaculty(),
             api.getQuickLinks(),
             api.getNotices(false),
           ]);
@@ -100,9 +99,6 @@ export default function Home() {
         }
         if (cnRes.status === "fulfilled" && Array.isArray(cnRes.value)) {
           setCoopNews(cnRes.value);
-        }
-        if (facRes.status === "fulfilled" && Array.isArray(facRes.value)) {
-          setFaculty(facRes.value);
         }
         if (qlRes.status === "fulfilled" && Array.isArray(qlRes.value)) {
           setQuickLinks(qlRes.value);
@@ -272,46 +268,31 @@ export default function Home() {
             ROW 1 (Top Section): 2 | 3 | 4 | 3 Grid Layout
         ====================================================== */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          {/* Col 1 (Left) col-span-12 lg:col-span-2: Faculty (First 3) */}
+          {/* Col 1 (Left) col-span-12 lg:col-span-2: Dignitaries (Left) */}
           <div className="col-span-12 lg:col-span-2 space-y-3">
-            {faculty.slice(0, 3).map((f, idx) => (
+            {portalData.dignitaries.left.map((d, idx) => (
               <div
-                key={f.id || idx}
-                className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between min-h-[160px]"
+                key={idx}
+                className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between"
               >
-                <div className="w-16 h-20 rounded border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
-                  {f.image_url ? (
-                    <img
-                      src={f.image_url}
-                      alt={f.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-500 text-sm bg-slate-100">
-                      {f.name
-                        ? f.name
-                            .replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, "")
-                            .charAt(0)
-                        : "F"}
-                    </div>
-                  )}
+                <div className="w-20 h-24 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                  <img
+                    src={d.image}
+                    alt={d.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-slate-900 leading-tight">
-                    {f.name}
+                  <h4 className="text-sm font-bold text-slate-900 mt-2 text-center leading-tight">
+                    {d.name}
                   </h4>
-                  <p className="text-[10px] text-red-700 font-semibold mt-1 leading-snug">
-                    {f.designation}
+                  <p className="text-[10px] text-orange-600 font-semibold text-center px-2 pb-2 mt-1 leading-snug">
+                    {d.designation}
                   </p>
                 </div>
               </div>
             ))}
-            {faculty.length === 0 && (
-              <div className="p-4 bg-white border border-slate-200 rounded-md text-center text-xs text-slate-400">
-                Loading faculty...
-              </div>
-            )}
           </div>
 
           {/* Col 2 (Middle-Left) col-span-12 lg:col-span-3: Quick Links */}
@@ -403,46 +384,31 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Col 4 (Right) col-span-12 lg:col-span-3: Faculty (Next 3) */}
+          {/* Col 4 (Right) col-span-12 lg:col-span-3: Dignitaries (Right) */}
           <div className="col-span-12 lg:col-span-3 space-y-3">
-            {faculty.slice(3, 6).map((f, idx) => (
+            {portalData.dignitaries.right.map((d, idx) => (
               <div
-                key={f.id || idx}
-                className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between min-h-[160px]"
+                key={idx}
+                className="bg-white border border-slate-200 rounded-md p-3 text-center shadow-xs hover:shadow-sm transition-shadow flex flex-col items-center justify-between"
               >
-                <div className="w-16 h-20 rounded border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
-                  {f.image_url ? (
-                    <img
-                      src={f.image_url}
-                      alt={f.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-500 text-sm bg-slate-100">
-                      {f.name
-                        ? f.name
-                            .replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, "")
-                            .charAt(0)
-                        : "F"}
-                    </div>
-                  )}
+                <div className="w-20 h-24 rounded-t-md border border-slate-200 bg-slate-100 overflow-hidden shadow-2xs mb-2">
+                  <img
+                    src={d.image}
+                    alt={d.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-slate-900 leading-tight">
-                    {f.name}
+                  <h4 className="text-sm font-bold text-slate-900 mt-2 text-center leading-tight">
+                    {d.name}
                   </h4>
-                  <p className="text-[10px] text-red-700 font-semibold mt-1 leading-snug">
-                    {f.designation}
+                  <p className="text-[10px] text-orange-600 font-semibold text-center px-2 pb-2 mt-1 leading-snug">
+                    {d.designation}
                   </p>
                 </div>
               </div>
             ))}
-            {faculty.length < 4 && (
-              <div className="p-4 bg-white border border-slate-200 rounded-md text-center text-xs text-slate-400">
-                MICM Faculty Directory
-              </div>
-            )}
           </div>
         </div>
 
