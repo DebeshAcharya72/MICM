@@ -11,14 +11,16 @@ export default function PortalNavbar() {
   // Desktop Dropdown States
   const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
   const [admissionsDropdownOpen, setAdmissionsDropdownOpen] = useState(false);
-  const [academicsTrainingDropdownOpen, setAcademicsTrainingDropdownOpen] = useState(false);
+  const [academicsTrainingDropdownOpen, setAcademicsTrainingDropdownOpen] =
+    useState(false);
   const [studentLifeDropdownOpen, setStudentLifeDropdownOpen] = useState(false);
 
   // Mobile Drawer & Collapsible States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileAdmissionsOpen, setMobileAdmissionsOpen] = useState(false);
-  const [mobileAcademicsTrainingOpen, setMobileAcademicsTrainingOpen] = useState(false);
+  const [mobileAcademicsTrainingOpen, setMobileAcademicsTrainingOpen] =
+    useState(false);
   const [mobileStudentLifeOpen, setMobileStudentLifeOpen] = useState(false);
 
   // Active Route Checks
@@ -29,8 +31,7 @@ export default function PortalNavbar() {
     pathname.startsWith("/directors-desk");
 
   const isAdmissionsActive =
-    pathname.startsWith("/apply") ||
-    pathname.startsWith("/admission-faqs");
+    pathname.startsWith("/apply") || pathname.startsWith("/admission-faqs");
 
   const isAcademicsTrainingActive =
     pathname.startsWith("/programmes") ||
@@ -39,8 +40,7 @@ export default function PortalNavbar() {
     pathname.startsWith("/downloads");
 
   const isStudentLifeActive =
-    pathname.startsWith("/placements") ||
-    pathname.startsWith("/campus-events");
+    pathname.startsWith("/placements") || pathname.startsWith("/campus-events");
 
   const isFacultyActive = pathname.startsWith("/faculty");
   const isFacilitiesActive = pathname.startsWith("/facilities");
@@ -65,7 +65,6 @@ export default function PortalNavbar() {
     <nav className="w-full bg-[#f8fafc] border-y border-slate-300 shadow-xs sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          
           {/* ========================================================
               DESKTOP NAVIGATION (Merged Academics & Training)
           ======================================================== */}
@@ -156,13 +155,13 @@ export default function PortalNavbar() {
                       2026-27
                     </span>
                   </Link>
-                  <Link
+                  {/* <Link
                     href="/admission-faqs#fees"
                     onClick={() => setAdmissionsDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors"
                   >
                     Fees & Eligibility
-                  </Link>
+                  </Link> */}
                   <Link
                     href="/admission-faqs"
                     onClick={() => setAdmissionsDropdownOpen(false)}
@@ -269,7 +268,10 @@ export default function PortalNavbar() {
             </Link>
 
             {/* 7. Facilities */}
-            <Link href="/facilities" className={navItemClass(isFacilitiesActive)}>
+            <Link
+              href="/facilities"
+              className={navItemClass(isFacilitiesActive)}
+            >
               Facilities
             </Link>
 
@@ -424,13 +426,13 @@ export default function PortalNavbar() {
                 >
                   Apply Online (2026-27)
                 </Link>
-                <Link
+                {/* <Link
                   href="/admission-faqs#fees"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
                 >
                   Fees & Eligibility
-                </Link>
+                </Link> */}
                 <Link
                   href="/admission-faqs"
                   onClick={() => setMobileMenuOpen(false)}
@@ -446,7 +448,9 @@ export default function PortalNavbar() {
           <div className="border-b border-slate-100 pb-1">
             <button
               type="button"
-              onClick={() => setMobileAcademicsTrainingOpen(!mobileAcademicsTrainingOpen)}
+              onClick={() =>
+                setMobileAcademicsTrainingOpen(!mobileAcademicsTrainingOpen)
+              }
               className="w-full flex items-center justify-between py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded text-left"
             >
               <span>Academics & Training</span>
