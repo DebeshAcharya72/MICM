@@ -125,7 +125,7 @@ export default function PortalHeader({ onSearchClick }) {
           {/* Left: Official Emblem + Bilingual Name & Ministry Details */}
           <Link
             href="/"
-            className="flex items-center gap-3.5 sm:gap-5 text-left group notranslate"
+            className="flex flex-col sm:flex-row items-center sm:items-start gap-3.5 sm:gap-5 text-left group notranslate"
           >
             <div className="shrink-0 flex items-center gap-3 bg-white p-1.5 rounded-sm border border-slate-100 shadow-2xs group-hover:scale-102 transition-transform notranslate">
               <img
@@ -135,7 +135,8 @@ export default function PortalHeader({ onSearchClick }) {
               />
             </div>
 
-            <div className="flex flex-col notranslate">
+            {/* Added text-center for mobile, sm:text-left for desktop */}
+            <div className="flex flex-col text-center sm:text-left notranslate">
               <h2 className="font-serif text-emerald-800 font-bold text-sm sm:text-base lg:text-lg leading-tight notranslate">
                 {portalData.instituteHindi}
               </h2>
