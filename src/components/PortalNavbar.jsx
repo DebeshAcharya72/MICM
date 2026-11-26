@@ -118,13 +118,13 @@ export default function PortalNavbar() {
                   >
                     Management
                   </Link>
-                  <Link
+                  {/* <Link
                     href="/collaboration/mous"
                     onClick={() => setAboutDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white transition-colors"
                   >
                     MoUs
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </div>
@@ -392,13 +392,13 @@ export default function PortalNavbar() {
                 >
                   Management
                 </Link>
-                <Link
+                {/* <Link
                   href="/collaboration/mous"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1]"
                 >
                   MoUs
-                </Link>
+                </Link> */}
               </div>
             )}
           </div>
