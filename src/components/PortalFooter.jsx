@@ -91,6 +91,17 @@ export default function PortalFooter() {
       {/* Bottom Dark Navy Government Bar */}
       <div className="bg-[#0b1b3d] text-slate-300 py-3.5 px-4 text-[11px] border-t border-slate-700">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+          <p className="text-slate-400">
+            Built by{" "}
+            <a
+              href="https://www.flashotech.com/" // Replace with the actual URL if different
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#FFC107] hover:text-amber-300 font-semibold hover:underline transition-colors notranslate"
+            >
+              Flasho Tech Private Limited
+            </a>
+          </p>
           <p>
             Copyright © {new Date().getFullYear()}{" "}
             <strong className="notranslate">
@@ -98,20 +109,6 @@ export default function PortalFooter() {
             </strong>
             , Bhubaneswar.
           </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 text-slate-400">
-            <span>Last Update : 18-November-2026</span>
-            {/* <span className="text-slate-600">|</span> */}
-            {/* <span>Visitor Count <strong className="text-amber-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700">534,892</strong></span> */}
-            {/* <span className="text-slate-600">|</span> */}
-            {/* <Link
-              href="/admin"
-              className="text-sky-300 hover:text-white flex items-center gap-1 font-semibold"
-            >
-              <Lock className="w-3 h-3" />
-              <span>Admin Login</span>
-            </Link> */}
-          </div>
         </div>
       </div>
     </footer>
