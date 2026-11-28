@@ -147,6 +147,16 @@ export const api = {
     }
   },
 
+  getFacultyMember: async (idOrSlug) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/faculty/${idOrSlug}`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  },
+
   createFaculty: async (facultyData, token) => {
     const res = await fetch(`${API_BASE_URL}/faculty`, {
       method: 'POST',
@@ -185,6 +195,7 @@ export const api = {
 
   // Image Upload (ImgBB with resilient fallback)
   uploadImage: async (file) => {
+    console.log("[api.uploadImage] Preparing upload for file:", file?.name, file?.size);
     const formData = new FormData();
     formData.append('image', file);
     const res = await fetch(`${API_BASE_URL}/upload`, {
@@ -192,10 +203,13 @@ export const api = {
       body: formData,
     });
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(() => ({}));
+      console.error("[api.uploadImage] Upload failed:", err);
       throw new Error(err.detail || 'Failed to upload image');
     }
-    return await res.json();
+    const data = await res.json();
+    console.log("[api.uploadImage] Upload succeeded:", data);
+    return data;
   },
 
   // Banners
@@ -601,6 +615,40 @@ export const api = {
 
   deleteAlumniRequest: async (id, token) => {
     const res = await fetch(`${API_BASE_URL}/alumni-requests/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+
+  // Gallery CMS (Images & Videos)
+  getGallery: async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/gallery`);
+      return await res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  createGalleryItem: async (itemData, token) => {
+    const res = await fetch(`${API_BASE_URL}/gallery`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(itemData),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to add gallery item');
+    }
+    return await res.json();
+  },
+
+  deleteGalleryItem: async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/gallery/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });

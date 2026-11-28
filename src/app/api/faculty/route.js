@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  const faculty = await db.getFaculty();
-  return NextResponse.json(faculty);
+  try {
+    const faculty = await db.getFaculty();
+    return NextResponse.json(faculty);
+  } catch (err) {
+    return NextResponse.json({ detail: "Failed to fetch faculty" }, { status: 500 });
+  }
 }
 
 export async function POST(request) {

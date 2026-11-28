@@ -1,5 +1,6 @@
 import React from 'react';
-import { GraduationCap, Award, Building2, BookOpen, Mail, Phone } from 'lucide-react';
+import Link from 'next/link';
+import { GraduationCap, Award, Building2, BookOpen, ChevronRight } from 'lucide-react';
 
 export default function FacultyCard({ member }) {
   const getInitials = (name) => {
@@ -16,8 +17,13 @@ export default function FacultyCard({ member }) {
     member.designation.toLowerCase().includes('dean')
   ));
 
+  const facultyHref = `/faculty/${member.slug || member.id}`;
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-soft hover:shadow-premium transition-all duration-300 flex flex-col group hover:-translate-y-1">
+    <Link 
+      href={facultyHref}
+      className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-soft hover:shadow-premium transition-all duration-300 flex flex-col group hover:-translate-y-1 block cursor-pointer"
+    >
       {/* Respectful Academic Portrait Header */}
       <div className={`relative h-64 bg-gradient-to-br ${member.avatarBg || 'from-slate-900 via-brand-navy to-slate-950'} flex flex-col items-center justify-center p-6 text-white overflow-hidden`}>
         {/* Subtle geometric pattern overlay */}
@@ -102,14 +108,15 @@ export default function FacultyCard({ member }) {
         </div>
 
         <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-          <span className="font-medium uppercase tracking-wider">
-            Faculty Member
+          <span className="font-medium uppercase tracking-wider text-slate-500">
+            View Profile
           </span>
-          <span className="text-brand-navy font-semibold">
-            MICM BBSR
+          <span className="text-brand-navy font-semibold flex items-center gap-1 group-hover:text-[#0288D1] transition-colors">
+            <span>MICM BBSR</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

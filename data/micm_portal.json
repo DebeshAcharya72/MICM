@@ -129,7 +129,8 @@
       "phone": "+91 674 2562826",
       "image_url": "https://i.ibb.co/gbtRX70n/9b318cf30b55.png",
       "order_seq": 1,
-      "updated_at": "2026-11-23T12:56:14.564Z"
+      "updated_at": "2026-11-23T12:56:14.564Z",
+      "slug": "dr-p-kannaiah"
     },
     {
       "id": 2,
@@ -142,7 +143,8 @@
       "phone": "+91 674 2562826",
       "image_url": "https://i.ibb.co/3mrVkMnr/0c90922e6c85.jpg",
       "order_seq": 2,
-      "updated_at": "2026-11-23T12:57:02.048Z"
+      "updated_at": "2026-11-23T12:57:02.048Z",
+      "slug": "dr-sanjib-kumar-hota"
     },
     {
       "id": 3,
@@ -155,7 +157,8 @@
       "phone": "+91 674 2562826",
       "image_url": "https://i.ibb.co/VYs44HCS/a66b7c035fb4.png",
       "order_seq": 3,
-      "updated_at": "2026-11-23T12:57:40.242Z"
+      "updated_at": "2026-11-23T12:57:40.242Z",
+      "slug": "dr-pk-upadhyaya"
     },
     {
       "id": 4,
@@ -168,7 +171,8 @@
       "phone": "+91 674 2562826",
       "image_url": "https://i.ibb.co/KctVKTDT/cb52e2c06ff6.jpg",
       "order_seq": 4,
-      "updated_at": "2026-11-23T12:58:12.411Z"
+      "updated_at": "2026-11-23T12:58:12.411Z",
+      "slug": "dr-pranaba-nanda-das"
     },
     {
       "id": 5,
@@ -181,7 +185,8 @@
       "phone": "+91 674 2562826",
       "image_url": "https://i.ibb.co/7xNcYQy4/48431edfd9fb.jpg",
       "order_seq": 5,
-      "updated_at": "2026-11-23T12:58:40.377Z"
+      "updated_at": "2026-11-23T12:58:40.377Z",
+      "slug": "ms-priyadarshini-dash"
     },
     {
       "id": 6,
@@ -194,7 +199,8 @@
       "phone": "+91 674 2562826",
       "image_url": "https://i.ibb.co/gZDkwLHf/48a857478770.jpg",
       "order_seq": 6,
-      "updated_at": "2026-11-23T12:59:30.377Z"
+      "updated_at": "2026-11-23T12:59:30.377Z",
+      "slug": "dr-dilip-kumar-mahapatra"
     }
   ],
   "news_events": [
@@ -295,56 +301,14 @@
   "banners": [
     {
       "id": 1,
-      "title": "CONGRATULATIONS",
-      "subtitle": "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
-      "location": "AT NATIONAL COOPERATIVE SUMMIT",
-      "bg": "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
-      "image_url": null,
-      "students": [
-        {
-          "name": "ADARSH MOHANTY",
-          "batch": "MBA (2025-27)",
-          "rank": "First Rank"
-        },
-        {
-          "name": "GURU PRASAD DAS",
-          "batch": "MBA (2025-27)",
-          "rank": "Distinction"
-        },
-        {
-          "name": "SUBHASHREE NAYAK",
-          "batch": "HDCM (2025-26)",
-          "rank": "Top Merit"
-        }
-      ],
+      "image_url": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=80",
       "is_active": 1,
       "order_seq": 1,
       "created_at": "2026-11-21T13:24:54.693Z"
     },
     {
       "id": 2,
-      "title": "PIONEERING LEGACY",
-      "subtitle": "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
-      "location": "MINISTRY OF CO-OPERATION, GOVT. OF INDIA",
-      "bg": "from-[#093a47] via-[#0288D1] to-[#093a47]",
-      "image_url": null,
-      "students": [
-        {
-          "name": "AICTE APPROVED",
-          "batch": "2-Year MBA",
-          "rank": "BPUT Affiliated"
-        },
-        {
-          "name": "NCCT UNIT",
-          "batch": "New Delhi",
-          "rank": "Apex Body"
-        },
-        {
-          "name": "3.4 ACRES",
-          "batch": "Nayapalli, BBSR",
-          "rank": "Green Campus"
-        }
-      ],
+      "image_url": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=80",
       "is_active": 1,
       "order_seq": 2,
       "created_at": "2026-11-21T13:24:54.693Z"
@@ -785,5 +749,6 @@
       "created_at": "2026-11-25T13:53:28.986Z"
     }
   ],
-  "alumni_requests": []
+  "alumni_requests": [],
+  "gallery": []
 }

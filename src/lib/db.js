@@ -47,6 +47,9 @@ const ApplicationSchema = new mongoose.Schema({
   entrance_exam: { type: String },
   entrance_roll: { type: String, default: '' },
   entrance_score: { type: String, default: '' },
+  photo_url: { type: String, default: null },
+  signature_url: { type: String, default: null },
+  marksheet_url: { type: String, default: null },
   documents_status: { type: String, default: 'Verified Online' },
   status: { type: String, default: 'Submitted' },
   created_at: { type: String, default: () => new Date().toISOString() }
@@ -80,6 +83,7 @@ const GrievanceSchema = new mongoose.Schema({
 
 const FacultySchema = new mongoose.Schema({
   id: { type: mongoose.Schema.Types.Mixed },
+  slug: { type: String },
   name: { type: String, required: true },
   designation: { type: String, required: true },
   department: { type: String, default: 'Management Studies' },
@@ -95,12 +99,7 @@ const FacultySchema = new mongoose.Schema({
 
 const BannerSchema = new mongoose.Schema({
   id: { type: mongoose.Schema.Types.Mixed },
-  title: { type: String, default: "CONGRATULATIONS" },
-  subtitle: { type: String, default: "" },
-  location: { type: String, default: "MADHUSUDAN INSTITUTE OF CO-OPERATIVE MANAGEMENT" },
-  bg: { type: String, default: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]" },
-  image_url: { type: String, default: null },
-  students: { type: Array, default: [] },
+  image_url: { type: String, required: true },
   is_active: { type: Number, default: 1 },
   order_seq: { type: Number, default: 1 },
   created_at: { type: String, default: () => new Date().toISOString() },
@@ -239,6 +238,14 @@ const AlumniRequestSchema = new mongoose.Schema({
   created_at: { type: String, default: () => new Date().toISOString() }
 }, { timestamps: true });
 
+const GallerySchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.Mixed },
+  title: { type: String, required: true },
+  type: { type: String, enum: ['image', 'video'], default: 'image' },
+  url: { type: String, required: true },
+  created_at: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+
 // Export Models (prevent overwrite in dev)
 export const AdminUser = mongoose.models.AdminUser || mongoose.model('AdminUser', AdminUserSchema);
 export const Notice = mongoose.models.Notice || mongoose.model('Notice', NoticeSchema);
@@ -260,6 +267,7 @@ export const Internship = mongoose.models.Internship || mongoose.model('Internsh
 export const CampusEvent = mongoose.models.CampusEvent || mongoose.model('CampusEvent', CampusEventSchema);
 export const Alumni = mongoose.models.Alumni || mongoose.model('Alumni', AlumniSchema);
 export const AlumniRequest = mongoose.models.AlumniRequest || mongoose.model('AlumniRequest', AlumniRequestSchema);
+export const Gallery = mongoose.models.Gallery || mongoose.model('Gallery', GallerySchema);
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -332,6 +340,7 @@ export const db = {
       case 'campus_events': return CampusEvent;
       case 'alumni': return Alumni;
       case 'alumni_requests': return AlumniRequest;
+      case 'gallery': return Gallery;
       default: return null;
     }
   },
@@ -494,6 +503,9 @@ export const db = {
       entrance_exam: app.entrance_exam,
       entrance_roll: app.entrance_roll || '',
       entrance_score: app.entrance_score || '',
+      photo_url: app.photo_url || null,
+      signature_url: app.signature_url || null,
+      marksheet_url: app.marksheet_url || null,
       documents_status: 'Verified Online',
       status: 'Submitted',
       created_at: new Date().toISOString()
@@ -575,14 +587,55 @@ export const db = {
   getFaculty: async () => {
     await connectToDatabase();
     const docs = await Faculty.find().sort({ order_seq: 1, id: 1 }).lean();
-    return formatDocs(docs);
+    return formatDocs(docs).map(f => ({
+      ...f,
+      slug: f.slug || (f.name ? f.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : `faculty-${f.id}`)
+    }));
+  },
+
+  getFacultyMember: async (idOrSlug) => {
+    await connectToDatabase();
+    if (!idOrSlug) return null;
+    const clean = String(idOrSlug).trim().toLowerCase();
+    const isNum = !isNaN(Number(clean));
+
+    // Try finding by slug or id in MongoDB
+    const query = {
+      $or: [
+        { slug: clean },
+        { id: clean },
+        ...(isNum ? [{ id: Number(clean) }] : [])
+      ]
+    };
+    let doc = await Faculty.findOne(query).lean();
+    if (doc) {
+      const res = formatDoc(doc);
+      if (!res.slug && res.name) {
+        res.slug = res.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      }
+      return res;
+    }
+
+    // Fallback: check all faculty docs if name slug matches
+    const all = await Faculty.find().lean();
+    for (const f of all) {
+      const autoSlug = (f.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      if (f.slug === clean || String(f.id) === clean || autoSlug === clean) {
+        const res = formatDoc(f);
+        if (!res.slug) res.slug = autoSlug;
+        return res;
+      }
+    }
+    return null;
   },
 
   createFaculty: async (fac) => {
     await connectToDatabase();
     const id = fac.id || (await getNextId(Faculty));
+    const autoSlug = fac.slug || (fac.name ? fac.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : `faculty-${id}`);
     const created = await Faculty.create({
       id,
+      slug: autoSlug,
       name: fac.name,
       designation: fac.designation,
       department: fac.department || 'Management Studies',
@@ -599,9 +652,12 @@ export const db = {
 
   updateFaculty: async (id, facUpdates) => {
     await connectToDatabase();
+    const autoSlug = facUpdates.slug || (facUpdates.name ? facUpdates.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : undefined);
+    const updates = { ...facUpdates, updated_at: new Date().toISOString() };
+    if (autoSlug) updates.slug = autoSlug;
     const updated = await Faculty.findOneAndUpdate(
       buildIdQuery(id),
-      { ...facUpdates, updated_at: new Date().toISOString() },
+      updates,
       { new: true }
     ).lean();
     return formatDoc(updated);
@@ -627,14 +683,9 @@ export const db = {
     const count = await Banner.countDocuments();
     const created = await Banner.create({
       id,
-      title: bannerData.title || "CONGRATULATIONS",
-      subtitle: bannerData.subtitle || "",
-      location: bannerData.location || "MADHUSUDAN INSTITUTE OF CO-OPERATIVE MANAGEMENT",
-      bg: bannerData.bg || "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
-      image_url: bannerData.image_url || null,
-      students: Array.isArray(bannerData.students) ? bannerData.students : [],
+      image_url: bannerData.image_url,
       is_active: bannerData.is_active !== undefined ? (bannerData.is_active ? 1 : 0) : 1,
-      order_seq: bannerData.order_seq || count + 1,
+      order_seq: bannerData.order_seq !== undefined ? Number(bannerData.order_seq) : count + 1,
       created_at: new Date().toISOString()
     });
     return formatDoc(created);
@@ -1122,6 +1173,84 @@ export const db = {
     return !!res;
   },
 
+  // Gallery CMS (Images & Videos)
+  getGallery: async () => {
+    await connectToDatabase();
+    let docs = await Gallery.find().sort({ id: -1 }).lean();
+    if (!docs || docs.length === 0) {
+      const defaults = [
+        {
+          id: 1,
+          title: "MICM Campus Green Environment & Administrative Block",
+          type: "image",
+          url: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          title: "Annual Convocation & Degree Awarding Ceremony",
+          type: "image",
+          url: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 3,
+          title: "State Cooperative Leadership Seminar & Technical Workshop",
+          type: "image",
+          url: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 4,
+          title: "MICM Institutional Documentary & Training Facilities",
+          type: "video",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 5,
+          title: "Advanced Computer Lab & Digital ERP Training Session",
+          type: "image",
+          url: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 6,
+          title: "National Cooperative Development Conference Highlights",
+          type: "video",
+          url: "https://www.youtube.com/watch?v=ScMzIvxBSi4",
+          created_at: new Date().toISOString()
+        }
+      ];
+      try {
+        await Gallery.insertMany(defaults);
+        docs = await Gallery.find().sort({ id: -1 }).lean();
+      } catch (e) {
+        return defaults;
+      }
+    }
+    return formatDocs(docs);
+  },
+
+  createGalleryItem: async (itemData) => {
+    await connectToDatabase();
+    const id = itemData.id || (await getNextId(Gallery));
+    const created = await Gallery.create({
+      id,
+      title: itemData.title || '',
+      type: itemData.type || 'image',
+      url: itemData.url || '',
+      created_at: new Date().toISOString()
+    });
+    return formatDoc(created);
+  },
+
+  deleteGalleryItem: async (id) => {
+    await connectToDatabase();
+    const res = await Gallery.findOneAndDelete(buildIdQuery(id));
+    return !!res;
+  },
+
   // Dashboard Stats
   getDashboardStats: async () => {
     await connectToDatabase();
@@ -1142,7 +1271,8 @@ export const db = {
       internships_total,
       campus_events_total,
       alumni_total,
-      alumni_requests_total
+      alumni_requests_total,
+      gallery_total
     ] = await Promise.all([
       Enquiry.countDocuments(),
       Application.countDocuments(),
@@ -1160,7 +1290,8 @@ export const db = {
       Internship.countDocuments(),
       CampusEvent.countDocuments(),
       Alumni.countDocuments(),
-      AlumniRequest.countDocuments()
+      AlumniRequest.countDocuments(),
+      Gallery.countDocuments()
     ]);
 
     return {
@@ -1181,6 +1312,7 @@ export const db = {
       campus_events_total,
       alumni_total,
       alumni_requests_total,
+      gallery_total,
       server_status: "Online (MongoDB Atlas & Next.js)",
       last_backup: new Date().toLocaleString('en-GB')
     };

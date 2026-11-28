@@ -18,7 +18,8 @@ import {
   Mail,
   MapPin,
   Award,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -57,11 +58,69 @@ export default function ApplyOnline() {
     entrance_score: '',
 
     // Step 3: Uploads & Declaration
-    photo_uploaded: true,
-    signature_uploaded: true,
-    marksheet_uploaded: true,
+    photo_uploaded: false,
+    photo_url: '',
+    signature_uploaded: false,
+    signature_url: '',
+    marksheet_uploaded: false,
+    marksheet_url: '',
     declaration_agreed: false
   });
+
+  const [uploadingState, setUploadingState] = useState({
+    photo: false,
+    signature: false,
+    marksheet: false
+  });
+
+  const handleFileUpload = async (e, field) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      console.warn(`[ApplyOnline] No file chosen for ${field}`);
+      return;
+    }
+
+    console.log(`[ApplyOnline] Preparing upload for ${field}:`, {
+      name: file.name,
+      size: `${(file.size / 1024).toFixed(1)} KB`,
+      type: file.type
+    });
+
+    setUploadingState(prev => ({ ...prev, [field]: true }));
+    setErrorMsg('');
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('image', file); // file must be the actual File object
+
+      console.log(`[ApplyOnline] Sending POST /api/upload with FormData for ${field}...`);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      const data = await res.json();
+      console.log(`[ApplyOnline] Upload API response for ${field}:`, data);
+
+      if (res.ok && data.success && data.url) {
+        setFormData(prev => ({
+          ...prev,
+          [`${field}_url`]: data.url,
+          [`${field}_uploaded`]: true
+        }));
+        console.log(`[ApplyOnline] ${field} URL recorded in form state:`, data.url);
+      } else {
+        const errorDetail = data.detail || data.error || 'Failed to upload document';
+        console.error(`[ApplyOnline] Upload error for ${field}:`, errorDetail);
+        setErrorMsg(`Failed to upload ${field}: ${errorDetail}`);
+      }
+    } catch (err) {
+      console.error(`[ApplyOnline] Network exception during upload of ${field}:`, err);
+      setErrorMsg(`Network error during ${field} upload: ${err.message}`);
+    } finally {
+      setUploadingState(prev => ({ ...prev, [field]: false }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -126,20 +185,68 @@ export default function ApplyOnline() {
         grad_percentage: formData.grad_percentage,
         entrance_exam: formData.entrance_exam,
         entrance_roll: formData.entrance_roll,
-        entrance_score: formData.entrance_score
+        entrance_score: formData.entrance_score,
+        photo_url: formData.photo_url || null,
+        signature_url: formData.signature_url || null,
+        marksheet_url: formData.marksheet_url || null
       };
 
+      console.log("[ApplyOnline] Submitting application to backend database:", payload);
       const result = await api.submitApplication(payload);
+      const assignedAppNo = result.application_number || result.app_number || `MICM-2026-MBA-${Math.floor(10000 + Math.random() * 90000)}`;
+      console.log("[ApplyOnline] Database submission successful! Assigned App No:", assignedAppNo);
+
+      // Send admission confirmation & admin notification emails via Resend
+      try {
+        console.log("[ApplyOnline] Invoking /api/send-email (Resend)...");
+        const emailRes = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: formData.full_name,
+            email: formData.email,
+            app_number: assignedAppNo,
+            programme: formData.programme,
+            phone: formData.phone,
+            category: formData.category,
+          }),
+        });
+        const emailData = await emailRes.json().catch(() => ({}));
+        console.log("[ApplyOnline] Email API dispatch result:", emailData);
+      } catch (emailErr) {
+        console.warn("[ApplyOnline] Email dispatch failed (non-blocking for applicant):", emailErr);
+      }
+
       setSubmittedData({
         ...formData,
-        app_number: result.application_number || `MICM-2026-MBA-${Math.floor(10000 + Math.random() * 90000)}`,
+        app_number: assignedAppNo,
         submission_time: new Date().toLocaleString()
       });
       setCurrentStep(4);
       window.scrollTo({ top: 150, behavior: 'smooth' });
     } catch (err) {
+      console.error("[ApplyOnline] Database submission encountered error, triggering fallback:", err);
       // Fallback in case backend server is unreachable
       const fallbackAppNo = `MICM-2026-${formData.programme.includes('MBA') ? 'MBA' : 'HDCM'}-${Math.floor(10000 + Math.random() * 90000)}`;
+
+      try {
+        console.log("[ApplyOnline] Invoking fallback /api/send-email...");
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: formData.full_name,
+            email: formData.email,
+            app_number: fallbackAppNo,
+            programme: formData.programme,
+            phone: formData.phone,
+            category: formData.category,
+          }),
+        });
+      } catch (emailErr) {
+        console.warn("[ApplyOnline] Fallback email dispatch failed:", emailErr);
+      }
+
       setSubmittedData({
         ...formData,
         app_number: fallbackAppNo,
@@ -692,39 +799,151 @@ export default function ApplyOnline() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 
                 {/* Photo Upload Box */}
-                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50 hover:bg-sky-50 transition-colors">
-                  <div className="w-12 h-12 bg-sky-100 text-[#0288D1] rounded-full flex items-center justify-center mx-auto mb-2">
-                    <User className="w-6 h-6" />
+                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50 hover:bg-sky-50 transition-colors relative flex flex-col justify-between">
+                  <div>
+                    {formData.photo_url ? (
+                      <div className="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden border-2 border-[#0288D1] shadow-xs">
+                        <img src={formData.photo_url} alt="Candidate Photo" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 bg-sky-100 text-[#0288D1] rounded-full flex items-center justify-center mx-auto mb-2">
+                        <User className="w-6 h-6" />
+                      </div>
+                    )}
+                    <div className="text-xs font-bold text-slate-800">Passport Photograph</div>
+                    <div className="text-[11px] text-slate-500 mb-3">JPG/PNG, Max 2 MB</div>
                   </div>
-                  <div className="text-xs font-bold text-slate-800">Passport Photograph</div>
-                  <div className="text-[11px] text-slate-500 mb-3">JPG/PNG, Max 2 MB</div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-semibold">
-                    <Check className="w-3 h-3" /> Ready for upload
-                  </span>
+                  <div>
+                    <label className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer transition-colors shadow-2xs ${
+                      formData.photo_uploaded
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-[#0288D1] hover:bg-[#0277bd] text-white'
+                    }`}>
+                      {uploadingState.photo ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : formData.photo_uploaded ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Photo Uploaded</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span>Choose Photo</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingState.photo}
+                        onChange={(e) => handleFileUpload(e, 'photo')}
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 {/* Signature Upload Box */}
-                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50 hover:bg-sky-50 transition-colors">
-                  <div className="w-12 h-12 bg-sky-100 text-[#0288D1] rounded-full flex items-center justify-center mx-auto mb-2">
-                    <FileText className="w-6 h-6" />
+                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50 hover:bg-sky-50 transition-colors relative flex flex-col justify-between">
+                  <div>
+                    {formData.signature_url ? (
+                      <div className="w-24 h-12 mx-auto mb-2 rounded bg-white border border-slate-300 p-1 flex items-center justify-center overflow-hidden">
+                        <img src={formData.signature_url} alt="Signature" className="max-h-full max-w-full object-contain" />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 bg-sky-100 text-[#0288D1] rounded-full flex items-center justify-center mx-auto mb-2">
+                        <FileText className="w-6 h-6" />
+                      </div>
+                    )}
+                    <div className="text-xs font-bold text-slate-800">Candidate Signature</div>
+                    <div className="text-[11px] text-slate-500 mb-3">JPG/PNG, Max 1 MB</div>
                   </div>
-                  <div className="text-xs font-bold text-slate-800">Candidate Signature</div>
-                  <div className="text-[11px] text-slate-500 mb-3">JPG/PNG, Max 1 MB</div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-semibold">
-                    <Check className="w-3 h-3" /> Ready for upload
-                  </span>
+                  <div>
+                    <label className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer transition-colors shadow-2xs ${
+                      formData.signature_uploaded
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-[#0288D1] hover:bg-[#0277bd] text-white'
+                    }`}>
+                      {uploadingState.signature ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : formData.signature_uploaded ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Signature Uploaded</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span>Choose Signature</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingState.signature}
+                        onChange={(e) => handleFileUpload(e, 'signature')}
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 {/* Marksheet Upload Box */}
-                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50 hover:bg-sky-50 transition-colors">
-                  <div className="w-12 h-12 bg-sky-100 text-[#0288D1] rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Award className="w-6 h-6" />
+                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50 hover:bg-sky-50 transition-colors relative flex flex-col justify-between">
+                  <div>
+                    {formData.marksheet_url ? (
+                      <div className="w-20 h-12 mx-auto mb-2 rounded bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 font-bold text-xs p-1">
+                        {formData.marksheet_url.startsWith('data:image') || formData.marksheet_url.match(/\.(png|jpg|jpeg|webp)/i) ? (
+                          <img src={formData.marksheet_url} alt="Marksheet" className="max-h-full max-w-full object-contain" />
+                        ) : (
+                          <span>DOC OK</span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 bg-sky-100 text-[#0288D1] rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Award className="w-6 h-6" />
+                      </div>
+                    )}
+                    <div className="text-xs font-bold text-slate-800">Degree Marksheet / Certificate</div>
+                    <div className="text-[11px] text-slate-500 mb-3">PDF/JPG, Max 5 MB</div>
                   </div>
-                  <div className="text-xs font-bold text-slate-800">Degree Marksheet / Certificate</div>
-                  <div className="text-[11px] text-slate-500 mb-3">PDF/JPG, Max 5 MB</div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-semibold">
-                    <Check className="w-3 h-3" /> Ready for upload
-                  </span>
+                  <div>
+                    <label className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer transition-colors shadow-2xs ${
+                      formData.marksheet_uploaded
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-[#0288D1] hover:bg-[#0277bd] text-white'
+                    }`}>
+                      {uploadingState.marksheet ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : formData.marksheet_uploaded ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Certificate Uploaded</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span>Choose Document</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        disabled={uploadingState.marksheet}
+                        onChange={(e) => handleFileUpload(e, 'marksheet')}
+                      />
+                    </label>
+                  </div>
                 </div>
 
               </div>

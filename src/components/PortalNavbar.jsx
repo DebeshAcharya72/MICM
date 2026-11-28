@@ -37,10 +37,15 @@ export default function PortalNavbar() {
     pathname.startsWith("/programmes") ||
     pathname.startsWith("/training") ||
     pathname.startsWith("/training-calendar") ||
-    pathname.startsWith("/downloads");
+    pathname.startsWith("/downloads") ||
+    pathname.startsWith("/academics") ||
+    pathname.startsWith("/cooperative-training");
 
   const isStudentLifeActive =
-    pathname.startsWith("/placements") || pathname.startsWith("/campus-events");
+    pathname.startsWith("/placements") ||
+    pathname.startsWith("/campus-events");
+
+  const isGalleryActive = pathname.startsWith("/gallery");
 
   const isFacultyActive = pathname.startsWith("/faculty");
   const isFacilitiesActive = pathname.startsWith("/facilities");
@@ -204,6 +209,13 @@ export default function PortalNavbar() {
                     <span className="notranslate">HDCM</span> Programme
                   </Link>
                   <Link
+                    href="/academics/cooperative-training"
+                    onClick={() => setAcademicsTrainingDropdownOpen(false)}
+                    className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors font-medium"
+                  >
+                    Cooperative Training
+                  </Link>
+                  <Link
                     href="/training-calendar"
                     onClick={() => setAcademicsTrainingDropdownOpen(false)}
                     className="block px-4 py-2 text-slate-700 hover:bg-[#0288D1] hover:text-white border-b border-slate-100 transition-colors font-semibold"
@@ -275,7 +287,12 @@ export default function PortalNavbar() {
               Facilities
             </Link>
 
-            {/* 8. Alumni (Direct Link to /alumni) */}
+            {/* 8. Gallery */}
+            <Link href="/gallery" className={navItemClass(isGalleryActive)}>
+              Gallery
+            </Link>
+
+            {/* 9. Alumni (Direct Link to /alumni) */}
             <Link href="/alumni" className={navItemClass(isAlumniActive)}>
               Alumni
             </Link>
@@ -477,6 +494,13 @@ export default function PortalNavbar() {
                   <span className="notranslate">HDCM</span> Programme
                 </Link>
                 <Link
+                  href="/academics/cooperative-training"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1] font-medium"
+                >
+                  Cooperative Training
+                </Link>
+                <Link
                   href="/training-calendar"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1.5 px-2 text-slate-700 hover:text-[#0288D1] font-semibold"
@@ -553,7 +577,16 @@ export default function PortalNavbar() {
             Facilities
           </Link>
 
-          {/* 8. Alumni (Direct Link to /alumni) */}
+          {/* 8. Gallery */}
+          <Link
+            href="/gallery"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 px-3 text-slate-800 font-bold hover:bg-slate-100 rounded"
+          >
+            Gallery
+          </Link>
+
+          {/* 9. Alumni (Direct Link to /alumni) */}
           <Link
             href="/alumni"
             onClick={() => setMobileMenuOpen(false)}

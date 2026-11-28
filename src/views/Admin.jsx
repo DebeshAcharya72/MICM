@@ -36,6 +36,9 @@ import {
   Building2,
   Award,
   UserCheck,
+  Film,
+  Video,
+  UploadCloud,
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -94,6 +97,18 @@ export default function Admin() {
   const [campusEvents, setCampusEvents] = useState([]);
   const [alumni, setAlumni] = useState([]);
   const [alumniRequests, setAlumniRequests] = useState([]);
+  const [gallery, setGallery] = useState([]);
+
+  // Gallery Modal State
+  const [newGalleryModal, setNewGalleryModal] = useState(false);
+  const [newGalleryData, setNewGalleryData] = useState({
+    title: "",
+    type: "image",
+    url: "",
+  });
+  const [galleryImagePreview, setGalleryImagePreview] = useState("");
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryUploadError, setGalleryUploadError] = useState("");
 
   // Alumni Modal State
   const [newAlumniModal, setNewAlumniModal] = useState(false);
@@ -249,17 +264,7 @@ export default function Admin() {
   const [bannerUploading, setBannerUploading] = useState(false);
   const [bannerUploadError, setBannerUploadError] = useState("");
   const [newBannerData, setNewBannerData] = useState({
-    title: "CONGRATULATIONS",
-    subtitle:
-      "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
-    location: "AT NATIONAL COOPERATIVE SUMMIT",
-    bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
     image_url: "",
-    students: [
-      { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
-      { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" },
-    ],
     is_active: 1,
     order_seq: 1,
   });
@@ -275,7 +280,7 @@ export default function Admin() {
 
     setLoading(true);
     try {
-      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern, ev, alm, alReq] = await Promise.allSettled([
+      const [s, a, e, n, g, f, b, tr, an, pl, cn, ql, ps, rec, intern, ev, alm, alReq, gal] = await Promise.allSettled([
         api.getDashboardStats(authToken),
         api.getApplications(authToken),
         api.getEnquiries(authToken),
@@ -294,6 +299,7 @@ export default function Admin() {
         api.getCampusEvents(),
         api.getAlumni(),
         api.getAlumniRequests(authToken),
+        api.getGallery(),
       ]);
 
       if (s.status === "fulfilled" && s.value) setStats(s.value);
@@ -331,6 +337,8 @@ export default function Admin() {
         setAlumni(alm.value);
       if (alReq.status === "fulfilled" && Array.isArray(alReq.value))
         setAlumniRequests(alReq.value);
+      if (gal.status === "fulfilled" && Array.isArray(gal.value))
+        setGallery(gal.value);
     } catch (err) {
       console.warn("Could not fetch remote dashboard data:", err);
     } finally {
@@ -894,6 +902,65 @@ export default function Admin() {
     }
   };
 
+  // Gallery Handlers
+  const handleGalleryImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setGalleryImagePreview(URL.createObjectURL(file));
+    setGalleryUploading(true);
+    setGalleryUploadError("");
+
+    try {
+      const res = await api.uploadImage(file);
+      if (res && res.url) {
+        setNewGalleryData((prev) => ({
+          ...prev,
+          url: res.url,
+        }));
+      }
+    } catch (err) {
+      console.error("Gallery image upload error:", err);
+      setGalleryUploadError(err.message || "Failed to upload image");
+    } finally {
+      setGalleryUploading(false);
+    }
+  };
+
+  const handleAddGalleryItem = async (e) => {
+    e.preventDefault();
+    if (!newGalleryData.title.trim()) {
+      alert("Please enter a title for the gallery item.");
+      return;
+    }
+    if (!newGalleryData.url.trim()) {
+      alert(newGalleryData.type === 'image' ? "Please upload an image." : "Please enter a YouTube video URL.");
+      return;
+    }
+
+    try {
+      await api.createGalleryItem(newGalleryData, token);
+      setNewGalleryModal(false);
+      setNewGalleryData({ title: "", type: "image", url: "" });
+      setGalleryImagePreview("");
+      setGalleryUploadError("");
+      loadAdminData(token);
+    } catch (err) {
+      alert("Failed to create gallery item: " + err.message);
+    }
+  };
+
+  const handleDeleteGalleryItem = async (id) => {
+    if (window.confirm("Are you sure you want to delete this gallery item?")) {
+      try {
+        await api.deleteGalleryItem(id, token);
+        loadAdminData(token);
+      } catch {
+        setGallery(gallery.filter((g) => g.id !== id));
+      }
+    }
+  };
+
   // Upload Faculty Image via ImgBB
   const handleFacultyImageChange = async (e) => {
     const file = e.target.files?.[0];
@@ -1016,35 +1083,13 @@ export default function Admin() {
       setNewBannerModal(false);
       setEditingBannerId(null);
       setNewBannerData({
-        title: "CONGRATULATIONS",
-        subtitle:
-          "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
-        location: "AT NATIONAL COOPERATIVE SUMMIT",
-        bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
         image_url: "",
-        students: [
-          {
-            name: "ADARSH MOHANTY",
-            batch: "MBA (2025-27)",
-            rank: "First Rank",
-          },
-          {
-            name: "GURU PRASAD DAS",
-            batch: "MBA (2025-27)",
-            rank: "Distinction",
-          },
-          {
-            name: "SUBHASHREE NAYAK",
-            batch: "HDCM (2025-26)",
-            rank: "Top Merit",
-          },
-        ],
         is_active: 1,
         order_seq: 1,
       });
       loadAdminData(token);
     } catch (err) {
-      alert("Failed to save banner slide: " + err.message);
+      alert("Failed to save banner: " + err.message);
     }
   };
 
@@ -1052,34 +1097,11 @@ export default function Admin() {
   const handleEditBanner = (b) => {
     setEditingBannerId(b.id);
     setNewBannerData({
-      title: b.title || "",
-      subtitle: b.subtitle || "",
-      location: b.location || "",
-      bg: b.bg || "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
       image_url: b.image_url || "",
-      students:
-        Array.isArray(b.students) && b.students.length > 0
-          ? b.students
-          : [
-              {
-                name: "ADARSH MOHANTY",
-                batch: "MBA (2025-27)",
-                rank: "First Rank",
-              },
-              {
-                name: "GURU PRASAD DAS",
-                batch: "MBA (2025-27)",
-                rank: "Distinction",
-              },
-              {
-                name: "SUBHASHREE NAYAK",
-                batch: "HDCM (2025-26)",
-                rank: "Top Merit",
-              },
-            ],
       is_active: b.is_active !== undefined ? b.is_active : 1,
       order_seq: b.order_seq || 1,
     });
+    setBannerUploadError("");
     setNewBannerModal(true);
   };
 
@@ -1400,6 +1422,11 @@ export default function Admin() {
                 id: "alumni_requests",
                 label: `Alumni Requests (${alumniRequests.length})`,
                 icon: UserCheck,
+              },
+              {
+                id: "gallery",
+                label: `Gallery CMS (${gallery.length})`,
+                icon: ImageIcon,
               },
               {
                 id: "coop_news",
@@ -2136,66 +2163,41 @@ export default function Admin() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-md border border-slate-300 shadow-xs">
               <div>
                 <h3 className="font-bold text-base text-[#0B1B3D] flex items-center gap-2">
-                  <Sliders className="w-5 h-5 text-[#0288D1]" />
-                  <span>Homepage Hero Banner Management</span>
+                  <ImageIcon className="w-5 h-5 text-[#0288D1]" />
+                  <span>Homepage Banner Management</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Configure live auto-scrolling hero banners, student award
-                  badges, headlines, and upload custom backgrounds with ImgBB.
+                  Upload full-width banner images (5958 &times; 1130 px recommended). They will display directly on the homepage hero slider.
                 </p>
               </div>
               <button
                 onClick={() => {
                   setEditingBannerId(null);
                   setNewBannerData({
-                    title: "CONGRATULATIONS",
-                    subtitle:
-                      "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
-                    location: "AT NATIONAL COOPERATIVE SUMMIT",
-                    bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
                     image_url: "",
-                    students: [
-                      {
-                        name: "ADARSH MOHANTY",
-                        batch: "MBA (2025-27)",
-                        rank: "First Rank",
-                      },
-                      {
-                        name: "GURU PRASAD DAS",
-                        batch: "MBA (2025-27)",
-                        rank: "Distinction",
-                      },
-                      {
-                        name: "SUBHASHREE NAYAK",
-                        batch: "HDCM (2025-26)",
-                        rank: "Top Merit",
-                      },
-                    ],
                     is_active: 1,
                     order_seq: banners.length + 1,
                   });
+                  setBannerUploadError("");
                   setNewBannerModal(true);
                 }}
                 className="bg-[#0288D1] hover:bg-[#0277bd] text-white px-4 py-2 rounded text-xs font-bold flex items-center gap-2 shadow-xs transition-colors shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add New Banner Slide</span>
+                <span>+ Upload New Banner</span>
               </button>
             </div>
 
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {banners.map((b, bIdx) => (
                 <div
                   key={b.id || bIdx}
-                  className="bg-white border border-slate-300 rounded-lg shadow-xs overflow-hidden"
+                  className="bg-white border border-slate-300 rounded-lg shadow-xs overflow-hidden flex flex-col justify-between"
                 >
-                  <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
+                  <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
                       <span className="font-bold text-xs text-slate-800">
-                        Slide #{b.order_seq || bIdx + 1}:
-                      </span>
-                      <span className="font-extrabold text-xs text-[#0B1B3D] truncate max-w-xs">
-                        {b.title}
+                        Slide #{b.order_seq || bIdx + 1}
                       </span>
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -2204,13 +2206,8 @@ export default function Admin() {
                             : "bg-slate-200 text-slate-600 border border-slate-300"
                         }`}
                       >
-                        {b.is_active ? "● Active (Displaying)" : "○ Inactive"}
+                        {b.is_active ? "● Active" : "○ Inactive"}
                       </span>
-                      {b.image_url && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                          Custom Background Image
-                        </span>
-                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -2237,82 +2234,30 @@ export default function Admin() {
                     </div>
                   </div>
 
-                  <div className="p-4 bg-slate-100">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1">
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Live Banner Preview:</span>
-                    </div>
-                    <div
-                      className={`rounded-lg overflow-hidden border-2 border-amber-400 p-6 relative shadow-md ${
-                        b.image_url
-                          ? "bg-[#0B1B3D]"
-                          : `bg-gradient-to-r ${
-                              b.bg ||
-                              "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]"
-                            }`
-                      }`}
-                      style={
-                        b.image_url
-                          ? {
-                              backgroundImage: `url('${b.image_url}')`,
-                              backgroundSize: "cover",
-                              backgroundPosition: "center",
-                            }
-                          : {}
-                      }
-                    >
-                      {b.image_url && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#0c2a5c]/95 via-[#0c2a5c]/85 to-[#0c2a5c]/90"></div>
-                      )}
-                      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="space-y-2 text-center md:text-left max-w-lg">
-                          <div className="inline-flex items-center gap-1.5 bg-white py-0.5 px-2 rounded shadow-xs border border-amber-300">
-                            <span className="text-[10px] font-black text-[#0B1B3D]">
-                              MICM
-                            </span>
-                          </div>
-                          <h4 className="font-serif text-2xl sm:text-3xl font-black text-amber-400 tracking-tight uppercase">
-                            {b.title}
-                          </h4>
-                          <p className="text-xs font-bold text-white uppercase tracking-wide">
-                            {b.subtitle}
-                          </p>
-                          <div>
-                            <span className="inline-block bg-white/20 px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider text-amber-300 border border-white/20">
-                              {b.location}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 flex-wrap justify-center">
-                          {(b.students || []).map((st, sIdx) => (
-                            <div
-                              key={sIdx}
-                              className="flex flex-col items-center text-center"
-                            >
-                              <div className="w-16 h-16 rounded-full border-2 border-amber-400 bg-slate-900 text-amber-300 shadow-md flex flex-col items-center justify-center p-1">
-                                <span className="text-[7px] font-black uppercase text-amber-400 text-center leading-tight">
-                                  {st.rank}
-                                </span>
-                              </div>
-                              <span className="font-bold text-[11px] text-white mt-1 block">
-                                {st.name}
-                              </span>
-                              <span className="text-[9px] text-amber-200 block">
-                                {st.batch}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                  <div className="p-3 bg-slate-100 flex-1">
+                    {b.image_url ? (
+                      <div className="w-full h-44 rounded-md overflow-hidden border border-slate-200 bg-slate-900 shadow-inner">
+                        <img
+                          src={b.image_url}
+                          alt={`Banner Slide ${b.order_seq || bIdx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                    </div>
+                    ) : (
+                      <div className="w-full h-44 rounded-md border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-400 text-xs">
+                        No image uploaded
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
               {banners.length === 0 && (
-                <div className="p-12 text-center bg-white rounded-md border border-slate-300 text-slate-400">
-                  No banner slides currently found. Click "Add New Banner Slide"
-                  to create one.
+                <div className="col-span-full p-12 text-center bg-white rounded-md border border-slate-300 text-slate-400">
+                  <ImageIcon className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+                  <p className="font-semibold text-sm">No banners uploaded yet</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Click &quot;+ Upload New Banner&quot; to add your first full-width homepage banner.
+                  </p>
                 </div>
               )}
             </div>
@@ -3265,6 +3210,113 @@ export default function Admin() {
             </div>
           </div>
         )}
+        {/* TAB: GALLERY CMS */}
+        {activeTab === "gallery" && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-md border border-slate-300 shadow-sm p-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <div>
+                  <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-[#0288D1]" />
+                    <span>Gallery CMS ({gallery.length})</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Manage photo uploads and YouTube video links displayed on the public Gallery page.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setNewGalleryData({ title: "", type: "image", url: "" });
+                    setGalleryImagePreview("");
+                    setGalleryUploadError("");
+                    setNewGalleryModal(true);
+                  }}
+                  className="px-3.5 py-1.5 bg-[#0288D1] hover:bg-[#0277bd] text-white text-xs font-bold rounded flex items-center gap-1.5 shadow-2xs transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Gallery Item</span>
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border rounded border-slate-200">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-[#0B1B3D] text-white">
+                    <tr>
+                      <th className="p-3 w-12 text-center border-r border-[#1a3365]">#</th>
+                      <th className="p-3 w-28 text-center border-r border-[#1a3365]">Preview</th>
+                      <th className="p-3 border-r border-[#1a3365]">Title</th>
+                      <th className="p-3 w-24 text-center border-r border-[#1a3365]">Type</th>
+                      <th className="p-3 border-r border-[#1a3365]">Media Link</th>
+                      <th className="p-3 w-20 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {gallery.map((item, idx) => (
+                      <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3 text-center text-slate-500 font-mono border-r">
+                          {idx + 1}
+                        </td>
+                        <td className="p-3 text-center border-r">
+                          {item.type === "image" ? (
+                            <img
+                              src={item.url}
+                              alt={item.title}
+                              className="w-20 h-12 object-cover rounded border border-slate-200 mx-auto"
+                            />
+                          ) : (
+                            <div className="w-20 h-12 bg-rose-50 border border-rose-200 rounded flex flex-col items-center justify-center mx-auto text-rose-600">
+                              <Film className="w-4 h-4" />
+                              <span className="text-[10px] font-bold">Video</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3 font-bold text-slate-900 border-r">
+                          {item.title}
+                        </td>
+                        <td className="p-3 text-center border-r">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            item.type === "video"
+                              ? "bg-rose-100 text-rose-800 border border-rose-200"
+                              : "bg-sky-100 text-sky-800 border border-sky-200"
+                          }`}>
+                            {item.type}
+                          </span>
+                        </td>
+                        <td className="p-3 border-r max-w-xs truncate">
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[#0288D1] hover:underline flex items-center gap-1 font-mono text-[11px]"
+                          >
+                            <span className="truncate">{item.url}</span>
+                            <ExternalLink className="w-3 h-3 shrink-0" />
+                          </a>
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => handleDeleteGalleryItem(item.id)}
+                            className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                            title="Delete Item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {gallery.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-slate-400">
+                          No gallery items found. Click "Add Gallery Item" to add photos or YouTube videos.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
 
@@ -3334,6 +3386,54 @@ export default function Admin() {
                   ({selectedApp.entrance_score})
                 </div>
               </div>
+
+              {/* Uploaded Documents */}
+              {(selectedApp.photo_url || selectedApp.signature_url || selectedApp.marksheet_url) && (
+                <div className="bg-slate-50 p-3 rounded border space-y-2">
+                  <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                    Uploaded Documents
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4">
+                    {selectedApp.photo_url && (
+                      <div className="text-center">
+                        <div className="text-[10px] text-slate-500 font-semibold mb-1">Photograph</div>
+                        <a href={selectedApp.photo_url} target="_blank" rel="noreferrer">
+                          <img
+                            src={selectedApp.photo_url}
+                            alt="Candidate"
+                            className="w-16 h-16 object-cover rounded border border-slate-300 hover:opacity-80 transition-opacity"
+                          />
+                        </a>
+                      </div>
+                    )}
+                    {selectedApp.signature_url && (
+                      <div className="text-center">
+                        <div className="text-[10px] text-slate-500 font-semibold mb-1">Signature</div>
+                        <a href={selectedApp.signature_url} target="_blank" rel="noreferrer">
+                          <img
+                            src={selectedApp.signature_url}
+                            alt="Signature"
+                            className="h-16 w-24 object-contain bg-white rounded border border-slate-300 hover:opacity-80 transition-opacity p-1"
+                          />
+                        </a>
+                      </div>
+                    )}
+                    {selectedApp.marksheet_url && (
+                      <div className="text-center">
+                        <div className="text-[10px] text-slate-500 font-semibold mb-1">Marksheet</div>
+                        <a
+                          href={selectedApp.marksheet_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="h-16 px-3 bg-white rounded border border-slate-300 hover:bg-slate-100 flex items-center justify-center font-bold text-[#0288D1] text-xs transition-colors"
+                        >
+                          View Document ↗
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bg-slate-100 px-6 py-3 border-t flex justify-end">
@@ -3656,17 +3756,17 @@ export default function Admin() {
         </div>
       )}
 
-      {/* MODAL: ADD / EDIT BANNER SLIDE (WITH IMGBB CUSTOM IMAGE) */}
+      {/* MODAL: ADD / EDIT BANNER SLIDE (PURE IMAGE UPLOADER) */}
       {newBannerModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-md max-w-2xl w-full border border-slate-300 shadow-2xl overflow-hidden my-6 max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden my-6 flex flex-col">
             <div className="bg-[#0B1B3D] text-white px-6 py-3.5 font-bold text-sm flex justify-between items-center border-b-2 border-amber-400">
               <span className="flex items-center gap-2 text-amber-300">
-                <Sliders className="w-4 h-4" />
+                <ImageIcon className="w-4 h-4" />
                 <span>
                   {editingBannerId
-                    ? "Edit Banner Slide"
-                    : "Add New Banner Slide"}
+                    ? "Edit Banner Image"
+                    : "Upload New Banner Image"}
                 </span>
               </span>
               <button
@@ -3681,252 +3781,63 @@ export default function Admin() {
               onSubmit={handleSaveBanner}
               className="p-6 space-y-4 text-xs overflow-y-auto flex-1"
             >
-              <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
-                <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span>Headline &amp; Institutional Category</span>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    Main Banner Title * (e.g. CONGRATULATIONS, ADMISSIONS 2026)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newBannerData.title}
-                    onChange={(e) =>
-                      setNewBannerData({
-                        ...newBannerData,
-                        title: e.target.value,
-                      })
-                    }
-                    placeholder="e.g. CONGRATULATIONS"
-                    className="w-full p-2 border border-slate-300 rounded outline-none font-bold text-slate-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    Announcement Subtitle
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={newBannerData.subtitle}
-                    onChange={(e) =>
-                      setNewBannerData({
-                        ...newBannerData,
-                        subtitle: e.target.value,
-                      })
-                    }
-                    placeholder="e.g. FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE"
-                    className="w-full p-2 border border-slate-300 rounded outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    Event / Location Badge Tag
-                  </label>
-                  <input
-                    type="text"
-                    value={newBannerData.location}
-                    onChange={(e) =>
-                      setNewBannerData({
-                        ...newBannerData,
-                        location: e.target.value,
-                      })
-                    }
-                    placeholder="e.g. AT NATIONAL COOPERATIVE SUMMIT"
-                    className="w-full p-2 border border-slate-300 rounded outline-none"
-                  />
-                </div>
+              <div className="bg-amber-50 border border-amber-200 p-3 rounded text-xs text-amber-900 mb-3">
+                <strong>Important:</strong> Please upload an image with exact dimensions of <strong>5958px width &times; 1130px height</strong> (Aspect Ratio ~5.27:1).
               </div>
 
-              <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
-                <div className="font-bold text-slate-800 text-xs flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4 text-[#0288D1]" />
-                    <span>Background Appearance</span>
-                  </span>
-                  {newBannerData.image_url ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setNewBannerData({ ...newBannerData, image_url: "" })
-                      }
-                      className="text-[11px] text-red-600 hover:underline font-bold"
-                    >
-                      Remove Custom Photo
-                    </button>
-                  ) : null}
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-600 mb-1.5">
-                    Select Theme Gradient Palette:
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {[
-                      {
-                        label: "Navy Conclave",
-                        value: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
-                      },
-                      {
-                        label: "Ocean Teal",
-                        value: "from-[#093a47] via-[#0288D1] to-[#093a47]",
-                      },
-                      {
-                        label: "Deep Indigo",
-                        value: "from-[#1e1b4b] via-[#312e81] to-[#1e1b4b]",
-                      },
-                      {
-                        label: "Royal Prestige",
-                        value: "from-[#3b0764] via-[#581c87] to-[#3b0764]",
-                      },
-                    ].map((g, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() =>
-                          setNewBannerData({ ...newBannerData, bg: g.value })
-                        }
-                        className={`p-2 rounded border text-left flex items-center gap-2 ${
-                          newBannerData.bg === g.value &&
-                          !newBannerData.image_url
-                            ? "border-amber-500 ring-2 ring-amber-400"
-                            : "border-slate-300"
-                        }`}
-                      >
-                        <div
-                          className={`w-5 h-5 rounded bg-gradient-to-r ${g.value}`}
-                        ></div>
-                        <span className="text-[11px] font-bold text-slate-700">
-                          {g.label}
-                        </span>
-                      </button>
-                    ))}
+              {/* File input for image (ImgBB API) */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Banner Image (JPG, PNG, WebP) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBannerImageChange}
+                  className="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-[#0B1B3D] file:text-amber-300 hover:file:bg-slate-900 cursor-pointer border border-slate-300 p-1.5 rounded"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  For best results, upload an image with dimensions 5958 &times; 1130 pixels.
+                </p>
+                {bannerUploading && (
+                  <div className="text-xs text-sky-700 font-semibold flex items-center gap-1.5 mt-2">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Uploading banner to ImgBB CDN...</span>
                   </div>
-                </div>
+                )}
+                {bannerUploadError && (
+                  <div className="text-xs text-red-600 font-semibold mt-2">
+                    {bannerUploadError}
+                  </div>
+                )}
+              </div>
 
-                <div className="pt-2 border-t border-slate-200">
-                  <label className="block font-bold text-slate-700 mb-1">
-                    Or Upload Custom Background Image (via ImgBB API)
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleBannerImageChange}
-                      className="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-bold file:bg-[#0B1B3D] file:text-amber-300 hover:file:bg-slate-900 cursor-pointer"
+              {/* Preview of uploaded image */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Image Preview:
+                </label>
+                {newBannerData.image_url ? (
+                  <div className="relative rounded-lg overflow-hidden border-2 border-slate-200 bg-slate-900 shadow-inner">
+                    <img
+                      src={newBannerData.image_url}
+                      alt="Banner Preview"
+                      className="w-full h-44 object-cover"
                     />
-                    {bannerUploading && (
-                      <div className="text-[11px] text-sky-700 font-semibold flex items-center gap-1">
-                        <RefreshCw className="w-3 h-3 animate-spin" />
-                        <span>Uploading background to ImgBB...</span>
-                      </div>
-                    )}
+                    <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                      Live Preview
+                    </div>
                   </div>
-                  {newBannerData.image_url && !bannerUploading && (
-                    <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded flex items-center justify-between text-emerald-800 text-[11px] font-semibold">
-                      <span className="flex items-center gap-1.5 truncate">
-                        <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span className="truncate">
-                          Image URL: {newBannerData.image_url}
-                        </span>
-                      </span>
-                    </div>
-                  )}
-                  {bannerUploadError && (
-                    <div className="text-[11px] text-red-600 font-semibold mt-1">
-                      {bannerUploadError}
-                    </div>
-                  )}
-                </div>
+                ) : (
+                  <div className="w-full h-32 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 flex flex-col items-center justify-center text-slate-400 gap-1.5">
+                    <ImageIcon className="w-8 h-8 text-slate-300" />
+                    <span className="text-xs">No image uploaded yet</span>
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-3 bg-slate-50 p-4 rounded border border-slate-200">
-                <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                  <GraduationCap className="w-4 h-4 text-amber-500" />
-                  <span>Scholar / Highlight Badges (Up to 3 Badges)</span>
-                </div>
-
-                <div className="space-y-3">
-                  {[0, 1, 2].map((idx) => {
-                    const st = newBannerData.students[idx] || {
-                      name: "",
-                      batch: "",
-                      rank: "",
-                    };
-                    return (
-                      <div
-                        key={idx}
-                        className="p-3 bg-white rounded border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2"
-                      >
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
-                            Scholar Name #{idx + 1}
-                          </label>
-                          <input
-                            type="text"
-                            value={st.name}
-                            onChange={(e) => {
-                              const updated = [...newBannerData.students];
-                              updated[idx] = { ...st, name: e.target.value };
-                              setNewBannerData({
-                                ...newBannerData,
-                                students: updated,
-                              });
-                            }}
-                            placeholder="e.g. ADARSH MOHANTY"
-                            className="w-full p-1.5 border border-slate-300 rounded text-xs font-semibold"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
-                            Batch / Programme
-                          </label>
-                          <input
-                            type="text"
-                            value={st.batch}
-                            onChange={(e) => {
-                              const updated = [...newBannerData.students];
-                              updated[idx] = { ...st, batch: e.target.value };
-                              setNewBannerData({
-                                ...newBannerData,
-                                students: updated,
-                              });
-                            }}
-                            placeholder="e.g. MBA (2025-27)"
-                            className="w-full p-1.5 border border-slate-300 rounded text-xs"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
-                            Merit / Badge Title
-                          </label>
-                          <input
-                            type="text"
-                            value={st.rank}
-                            onChange={(e) => {
-                              const updated = [...newBannerData.students];
-                              updated[idx] = { ...st, rank: e.target.value };
-                              setNewBannerData({
-                                ...newBannerData,
-                                students: updated,
-                              });
-                            }}
-                            placeholder="e.g. First Rank"
-                            className="w-full p-1.5 border border-slate-300 rounded text-xs text-amber-700 font-bold"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 pt-2">
+              {/* Active Checkbox */}
+              <div className="pt-2 border-t border-slate-100">
                 <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800">
                   <input
                     type="checkbox"
@@ -3939,28 +3850,27 @@ export default function Admin() {
                     }
                     className="w-4 h-4 text-[#0288D1] rounded"
                   />
-                  <span>Active (Auto-scroll on Homepage)</span>
+                  <span>Active (Display on Homepage Hero Slider)</span>
                 </label>
               </div>
 
+              {/* Actions */}
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button
                   type="button"
                   onClick={() => setNewBannerModal(false)}
-                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold"
+                  className="px-4 py-1.5 border rounded text-slate-700 font-semibold hover:bg-slate-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={bannerUploading}
-                  className="px-4 py-1.5 bg-[#0B1B3D] hover:bg-slate-900 text-amber-300 font-bold rounded flex items-center gap-1.5 border border-amber-400"
+                  disabled={bannerUploading || !newBannerData.image_url}
+                  className="px-4 py-1.5 bg-[#0B1B3D] hover:bg-slate-900 text-amber-300 font-bold rounded flex items-center gap-1.5 border border-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Check className="w-4 h-4" />
                   <span>
-                    {editingBannerId
-                      ? "Update Banner Slide"
-                      : "Save Banner Slide"}
+                    {editingBannerId ? "Update Banner" : "Save Banner"}
                   </span>
                 </button>
               </div>
@@ -5049,6 +4959,143 @@ export default function Admin() {
                 >
                   <Check className="w-4 h-4" />
                   <span>Save Alumni</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* MODAL: ADD GALLERY ITEM */}
+      {newGalleryModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md max-w-lg w-full border border-slate-300 shadow-2xl overflow-hidden">
+            <div className="bg-[#0288D1] text-white px-6 py-3 font-bold text-sm flex justify-between items-center">
+              <span>Add New Gallery Item</span>
+              <button
+                onClick={() => {
+                  setNewGalleryModal(false);
+                  setGalleryImagePreview("");
+                  setGalleryUploadError("");
+                }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddGalleryItem} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Title / Caption <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 71st All India Cooperative Week Celebrations"
+                  value={newGalleryData.title}
+                  onChange={(e) => setNewGalleryData({ ...newGalleryData, title: e.target.value })}
+                  className="w-full px-3 py-2 border rounded border-slate-300 outline-none focus:ring-1 focus:ring-[#0288D1]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Media Type <span className="text-red-600">*</span>
+                </label>
+                <select
+                  value={newGalleryData.type}
+                  onChange={(e) => {
+                    const nextType = e.target.value;
+                    setNewGalleryData({
+                      ...newGalleryData,
+                      type: nextType,
+                      url: "",
+                    });
+                    setGalleryImagePreview("");
+                  }}
+                  className="w-full px-3 py-2 border rounded border-slate-300 outline-none focus:ring-1 focus:ring-[#0288D1] bg-white font-medium"
+                >
+                  <option value="image">Photo / Image</option>
+                  <option value="video">YouTube Video</option>
+                </select>
+              </div>
+
+              {newGalleryData.type === "image" ? (
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Upload Photo <span className="text-red-600">*</span>
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-16 rounded border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                      {galleryImagePreview || newGalleryData.url ? (
+                        <img
+                          src={galleryImagePreview || newGalleryData.url}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <ImageIcon className="w-6 h-6 text-slate-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded cursor-pointer border border-slate-300 text-xs transition-colors">
+                        <UploadCloud className="w-3.5 h-3.5 text-[#0288D1]" />
+                        <span>{galleryUploading ? "Uploading to ImgBB..." : "Select Image File"}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleGalleryImageChange}
+                          disabled={galleryUploading}
+                        />
+                      </label>
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        High resolution JPG or PNG. Max 5MB.
+                      </p>
+                    </div>
+                  </div>
+                  {galleryUploadError && (
+                    <p className="text-[11px] text-red-600 font-semibold mt-1">
+                      {galleryUploadError}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    YouTube Video URL <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                    value={newGalleryData.url}
+                    onChange={(e) => setNewGalleryData({ ...newGalleryData, url: e.target.value })}
+                    className="w-full px-3 py-2 border rounded border-slate-300 outline-none focus:ring-1 focus:ring-[#0288D1]"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Paste the full YouTube video link. It will automatically be embedded on the public gallery page.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewGalleryModal(false);
+                    setGalleryImagePreview("");
+                    setGalleryUploadError("");
+                  }}
+                  className="px-4 py-2 border border-slate-300 rounded hover:bg-slate-50 text-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={galleryUploading}
+                  className="px-5 py-2 bg-[#0288D1] hover:bg-[#0277bd] text-white rounded font-bold shadow-xs disabled:opacity-50"
+                >
+                  Save to Gallery
                 </button>
               </div>
             </form>

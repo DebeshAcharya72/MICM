@@ -21,40 +21,11 @@ import {
 import { api } from "../services/api";
 import { portalData } from "../data/portalData";
 
-const DEFAULT_BANNER_SLIDES = [
-  {
-    id: 1,
-    title: "CONGRATULATIONS",
-    subtitle:
-      "FOR SECURING TOP HONOURS IN THE EASTERN REGION COOPERATIVE MANAGEMENT CONCLAVE",
-    location: "AT NATIONAL COOPERATIVE SUMMIT",
-    students: [
-      { name: "ADARSH MOHANTY", batch: "MBA (2025-27)", rank: "First Rank" },
-      { name: "GURU PRASAD DAS", batch: "MBA (2025-27)", rank: "Distinction" },
-      { name: "SUBHASHREE NAYAK", batch: "HDCM (2025-26)", rank: "Top Merit" },
-    ],
-    bg: "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]",
-    image_url: null,
-  },
-  {
-    id: 2,
-    title: "PIONEERING LEGACY",
-    subtitle:
-      "SERVING COOPERATIVE MANAGEMENT AND ADMINISTRATIVE CAPACITY BUILDING SINCE 1955-56",
-    location: "MINISTRY OF CO-OPERATION, GOVT. OF INDIA",
-    students: [
-      { name: "AICTE APPROVED", batch: "2-Year MBA", rank: "BPUT Affiliated" },
-      { name: "NCCT UNIT", batch: "New Delhi", rank: "Apex Body" },
-      { name: "3.4 ACRES", batch: "Nayapalli, BBSR", rank: "Green Campus" },
-    ],
-    bg: "from-[#093a47] via-[#0288D1] to-[#093a47]",
-    image_url: null,
-  },
-];
-
 export default function Home() {
   const [activeNewsTab, setActiveNewsTab] = useState("coop");
-  const [bannerSlides, setBannerSlides] = useState(DEFAULT_BANNER_SLIDES);
+
+  // Initialize bannerSlides as an empty array
+  const [bannerSlides, setBannerSlides] = useState([]);
   const [bannerSlide, setBannerSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -83,8 +54,7 @@ export default function Home() {
 
         if (
           bannersRes.status === "fulfilled" &&
-          Array.isArray(bannersRes.value) &&
-          bannersRes.value.length > 0
+          Array.isArray(bannersRes.value)
         ) {
           setBannerSlides(bannersRes.value);
         }
@@ -131,134 +101,94 @@ export default function Home() {
     setBannerSlide((prev) => (prev + 1) % bannerSlides.length);
   };
 
-  const currentBanner = bannerSlides[bannerSlide] || DEFAULT_BANNER_SLIDES[0];
+  // Safely get the current banner. If no banners exist, this is undefined.
+  const currentBanner = bannerSlides[bannerSlide];
 
   return (
     <div className="bg-[#f4f6f9] pb-12">
       {/* ========================================================
-          HERO BANNER SLIDER (Exact VAMNICOM Blue Banner from Image 1)
-          Now fully auto-scrollable & CMS customizable by Admin
+          HERO BANNER SLIDER (Only renders if API returns data)
       ======================================================== */}
-      <section
-        className="relative overflow-hidden shadow-md border-b-2 border-amber-400 select-none group"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <div
-          className={`py-8 sm:py-12 px-4 sm:px-8 relative transition-all duration-700 ${
-            currentBanner.image_url
-              ? "bg-[#0B1B3D]"
-              : `bg-gradient-to-r ${currentBanner.bg || "from-[#0c2a5c] via-[#103a7d] to-[#0c2a5c]"}`
-          }`}
-          style={
-            currentBanner.image_url
-              ? {
-                  backgroundImage: `url('${currentBanner.image_url}')`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }
-              : {}
-          }
+      {bannerSlides.length > 0 && (
+        <section
+          className="relative w-full overflow-hidden shadow-md border-b-2 border-amber-400 select-none group bg-[#0B1B3D]"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Custom Image Dark Gradient Overlay for contrast and readability */}
-          {currentBanner.image_url && (
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0c2a5c]/95 via-[#0c2a5c]/85 to-[#0c2a5c]/90 backdrop-blur-[1px]"></div>
-          )}
-
-          {/* Subtle Watermark Crest */}
-          <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
-            <div className="w-96 h-96 rounded-full border-8 border-white/20"></div>
-          </div>
-
-          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
-            {/* Left: Gold Foil Crest / Medallion + Institutional Text */}
-            <div className="flex-1 text-center lg:text-left space-y-3">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-amber-300/40 text-amber-300 text-xs font-bold tracking-wide">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                <span>NATIONAL INSTITUTE OF NCCT, GOVT. OF INDIA</span>
-              </div>
-
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-amber-400 tracking-tight drop-shadow-sm uppercase">
-                {currentBanner.title}
-              </h2>
-
-              <p className="text-white text-xs sm:text-sm md:text-base font-bold max-w-2xl leading-relaxed tracking-wide uppercase">
-                {currentBanner.subtitle}
-              </p>
-
-              <div className="pt-2 flex items-center justify-center lg:justify-start gap-4 text-xs font-bold text-amber-200">
-                <span className="bg-[#0B1B3D]/80 px-3 py-1 rounded border border-amber-400/30">
-                  {currentBanner.location}
-                </span>
-              </div>
-            </div>
-
-            {/* Right: Round Scholar Badges (Exact VAMNICOM Style) */}
-            <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
-              {(currentBanner.students || []).map((student, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center text-center"
-                >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-amber-400 bg-white shadow-lg overflow-hidden flex items-center justify-center p-1">
-                    <div className="w-full h-full rounded-full bg-slate-800 text-amber-300 flex flex-col items-center justify-center p-1">
-                      <GraduationCap className="w-5 h-5 text-amber-400 mb-0.5" />
-                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tighter text-amber-400 text-center leading-tight">
-                        {student.rank}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="font-bold text-xs sm:text-sm text-white mt-2 block tracking-tight">
-                    {student.name}
-                  </span>
-                  <span className="text-[10px] sm:text-[11px] text-amber-300 font-semibold block">
-                    {student.batch}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Banner Slider Controls */}
-          {bannerSlides.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={handlePrevSlide}
-                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/75 text-white transition-all shadow-md group-hover:scale-105 z-20"
-                aria-label="Previous Slide"
+          <div className="relative w-full overflow-hidden bg-slate-900">
+            {bannerSlides.map((slide, idx) => (
+              <div
+                key={slide.id || idx}
+                className={`transition-opacity duration-700 ease-in-out ${
+                  bannerSlide === idx
+                    ? "opacity-100 relative"
+                    : "opacity-0 absolute inset-0 pointer-events-none"
+                }`}
               >
-                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-              <button
-                type="button"
-                onClick={handleNextSlide}
-                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/75 text-white transition-all shadow-md group-hover:scale-105 z-20"
-                aria-label="Next Slide"
-              >
-                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
+                {/* Desktop & Tablet (Auto-height maintaining ratio) */}
+                <img
+                  src={slide.image_url}
+                  alt={`Hero Banner ${idx + 1}`}
+                  className="hidden md:block w-full h-auto object-contain"
+                />
 
-              {/* Slider Dots / Indicators */}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20">
-                {bannerSlides.map((_, idx) => (
+                {/* Mobile (Content-fit / centered crop preserving readability) */}
+                <img
+                  src={slide.image_url}
+                  alt={`Hero Banner ${idx + 1}`}
+                  className="block md:hidden w-full object-contain object-center"
+                />
+              </div>
+            ))}
+
+            {/* Slider Controls (Arrows & Dots) */}
+            {bannerSlides.length > 1 && (
+              <>
+                {/* Left Arrow */}
+                <div className="absolute inset-y-0 left-0 flex items-center z-10 pl-2 sm:pl-4 pointer-events-none">
                   <button
-                    key={idx}
                     type="button"
-                    onClick={() => setBannerSlide(idx)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      bannerSlide === idx
-                        ? "w-6 bg-amber-400"
-                        : "w-2 bg-white/50 hover:bg-white/80"
-                    }`}
-                    aria-label={`Go to slide ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </section>
+                    onClick={handlePrevSlide}
+                    className="pointer-events-auto p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/75 text-white transition-all shadow-md group-hover:scale-105"
+                    aria-label="Previous Slide"
+                  >
+                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                </div>
+
+                {/* Right Arrow */}
+                <div className="absolute inset-y-0 right-0 flex items-center z-10 pr-2 sm:pr-4 pointer-events-none">
+                  <button
+                    type="button"
+                    onClick={handleNextSlide}
+                    className="pointer-events-auto p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/75 text-white transition-all shadow-md group-hover:scale-105"
+                    aria-label="Next Slide"
+                  >
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                </div>
+
+                {/* Slider Dots / Indicators */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20 bg-black/30 backdrop-blur-xs px-3 py-1.5 rounded-full">
+                  {bannerSlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setBannerSlide(idx)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        bannerSlide === idx
+                          ? "w-6 bg-amber-400"
+                          : "w-2 bg-white/60 hover:bg-white"
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ========================================================
           MAIN HOMEPAGE SECTION (12-Column Dashboard Layout)
@@ -269,7 +199,7 @@ export default function Home() {
         ====================================================== */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           {/* Col 1 (Left) col-span-12 lg:col-span-2: Dignitaries (Left) */}
-          <div className="col-span-12 lg:col-span-2 space-y-3">
+          <div className="col-span-12 lg:col-span-2 space-y-3 order-1 lg:order-none">
             {portalData.dignitaries.left.map((d, idx) => (
               <div
                 key={idx}
@@ -296,7 +226,7 @@ export default function Home() {
           </div>
 
           {/* Col 2 (Middle-Left) col-span-12 lg:col-span-3: Quick Links */}
-          <div className="col-span-12 lg:col-span-3 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col">
+          <div className="col-span-12 lg:col-span-3 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col order-3 lg:order-none">
             <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
               <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
                 <ExternalLink className="w-4 h-4 text-red-700" />
@@ -335,7 +265,7 @@ export default function Home() {
           </div>
 
           {/* Col 3 (Middle-Right) col-span-12 lg:col-span-4: Announcements */}
-          <div className="col-span-12 lg:col-span-5 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col">
+          <div className="col-span-12 lg:col-span-5 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col order-4 lg:order-none">
             <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex items-center justify-between">
               <h3 className="font-serif font-bold text-base text-red-700 tracking-wide flex items-center gap-1.5">
                 <FileText className="w-4 h-4 text-red-700" />
@@ -385,7 +315,7 @@ export default function Home() {
           </div>
 
           {/* Col 4 (Right) col-span-12 lg:col-span-3: Dignitaries (Right) */}
-          <div className="col-span-12 lg:col-span-2 space-y-3">
+          <div className="col-span-12 lg:col-span-2 space-y-3 order-2 lg:order-none">
             {portalData.dignitaries.right.map((d, idx) => (
               <div
                 key={idx}
@@ -420,7 +350,6 @@ export default function Home() {
           <div className="col-span-12 lg:col-span-3 bg-white border border-slate-200 rounded-md shadow-xs">
             <div className="flex border-b border-slate-200 text-xs font-bold bg-slate-50">
               <div
-                // type="button"
                 onClick={() => setActiveNewsTab("coop")}
                 className={`flex-1 py-3 px-2 text-center transition-colors border-r border-slate-200 ${
                   activeNewsTab === "coop"
@@ -430,17 +359,6 @@ export default function Home() {
               >
                 Cooperative News
               </div>
-              {/* <button
-                type="button"
-                onClick={() => setActiveNewsTab('whatsnew')}
-                className={`flex-1 py-3 px-2 text-center transition-colors ${
-                  activeNewsTab === 'whatsnew'
-                    ? 'text-red-700 font-serif font-extrabold border-b-2 border-red-700 bg-white'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                What's New
-              </button> */}
             </div>
 
             <div className="p-3 divide-y divide-slate-100 text-xs max-h-[380px] overflow-y-auto">
@@ -567,6 +485,7 @@ export default function Home() {
               </table>
             </div>
           </div>
+
           {/* Col 1 (Left) col-span-12 lg:col-span-2: Notice Board */}
           <div className="col-span-12 lg:col-span-2 bg-white border border-slate-200 rounded-md shadow-xs flex flex-col">
             <div className="border-b border-slate-200 px-3 py-3 bg-slate-50 flex items-center justify-between">
@@ -574,9 +493,6 @@ export default function Home() {
                 <Bell className="w-4 h-4 text-red-700 shrink-0" />
                 <span className="truncate">Notice Board</span>
               </h3>
-              {/* <span className="text-[10px] font-bold text-slate-400 uppercase shrink-0">
-                Circulars
-              </span> */}
             </div>
 
             <div className="p-2.5 divide-y divide-slate-100 max-h-[400px] overflow-y-auto text-xs flex-1">
