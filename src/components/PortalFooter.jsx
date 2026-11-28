@@ -91,8 +91,15 @@ export default function PortalFooter() {
       {/* Bottom Dark Navy Government Bar */}
       <div className="bg-[#0b1b3d] text-slate-300 py-3.5 px-4 text-[11px] border-t border-slate-700">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+          <p>
+            Copyright © {new Date().getFullYear()}{" "}
+            <strong className="notranslate">
+              Madhusudan Institute of Co-operative Management (MICM)
+            </strong>
+            , Bhubaneswar.
+          </p>
           <p className="text-slate-400">
-            Built by{" "}
+            Built & Managed by{" "}
             <a
               href="https://www.flashotech.com/" // Replace with the actual URL if different
               target="_blank"
@@ -101,13 +108,6 @@ export default function PortalFooter() {
             >
               Flasho Tech Private Limited
             </a>
-          </p>
-          <p>
-            Copyright © {new Date().getFullYear()}{" "}
-            <strong className="notranslate">
-              Madhusudan Institute of Co-operative Management (MICM)
-            </strong>
-            , Bhubaneswar.
           </p>
         </div>
       </div>
